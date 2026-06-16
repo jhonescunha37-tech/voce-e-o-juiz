@@ -1,1 +1,346 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Você é o Juiz — O Hexa Está em Suas Mãos</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#071b0c;color:#f2f2f2}
+.app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.book{width:100%;max-width:540px;background:#102515;border:1px solid #2f6b3c;border-radius:18px;padding:24px;box-shadow:0 0 30px #000}
+h1,h2{color:#ffd166}
+p{font-size:18px;line-height:1.55}
+.page{display:none}
+.page.active{display:block}
+.counter{color:#ccc;font-size:14px;margin-bottom:12px}
+.buttons{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+button{flex:1;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:0.5;cursor:not-allowed}
+.next{background:#ffd166}
+.prev{background:#444;color:white}
+.choice{background:#118ab2;color:white}
+.choice2{background:#1d3557;color:white}
+.restart{background:#06d6a0;color:#06281f}
+.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
+.voteBox{background:#1b331f;padding:16px;border-radius:14px;margin-top:20px}
+.bar{height:18px;background:#333;border-radius:20px;overflow:hidden;margin:8px 0 16px}
+.fill{height:100%;width:0%;background:#ffd166;transition:width 0.6s ease}
+
+/* Aviso escolha permanente */
+.aviso-permanente{background:#071008;border:1px solid #118ab2;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center}
+.aviso-permanente p{font-size:15px;color:#aaddff;margin:0;line-height:1.5}
+.aviso-permanente strong{color:#118ab2}
+
+/* Overlay suspense */
+#overlay{display:none;position:fixed;inset:0;background:#000;z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+#overlay.ativo{display:flex}
+.suspense-texto{color:#ffd166;font-size:22px;font-weight:bold;animation:pulsar 0.8s ease-in-out infinite alternate}
+@keyframes pulsar{from{opacity:0.2}to{opacity:1}}
+.suspense-sub{color:#aaa;font-size:15px;margin-top:16px}
+
+/* Bloqueio */
+.ja-escolheu{background:#111;border:1px solid #555;border-radius:14px;padding:20px;text-align:center;margin-top:16px}
+.ja-escolheu h3{color:#ffd166;margin-top:0}
+.ja-escolheu p{font-size:15px;color:#ccc;margin:6px 0}
+.btn-ver-final{display:inline-block;margin-top:14px;padding:12px 24px;background:#ffd166;color:#111;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;border:none;width:100%}
+
+/* CTA */
+.cta-historia{background:#071008;border:1px solid #ffd166;border-radius:14px;padding:20px;margin-top:24px;text-align:center}
+.cta-historia p{font-size:15px;color:#ddd;margin:0 0 10px;line-height:1.5}
+.cta-historia a{color:#ffd166;font-weight:bold;word-break:break-all}
+</style>
+</head>
+<body>
+
+<!-- Overlay de suspense -->
+<div id="overlay">
+  <div class="suspense-texto" id="suspenseTexto">A final está começando...</div>
+  <div class="suspense-sub">Não há como voltar atrás.</div>
+</div>
+
+<div class="app">
+<div class="book">
+<div class="counter" id="counter"></div>
+<div id="content"></div>
+<div class="buttons" id="nav">
+  <button class="prev" id="btnPrev" onclick="prevPage()">Voltar</button>
+  <button class="next" id="btnNext" onclick="nextPage()">Próxima</button>
+</div>
+</div>
+</div>
+
+<script>
+// ---- Firebase ----
+const firebaseConfig = {
+  apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
+  authDomain: "voce-e-o-juiz.firebaseapp.com",
+  projectId: "voce-e-o-juiz",
+  storageBucket: "voce-e-o-juiz.firebasestorage.app",
+  messagingSenderId: "642064514915",
+  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56",
+  measurementId: "G-R5XH79YPX2"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storyRef = db.collection("historias").doc("hexa");
+
+storyRef.set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+  .catch(err => console.error("Erro ao contar acesso:", err));
+
+const CHAVE = "votou_hexa";
+const nomes = {
+  Argentina: "Final contra a Argentina",
+  Alemanha: "Final contra a Alemanha"
+};
+
+const ctaHTML = `
+<div class="cta-historia">
+  <p>✍️ <strong>Tem uma história para nos contar?</strong><br>
+  Mande o seu caso, polêmica ou mistério para virar um episódio de Você é o Juiz!</p>
+  <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a>
+</div>`;
+
+let current = 0;
+let pages = [];
+let opponent = "";
+
+const intro = [
+  ["Você é o Juiz", "O Hexa Está em Suas Mãos", "A Copa do Mundo chega ao fim. O Brasil, desacreditado no começo, encontra força onde ninguém esperava. A camisa amarela pesa. O mundo inteiro sabe: quando o Brasil chega, a história muda."],
+  ["Página 2", "", "Alisson fecha o gol. Marquinhos comanda a defesa. Gabriel Magalhães ganha todas pelo alto. Casemiro corre como se tivesse dez anos a menos. Bruno Guimarães pensa o jogo. Paquetá carrega a bola. Raphinha acelera. Vini Jr. desmonta marcações."],
+  ["Página 3", "", "Neymar começa o torneio no banco, voltando de lesão. Mas sua presença muda o vestiário. Quando ele entra, a torcida sente algo diferente. Não é só futebol. É memória, promessa e cobrança."],
+  ["Página 4", "", "Na estreia, o Brasil sofre. O adversário marca forte. Vini tenta de um lado, Raphinha do outro. Aos 42 do segundo tempo, Paquetá encontra Rodrygo. Chute seco. Gol. O Brasil respira."],
+  ["Página 5", "", "No segundo jogo, o Brasil joga melhor. Bruno Guimarães domina o meio. Casemiro dá carrinho, levanta e grita. O time entende que não basta jogar bonito. Precisa sobreviver."],
+  ["Página 6", "", "Nas oitavas, o Brasil encara uma seleção europeia fechada. O jogo parece travado. A bola bate na trave duas vezes. O goleiro adversário vira gigante."],
+  ["Página 7", "", "Aos 88 minutos, Neymar entra. Ele toca três vezes na bola. Na quarta, sofre falta perto da área. O estádio inteiro levanta."],
+  ["Página 8", "", "Neymar olha para o gol. A barreira pula. A bola passa por baixo. Gol do Brasil. Ele não comemora correndo. Apenas aponta para o céu."],
+  ["Página 9", "", "Nas quartas, o Brasil enfrenta uma seleção física. O jogo vira batalha. Gabriel Magalhães salva em cima da linha. Alisson faz uma defesa impossível com a ponta dos dedos."],
+  ["Página 10", "", "Nos acréscimos, Vini Jr. dispara. Ele passa por um, passa por dois, cruza rasteiro. Raphinha chega batendo. Gol. O Brasil está na semifinal."],
+  ["Página 11", "", "Na semifinal, o Brasil parece cansado. As pernas pesam. A torcida canta mesmo assim. O empate leva tudo para os pênaltis."],
+  ["Página 12", "", "Alisson pega a primeira cobrança. Casemiro acerta a segunda. Neymar guarda a última. O Brasil vence. O país inteiro acorda gritando."],
+  ["Página 13", "", "Depois de anos de frustração, o Brasil está de volta ao lugar onde nasceu para estar: a final da Copa do Mundo."],
+  ["Página 14", "", "No treino antes da decisão, Neymar fica sozinho no gramado. Ele coloca a bola na marca do pênalti e chuta dez vezes. Acerta todas. Mas na décima primeira, para antes de bater."],
+  ["Página 15", "", "Chegou a hora. O Brasil está na final. Mas você decide quem estará do outro lado. Qual gigante mundial o Brasil enfrentará?"]
+];
+
+function buildStory(rival) {
+  const clima = rival === "Argentina"
+    ? "É Brasil contra Argentina. A final que parece escrita por alguém que gosta de sofrimento. Messi não está em campo, mas sua sombra vive na camisa argentina. Cada dividida parece uma guerra."
+    : "É Brasil contra Alemanha. O fantasma de 2014 aparece em cada tela, em cada comentário, em cada olhar. O Brasil não enfrenta apenas onze jogadores. Enfrenta uma lembrança.";
+
+  const final30 = [
+    ["Página 16", "", clima],
+    ["Página 17", "", "O árbitro apita. A bola rola. O Brasil começa tocando curto, sem pressa. Alisson passa para Marquinhos. Marquinhos levanta a cabeça. O estádio parece respirar junto."],
+    ["Página 18", "", "A primeira arrancada vem com Vini Jr. Ele recebe na esquerda, encara o marcador, finge que vai para fora e corta para dentro. A torcida levanta antes mesmo do chute."],
+    ["Página 19", "", "A bola passa perto. Muito perto. O goleiro só olha. Neymar, no banco, bate palmas devagar. Ele sabe que o jogo já começou a mudar."],
+    ["Página 20", "", rival + " responde rápido. Um cruzamento venenoso atravessa a área brasileira. Gabriel Magalhães sobe mais alto que todos e tira de cabeça."],
+    ["Página 21", "", "Aos 18 minutos, Casemiro rouba uma bola no meio. Ele toca para Bruno Guimarães, que acha Paquetá entre as linhas. Paquetá gira como se estivesse dançando."],
+    ["Página 22", "", "Paquetá enfia para Raphinha. Raphinha bate cruzado. GOOOOOL DO BRASIL. O estádio explode. Brasil 1 a 0."],
+    ["Página 23", "", "A câmera mostra crianças chorando na arquibancada. Mostra torcedores de joelhos. Mostra Neymar olhando para o campo, sério, como se soubesse que ainda tinha muita coisa por vir."],
+    ["Página 24", "", rival + " aperta. O Brasil recua. Alisson começa a trabalhar. Uma defesa no canto. Depois outra no alto. A final vira sofrimento."],
+    ["Página 25", "", "Aos 36 minutos, falta perigosa contra o Brasil. A bola vem forte. Bate na barreira. Sobra na entrada da área. Chute seco. Gol. Empate. Brasil 1, " + rival + " 1."],
+    ["Página 26", "", "O silêncio dura poucos segundos. Depois a torcida brasileira volta a cantar. Não é canto de festa. É canto de quem se recusa a cair."],
+    ["Página 27", "", "No último lance do primeiro tempo, Vini Jr. recebe lançamento longo. Ele domina no peito, invade a área e cai após contato. O árbitro manda seguir."],
+    ["Página 28", "", "Os jogadores cercam o juiz. Nada muda. Fim do primeiro tempo. No vestiário, ninguém grita. Só se ouve a respiração pesada dos atletas."],
+    ["Página 29", "", "Ancelotti olha para Neymar. Neymar entende. Ele tira o colete. O mundo inteiro percebe. O camisa 10 vai para o jogo."],
+    ["Página 30", "", "Segundo tempo. Neymar entra. O estádio inteiro muda de som. A bola parece procurar seus pés. No primeiro toque, ele sofre falta. No segundo, dá um passe que ninguém esperava."],
+    ["Página 31", "", "Aos 12 minutos, Neymar recebe entre três marcadores. Ele gira, prende, espera. Quando todos acham que ele vai chutar, ele toca para Vini Jr."],
+    ["Página 32", "", "Vini invade a área. Bate colocado. GOOOOOL DO BRASIL. Brasil 2 a 1. Neymar corre para abraçar Vini. O banco inteiro invade a lateral."],
+    ["Página 33", "", rival + " sente o golpe. O Brasil toca a bola com confiança. Bruno Guimarães cadencia. Casemiro organiza. Marquinhos grita: calma, calma, calma."],
+    ["Página 34", "", "Aos 29 minutos, escanteio para o Brasil. Raphinha cobra fechado. Gabriel Magalhães sobe como um prédio. Cabeçada. GOOOOOL. Brasil 3 a 1."],
+    ["Página 35", "", "O Hexa parece perto. Perto demais. Os narradores começam a falar da taça. Os torcedores começam a se abraçar antes da hora. E final de Copa não perdoa ansiedade."],
+    ["Página 36", "", "Aos 38 minutos, " + rival + " diminui. Um chute desviado engana Alisson. Brasil 3, " + rival + " 2. O jogo volta a ficar vivo."],
+    ["Página 37", "", "Neymar pede calma. Ele segura a bola na lateral, sofre falta, demora para levantar. Cada segundo parece uma eternidade."],
+    ["Página 38", "", "Aos 44 minutos, o Brasil quase mata o jogo. Vini dispara sozinho, toca por cima do goleiro, mas a bola beija a trave e sai."],
+    ["Página 39", "", "A placa sobe. Dois minutos de acréscimo. O estádio inteiro grita. Dois minutos para o Hexa. Dois minutos para a história."],
+    ["Página 40", "", "Aos 46 minutos, " + rival + " ganha escanteio. O goleiro adversário vai para a área. Até ele. Todo mundo sobe."],
+    ["Página 41", "", "A bola vem alta. Alisson sai. Alguém desvia antes. A bola fica viva dentro da pequena área. Pernas, braços, gritos, desespero."],
+    ["Página 42", "", "O chute sai fraco. Parece fácil. Mas toca em Casemiro, muda de direção e passa por baixo de Alisson."],
+    ["Página 43", "", "Gol. Aos 47 do segundo tempo. Brasil 3, " + rival + " 3. O estádio vira um buraco de silêncio."],
+    ["Página 44", "", "Neymar coloca as mãos no rosto. Vini olha para o chão. Alisson busca a bola dentro do gol sem dizer uma palavra."],
+    ["Página 45", "", "Fim de jogo. A final da Copa do Mundo será decidida nos pênaltis. O Hexa está a poucos metros de distância. Ou a uma dor eterna."]
+  ];
+
+  const penaltis = [
+    ["Página 46", "", "Primeira cobrança do Brasil. O jogador caminha devagar. A câmera fecha no rosto dele. O suor escorre. Ele respira, corre e bate no canto direito. O goleiro pula certo. DEFENDEU. O Brasil perde o primeiro pênalti."],
+    ["Página 47", "", "Primeira cobrança de " + rival + ". O cobrador ajeita a bola com carinho, como se aquilo fosse simples. Ele corre curto, espera Alisson cair e toca no outro lado. Gol. Brasil 0, " + rival + " 1."],
+    ["Página 48", "", "Segunda cobrança do Brasil. Raphinha pega a bola. Ele olha para o céu, fecha os olhos por um segundo e parte. Chute forte, alto, sem chance. Gol do Brasil. Brasil 1, " + rival + " 1."],
+    ["Página 49", "", "Segunda cobrança de " + rival + ". Alisson tenta atrasar. Anda de um lado para o outro. Aponta para o canto. O cobrador não se abala. Bate seco. Gol. Brasil 1, " + rival + " 2."],
+    ["Página 50", "", "Terceira cobrança do Brasil. Vini Jr. pega a bola. Ele sorri, mas o sorriso parece nervoso. O árbitro apita. Vini corre rápido e bate cruzado. A bola entra beijando a rede. Gol. Brasil 2, " + rival + " 2."],
+    ["Página 51", "", "Terceira cobrança de " + rival + ". O estádio pulsa. O jogador adversário corre e bate forte. A bola vai subindo, subindo, subindo. TRAVEEEEEEEE. Ela explode no poste e volta para o campo. O Brasil está vivo."],
+    ["Página 52", "", "Quarta cobrança do Brasil. Bruno Guimarães caminha até a marca. Ele não olha para ninguém. Coloca a bola, dá quatro passos para trás e bate no canto. O goleiro toca nela, mas não segura. Gol. Brasil 3, " + rival + " 2."],
+    ["Página 53", "", "Quarta cobrança de " + rival + ". Se errar, o Brasil fica muito perto. Se fizer, a pressão volta. O atacante respira fundo. Alisson pula no canto certo, mas a bola passa por baixo do braço dele. Gol. Brasil 3, " + rival + " 3."],
+    ["Página 54", "", "Quinta cobrança do Brasil. Casemiro pega a bola. O capitão olha para seus companheiros. Corre. Bate. Gol. Brasil 4, " + rival + " 3."],
+    ["Página 55", "", "Quinta cobrança de " + rival + ". Se fizer, continua. Se perder, Neymar terá a bola do título. O cobrador corre. Alisson espera até o último instante. O chute vem forte, meia altura. Alisson voa. ESPALMA. DEFENDEU O GOLEIRO DO BRASIL."],
+    ["Página 56", "", "Neymar pega a bola. O estádio inteiro está de pé. Ele caminha sozinho até a marca. Se acertar, o Brasil é Hexacampeão. Se errar, a decisão continua e o medo volta. Neymar ajeita a bola. Dá três passos para trás. O árbitro apita. Ele corre devagar. Para. O goleiro se mexe. Neymar toca com calma. A bola vai lenta, venenosa, impossível. O goleiro cai para um lado. A bola entra no outro. GOOOOOOOOOOOOOOOOOL. O BRASIL É HEXACAMPEÃO DO MUNDO."]
+  ];
+
+  pages = [...intro, ...final30, ...penaltis];
+}
+
+function renderAreaEscolha() {
+  const jaVotou = localStorage.getItem(CHAVE);
+  if (jaVotou) {
+    return `
+      <div class="ja-escolheu">
+        <h3>Sua escolha está selada.</h3>
+        <p>Neste dispositivo, você escolheu:</p>
+        <p><strong style="color:#ffd166;font-size:17px">${nomes[jaVotou]}</strong></p>
+        <p style="color:#888;font-size:14px;margin-top:8px">O outro caminho permanece oculto para sempre.</p>
+        <button class="btn-ver-final" onclick="irParaFinalSalvo()">Continuar minha história</button>
+      </div>`;
+  }
+  return `
+    <div class="aviso-permanente">
+      <p><strong>⚠ Atenção: escolha irreversível.</strong><br>
+      Você só poderá jogar <strong>uma final</strong>.<br>
+      O outro adversário permanecerá para sempre oculto neste dispositivo.<br>
+      Pense bem antes de decidir.</p>
+    </div>
+    <div class="buttons">
+      <button class="choice" onclick="chooseOpponent('Argentina')">🇦🇷 Argentina</button>
+      <button class="choice2" onclick="chooseOpponent('Alemanha')">🇩🇪 Alemanha</button>
+    </div>`;
+}
+
+function irParaFinalSalvo() {
+  const jaVotou = localStorage.getItem(CHAVE);
+  opponent = jaVotou;
+  buildStory(opponent);
+  current = 15;
+  render();
+}
+
+function chooseOpponent(team) {
+  if (localStorage.getItem(CHAVE)) { irParaFinalSalvo(); return; }
+
+  const overlay = document.getElementById("overlay");
+  const suspenseTexto = document.getElementById("suspenseTexto");
+  const frases = team === "Argentina"
+    ? ["Brasil x Argentina...", "A maior rivalidade do futebol...", "O mundo inteiro vai parar...", "Não há como voltar atrás..."]
+    : ["Brasil x Alemanha...", "O fantasma de 2014 ressurge...", "O Brasil precisa se vingar...", "Não há como voltar atrás..."];
+
+  let i = 0;
+  overlay.classList.add("ativo");
+  suspenseTexto.innerText = frases[0];
+
+  const intervalo = setInterval(() => {
+    i++;
+    if (i < frases.length) {
+      suspenseTexto.innerText = frases[i];
+    } else {
+      clearInterval(intervalo);
+      overlay.classList.remove("ativo");
+      localStorage.setItem(CHAVE, team);
+      opponent = team;
+      buildStory(opponent);
+
+      // Salva no Firebase
+      const campo = team === "Argentina" ? "votoArgentina" : "votoAlemanha";
+      storyRef.set({ [campo]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+
+      current = 15;
+      render();
+    }
+  }, 1200);
+}
+
+function render() {
+  const content = document.getElementById("content");
+  const nav = document.getElementById("nav");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+
+  // Página de escolha (índice 14)
+  if (current === 14) {
+    content.innerHTML = `
+      <h2>Página 15</h2>
+      <p>Chegou a hora. O Brasil está na final. Mas você decide quem estará do outro lado. Qual gigante mundial o Brasil enfrentará?</p>
+      ${renderAreaEscolha()}`;
+    nav.style.display = "flex";
+    btnNext.style.display = "none";
+    btnPrev.disabled = false;
+    document.getElementById("counter").innerText = "Página 15 de 57";
+    return;
+  }
+
+  // Página final (índice 56)
+  if (current === 56) {
+    storyRef.get().then(doc => {
+      const data = doc.exists ? doc.data() : {};
+      const votoArg = data.votoArgentina || 0;
+      const votoAle = data.votoAlemanha || 0;
+      const total = votoArg + votoAle;
+      const pa = total ? Math.round((votoArg / total) * 100) : 0;
+      const pg = total ? Math.round((votoAle / total) * 100) : 0;
+
+      content.innerHTML = `
+        <h2>O Hexa é do Brasil 🏆</h2>
+        <p>Jogadores caem no gramado. Neymar chora antes mesmo dos companheiros chegarem. Alisson corre de braços abertos. Vini Jr. pula sobre a placa de publicidade. Casemiro ajoelha e beija o escudo.</p>
+        <p>Depois de tanta espera, depois de tanta cobrança, depois de tantos quase, o Brasil volta ao topo do mundo.</p>
+        <p><b>Brasil campeão. Brasil Hexacampeão.</b></p>
+        <div class="voteBox">
+          <h3>Escolha dos leitores — qual final você jogou?</h3>
+          <p>🇦🇷 Final contra Argentina: ${votoArg} voto(s) — ${pa}%</p>
+          <div class="bar"><div class="fill" style="width:${pa}%"></div></div>
+          <p>🇩🇪 Final contra Alemanha: ${votoAle} voto(s) — ${pg}%</p>
+          <div class="bar"><div class="fill" style="width:${pg}%"></div></div>
+          <p>Total: ${total} escolha(s)</p>
+        </div>
+        ${ctaHTML}
+        <div class="buttons" style="margin-top:16px">
+          <button class="restart" onclick="restart()">Recomeçar história</button>
+          <a class="other" href="../index.html">Outras histórias</a>
+        </div>`;
+    });
+    nav.style.display = "none";
+    document.getElementById("counter").innerText = "Fim — Brasil Hexacampeão! 🏆";
+    return;
+  }
+
+  // Páginas normais
+  const p = pages[current];
+  content.innerHTML = `
+    <h2>${p[0]}</h2>
+    ${p[1] ? `<h1>${p[1]}</h1>` : ""}
+    <p>${p[2]}</p>`;
+
+  nav.style.display = "flex";
+  btnNext.style.display = "flex";
+  btnPrev.disabled = (current === 0);
+
+  const total = opponent ? 57 : 15;
+  const label = opponent ? " — Final contra " + opponent : "";
+  document.getElementById("counter").innerText = "Página " + (current + 1) + " de " + total + label;
+}
+
+function nextPage() {
+  if (current === 14 && !localStorage.getItem(CHAVE)) return;
+  if (current < pages.length - 1) {
+    current++;
+    render();
+  }
+}
+
+function prevPage() {
+  if (current > 0) {
+    current--;
+    render();
+  }
+}
+
+function restart() {
+  opponent = "";
+  pages = [...intro];
+  current = 0;
+  render();
+}
+
+pages = [...intro];
+render();
+</script>
+</body>
+</html>
