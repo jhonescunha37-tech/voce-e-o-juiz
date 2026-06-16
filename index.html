@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Você é o Juiz — Histórias Interativas</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#08080c;
+  color:#f2f2f2;
+}
+.app{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.book{
+  width:100%;
+  max-width:520px;
+  background:#14161f;
+  border:1px solid #333;
+  border-radius:18px;
+  padding:28px;
+  box-shadow:0 0 30px #000;
+}
+h1{color:#ffd166;margin-top:0;text-align:center}
+.subtitle{color:#aaa;text-align:center;margin-bottom:28px;font-size:15px}
+.card{
+  display:block;
+  text-decoration:none;
+  background:#1d2030;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:16px;
+  color:#f2f2f2;
+  transition:transform 0.15s ease, border-color 0.15s ease;
+}
+.card:hover{
+  transform:translateY(-2px);
+  border-color:#ffd166;
+}
+.card h2{
+  margin:0 0 6px;
+  color:#ffd166;
+  font-size:19px;
+}
+.card p{
+  margin:0;
+  font-size:14px;
+  color:#bbb;
+  line-height:1.5;
+}
+.tag{
+  display:inline-block;
+  font-size:11px;
+  font-weight:bold;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:20px;
+  margin-bottom:10px;
+}
+.tag.terror{background:#b00020;color:#fff}
+.tag.misterio{background:#0b5f7a;color:#fff}
+.tag.ovni{background:#0b8457;color:#fff}
+footer{
+  text-align:center;
+  color:#666;
+  font-size:12px;
+  margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<div class="book">
+
+<h1>Você é o Juiz</h1>
+<p class="subtitle">Escolha uma história, leia até o fim e decida o veredito.</p>
+
+<a class="card" href="historias/casa-17.html">
+  <span class="tag misterio">Mistério / Suspense</span>
+  <h2>O Caso da Casa 17</h2>
+  <p>Helena Duarte foi encontrada morta em casa, com uma frase escrita no espelho. Quatro suspeitos, dezenas de pistas. Quem é o culpado: Daniel ou Clara?</p>
+</a>
+
+<a class="card" href="historias/passageiro.html">
+  <span class="tag terror">Terror</span>
+  <h2>O Passageiro da Última Viagem</h2>
+  <p>Marcelo dirige a última linha de ônibus da cidade após a meia-noite e começa a ver uma passageira que ninguém mais consegue ver. Real ou imaginação?</p>
+</a>
+
+<a class="card" href="historias/marcos-pantera.html">
+  <span class="tag ovni">Polêmica / OVNI</span>
+  <h2>O Caso Marcos Pantera</h2>
+  <p>Uma gravação misteriosa de luzes no céu divide a internet. Marcos está dizendo a verdade ou criou tudo para chamar atenção?</p>
+</a>
+
+<footer>Histórias fictícias. Decida com cuidado.</footer>
+
+</div>
+</div>
+
+</body>
+</html>
