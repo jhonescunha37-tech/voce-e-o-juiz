@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -175,7 +174,8 @@ function buildStory(rival) {
     ["Página 53", "", "Quarta cobrança de " + rival + ". Se errar, o Brasil fica muito perto. Se fizer, a pressão volta. O atacante respira fundo. Alisson pula no canto certo, mas a bola passa por baixo do braço dele. Gol. Brasil 3, " + rival + " 3."],
     ["Página 54", "", "Quinta cobrança do Brasil. Casemiro pega a bola. O capitão olha para seus companheiros. Corre. Bate. Gol. Brasil 4, " + rival + " 3."],
     ["Página 55", "", "Quinta cobrança de " + rival + ". Se fizer, continua. Se perder, Neymar terá a bola do título. O cobrador corre. Alisson espera até o último instante. O chute vem forte, meia altura. Alisson voa. ESPALMA. DEFENDEU O GOLEIRO DO BRASIL."],
-    ["Página 56", "", "Neymar pega a bola. O estádio inteiro está de pé. Ele caminha sozinho até a marca. Se acertar, o Brasil é Hexacampeão. Se errar, a decisão continua e o medo volta. Neymar ajeita a bola. Dá três passos para trás. O árbitro apita. Ele corre devagar. Para. O goleiro se mexe. Neymar toca com calma. A bola vai lenta, venenosa, impossível. O goleiro cai para um lado. A bola entra no outro. GOOOOOOOOOOOOOOOOOL. O BRASIL É HEXACAMPEÃO DO MUNDO."]
+    ["Página 56", "", "Neymar pega a bola. O estádio inteiro está de pé. Ele caminha sozinho até a marca. Se acertar, o Brasil é Hexacampeão. Se errar, a decisão continua e o medo volta. Neymar ajeita a bola. Dá três passos para trás. O árbitro apita. Ele olha para o gol. Fecha os olhos por um segundo. E corre."],
+    ["Página 57", "", "GOOOOOOOOOOOOOOOOOL. O BRASIL É HEXACAMPEÃO DO MUNDO. A bola foi lenta, venenosa, impossível. O goleiro caiu para um lado. A bola entrou no outro. Neymar para no meio do campo. Os braços abertos. O choro vem antes do grito."]
   ];
 
   pages = [...intro, ...final30, ...penaltis];
@@ -263,12 +263,28 @@ function render() {
     nav.style.display = "flex";
     btnNext.style.display = "none";
     btnPrev.disabled = false;
-    document.getElementById("counter").innerText = "Página 15 de 57";
+    document.getElementById("counter").innerText = "Página 15 de 58";
     return;
   }
 
-  // Página final (índice 56)
+  // Página 57 — suspense do Neymar correndo (sem botão próxima, só próxima especial)
   if (current === 56) {
+    const p = pages[current];
+    content.innerHTML = `
+      <h2>${p[0]}</h2>
+      <p>${p[2]}</p>
+      <div class="buttons" style="margin-top:24px">
+        <button class="next" onclick="revelarGol()">...</button>
+      </div>`;
+    nav.style.display = "flex";
+    btnNext.style.display = "none";
+    btnPrev.disabled = false;
+    document.getElementById("counter").innerText = "Página 57 de 58 — Final contra " + opponent;
+    return;
+  }
+
+  // Página final (índice 57) — gol + celebração + votação + email
+  if (current === 57) {
     storyRef.get().then(doc => {
       const data = doc.exists ? doc.data() : {};
       const votoArg = data.votoArgentina || 0;
@@ -312,13 +328,40 @@ function render() {
   btnNext.style.display = "flex";
   btnPrev.disabled = (current === 0);
 
-  const total = opponent ? 57 : 15;
+  const totalPags = opponent ? 58 : 15;
   const label = opponent ? " — Final contra " + opponent : "";
-  document.getElementById("counter").innerText = "Página " + (current + 1) + " de " + total + label;
+  document.getElementById("counter").innerText = "Página " + (current + 1) + " de " + totalPags + label;
+}
+
+function revelarGol() {
+  const overlay = document.getElementById("overlay");
+  const suspenseTexto = document.getElementById("suspenseTexto");
+  const frases = [
+    "Neymar corre...",
+    "O goleiro escolhe um lado...",
+    "A bola sai do pé...",
+    "O mundo inteiro para..."
+  ];
+  let i = 0;
+  overlay.classList.add("ativo");
+  suspenseTexto.innerText = frases[0];
+
+  const intervalo = setInterval(() => {
+    i++;
+    if (i < frases.length) {
+      suspenseTexto.innerText = frases[i];
+    } else {
+      clearInterval(intervalo);
+      overlay.classList.remove("ativo");
+      current = 57;
+      render();
+    }
+  }, 1000);
 }
 
 function nextPage() {
   if (current === 14 && !localStorage.getItem(CHAVE)) return;
+  if (current === 56) return; // bloqueado — usa revelarGol
   if (current < pages.length - 1) {
     current++;
     render();
