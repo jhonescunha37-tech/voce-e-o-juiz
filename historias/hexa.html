@@ -29,6 +29,16 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 .bar{height:18px;background:#333;border-radius:20px;overflow:hidden;margin:8px 0 16px}
 .fill{height:100%;width:0%;background:#ffd166;transition:width 0.6s ease}
 
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.home-btn{display:flex;align-items:center;background:#1b331f;border:1px solid #2f6b3c;border-radius:8px;padding:6px 12px;text-decoration:none;color:#ffd166;font-size:14px;font-weight:bold;gap:6px}
+.home-btn:hover{background:#244d2c}
+
+.like-box{display:flex;gap:12px;margin-top:16px;justify-content:center}
+.like-btn{flex:1;max-width:140px;padding:12px;border:0;border-radius:12px;font-size:22px;cursor:pointer;font-weight:bold;background:#1b331f;border:1px solid #2f6b3c;color:#f2f2f2;transition:background 0.2s}
+.like-btn:hover{background:#244d2c}
+.like-btn.voted{border-color:#ffd166}
+.like-count{font-size:13px;display:block;margin-top:4px;color:#aaa}
+
 /* Aviso escolha permanente */
 .aviso-permanente{background:#071008;border:1px solid #118ab2;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center}
 .aviso-permanente p{font-size:15px;color:#aaddff;margin:0;line-height:1.5}
@@ -63,7 +73,10 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 
 <div class="app">
 <div class="book">
-<div class="counter" id="counter"></div>
+<div class="topbar">
+  <div class="counter" id="counter"></div>
+  <a class="home-btn" href="../index.html">🏠 Home</a>
+</div>
 <div id="content"></div>
 <div class="buttons" id="nav">
   <button class="prev" id="btnPrev" onclick="prevPage()">Voltar</button>
@@ -240,12 +253,14 @@ function chooseOpponent(team) {
 
       // Salva no Firebase
       const campo = team === "Argentina" ? "votoArgentina" : "votoAlemanha";
-      storyRef.set({ [campo]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+      storyRef.set({ [campo]: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+        .then(() => console.log("Voto salvo:", campo))
+        .catch(err => console.error("Erro ao salvar voto:", err));
 
       current = 15;
       render();
     }
-  }, 1200);
+  }, 1600);
 }
 
 function render() {
@@ -307,13 +322,15 @@ function render() {
           <p>Total: ${total} escolha(s)</p>
         </div>
         ${ctaHTML}
+        <div id="likesHexa"></div>
         <div class="buttons" style="margin-top:16px">
           <button class="restart" onclick="restart()">Recomeçar história</button>
-          <a class="other" href="../index.html">Outras histórias</a>
+          <a class="other" href="../index.html">🏠 Home</a>
         </div>`;
     });
     nav.style.display = "none";
     document.getElementById("counter").innerText = "Fim — Brasil Hexacampeão! 🏆";
+    setTimeout(renderLikesHexa, 500);
     return;
   }
 
@@ -340,7 +357,8 @@ function revelarGol() {
     "Neymar corre...",
     "O goleiro escolhe um lado...",
     "A bola sai do pé...",
-    "O mundo inteiro para..."
+    "O mundo inteiro para...",
+    "..."
   ];
   let i = 0;
   overlay.classList.add("ativo");
@@ -356,7 +374,7 @@ function revelarGol() {
       current = 57;
       render();
     }
-  }, 1000);
+  }, 1800);
 }
 
 function nextPage() {
@@ -380,6 +398,27 @@ function restart() {
   pages = [...intro];
   current = 0;
   render();
+}
+
+function renderLikesHexa() {
+  const jL = localStorage.getItem("like_hexa");
+  storyRef.get().then(doc => {
+    const d = doc.exists ? doc.data() : {};
+    const likes = d.likes||0, dislikes = d.dislikes||0;
+    const el = document.getElementById("likesHexa");
+    if (!el) return;
+    el.innerHTML = `<div class="like-box">
+      <button class="like-btn ${jL==='like'?'voted':''}" onclick="registrarLikeHexa('like')">👍<span class="like-count">${likes}</span></button>
+      <button class="like-btn ${jL==='dislike'?'voted':''}" onclick="registrarLikeHexa('dislike')">👎<span class="like-count">${dislikes}</span></button>
+    </div>`;
+  });
+}
+
+function registrarLikeHexa(tipo) {
+  if (localStorage.getItem("like_hexa")) return;
+  localStorage.setItem("like_hexa", tipo);
+  storyRef.set({[tipo==="like"?"likes":"dislikes"]: firebase.firestore.FieldValue.increment(1)},{merge:true})
+    .then(() => renderLikesHexa());
 }
 
 pages = [...intro];
