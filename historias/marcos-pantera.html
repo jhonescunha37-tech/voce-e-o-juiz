@@ -16,7 +16,10 @@ p{font-size:18px;line-height:1.55}
 small{color:#aaa}
 .page{display:none}
 .page.active{display:block}
-.counter{color:#aaa;font-size:14px;margin-bottom:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.counter{color:#aaa;font-size:14px}
+.home-btn{display:flex;align-items:center;background:#222;border:1px solid #444;border-radius:8px;padding:6px 12px;text-decoration:none;color:#ffd166;font-size:14px;font-weight:bold;gap:6px}
+.home-btn:hover{background:#333}
 .buttons{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
 button{flex:1;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:0.5;cursor:not-allowed}
@@ -24,54 +27,45 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 .prev{background:#444;color:white}
 .choice{background:#0b8457;color:white}
 .choice2{background:#b00020;color:white}
+.restart{background:#06d6a0;color:#06281f}
+.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
 .voteBox{background:#222;padding:16px;border-radius:14px;margin-top:20px}
 .bar{height:18px;background:#333;border-radius:20px;overflow:hidden;margin:8px 0 16px}
 .fill{height:100%;width:0%;background:#ffd166;transition:width 0.6s ease}
-.restart{background:#06d6a0;color:#06281f}
-.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
-
 .aviso-permanente{background:#080d08;border:1px solid #0b8457;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center}
 .aviso-permanente p{font-size:15px;color:#aaffcc;margin:0;line-height:1.5}
 .aviso-permanente strong{color:#0b8457}
-
 #overlay{display:none;position:fixed;inset:0;background:#000;z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
 #overlay.ativo{display:flex}
 .suspense-texto{color:#ffd166;font-size:22px;font-weight:bold;animation:pulsar 0.8s ease-in-out infinite alternate}
 @keyframes pulsar{from{opacity:0.2}to{opacity:1}}
 .suspense-sub{color:#aaa;font-size:15px;margin-top:16px}
-
 .ja-escolheu{background:#111;border:1px solid #555;border-radius:14px;padding:20px;text-align:center;margin-top:16px}
 .ja-escolheu h3{color:#ffd166;margin-top:0}
 .ja-escolheu p{font-size:15px;color:#ccc;margin:6px 0}
 .btn-ver-final{display:inline-block;margin-top:14px;padding:12px 24px;background:#ffd166;color:#111;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;border:none;width:100%}
-
 .cta-historia{background:#1a1a2e;border:1px solid #ffd166;border-radius:14px;padding:20px;margin-top:24px;text-align:center}
 .cta-historia p{font-size:15px;color:#ddd;margin:0 0 10px;line-height:1.5}
 .cta-historia a{color:#ffd166;font-weight:bold;word-break:break-all}
+.like-box{display:flex;gap:12px;margin-top:16px;justify-content:center}
+.like-btn{flex:1;max-width:140px;padding:12px;border:0;border-radius:12px;font-size:22px;cursor:pointer;font-weight:bold;background:#1e1e22;border:1px solid #444;color:#f2f2f2;transition:background 0.2s}
+.like-btn:hover{background:#333}
+.like-btn.voted{border-color:#ffd166}
+.like-count{font-size:13px;display:block;margin-top:4px;color:#aaa}
 </style>
 </head>
 <body>
-
 <div id="overlay">
-  <div class="suspense-texto" id="suspenseTexto">O veredito está sendo formado...</div>
+  <div class="suspense-texto" id="suspenseTexto">Avaliando as evidências...</div>
   <div class="suspense-sub">Não há como voltar atrás.</div>
 </div>
-
-<div class="app">
-<div class="book">
-
-<div class="counter" id="counter"></div>
+<div class="app"><div class="book">
+<div class="topbar">
+  <div class="counter" id="counter"></div>
+  <a class="home-btn" href="../index.html">🏠 Home</a>
+</div>
 <div id="pages">
-
-<section class="page active">
-<h1>Você é o Juiz</h1>
-<h2>O Caso Marcos Pantera</h2>
-<p><small>História fictícia inspirada em polêmicas de internet sobre supostos OVNIs.</small></p>
-<p>Marcos Pantera era conhecido por mostrar sua vida simples no sítio, seus animais e as noites silenciosas no interior.</p>
-<p>Até que uma gravação mudou tudo.</p>
-<p>No céu escuro, uma luz apareceu, parou no ar e sumiu como se tivesse sido desligada.</p>
-</section>
-
+<section class="page active"><h1>Você é o Juiz</h1><h2>O Caso Marcos Pantera</h2><p><small>História fictícia inspirada em polêmicas de internet sobre supostos OVNIs.</small></p><p>Marcos Pantera era conhecido por mostrar sua vida simples no sítio, seus animais e as noites silenciosas no interior.</p><p>Até que uma gravação mudou tudo.</p><p>No céu escuro, uma luz apareceu, parou no ar e sumiu como se tivesse sido desligada.</p></section>
 <section class="page"><h2>Página 2</h2><p>Marcos jurava que não era avião, drone ou estrela. Segundo ele, aquilo se movia "como se pensasse".</p></section>
 <section class="page"><h2>Página 3</h2><p>O vídeo viralizou em poucas horas. Alguns chamaram Marcos de corajoso. Outros disseram que ele havia descoberto o caminho mais rápido para ganhar seguidores.</p></section>
 <section class="page"><h2>Página 4</h2><p>Na primeira gravação, a luz surgia atrás de uma árvore, subia lentamente e desaparecia sem fazer barulho.</p></section>
@@ -110,229 +104,82 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 <section class="page"><h2>Página 37</h2><p>Uma câmera de segurança distante registrou uma luz no céu no mesmo horário em que Marcos filmava.</p></section>
 <section class="page"><h2>Página 38</h2><p>Mas a imagem era ruim. Podia ser a mesma luz. Podia ser um carro refletindo no vidro. Podia ser nada.</p></section>
 <section class="page"><h2>Página 39</h2><p>No último vídeo, Marcos olhou para a câmera e disse: "Eu não pedi para vocês acreditarem. Eu só pedi para não me chamarem de mentiroso."</p></section>
-
-<!-- PÁGINA 40 — ESCOLHA -->
 <section class="page" id="paginaEscolha">
 <h2>Página 40</h2>
-
-<div class="aviso-permanente">
-  <p><strong>⚠ Atenção: escolha irreversível.</strong><br>
-  Você só poderá ver <strong>um dos finais</strong>.<br>
-  O outro permanecerá para sempre oculto neste dispositivo.<br>
-  Pense bem antes de decidir.</p>
-</div>
-
-<p>Agora você é o juiz.</p>
-<p>Marcos Pantera viu algo que ninguém consegue explicar?</p>
-<p>Ou a história foi exagerada, montada ou usada para chamar atenção?</p>
-
+<div class="aviso-permanente"><p><strong>⚠ Atenção: escolha irreversível.</strong><br>Você só poderá ver <strong>um dos finais</strong>.<br>O outro permanecerá para sempre oculto neste dispositivo.</p></div>
+<p>Agora você é o juiz. Marcos Pantera viu algo que ninguém consegue explicar? Ou a história foi exagerada, montada ou usada para chamar atenção?</p>
 <div id="areaEscolha"></div>
 </section>
-
-<!-- FINAL VERDADE -->
 <section class="page" id="finalVerdade">
 <h2>Marcos Está Falando a Verdade</h2>
 <p>Marcos não criou a luz. Ele apenas filmou algo que apareceu sobre seu sítio.</p>
 <p>As testemunhas podem ter falhas, mas não são todas falsas. A câmera distante também registrou algo no mesmo horário.</p>
 <p>Os cortes no vídeo não provam fraude. Apenas mostram que ele editou partes confusas.</p>
 <p>A morte do animal e o medo da família mostram que a situação passou do controle.</p>
-<p>Talvez Marcos tenha se expressado mal. Talvez tenha exagerado no desespero. Mas isso não significa que ele inventou tudo.</p>
 <p>Para você, ele viu algo real.</p>
-<div id="resultVerdade"></div>
-<div id="ctaVerdade"></div>
+<div id="resultVerdade"></div><div id="likesVerdade"></div><div id="ctaVerdade"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
-</div>
-</section>
-
-<!-- FINAL MENTINDO -->
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 <section class="page" id="finalMentindo">
 <h2>Marcos Está Mentindo</h2>
 <p>A história de Marcos cresceu rápido demais e trouxe atenção demais.</p>
 <p>Os vídeos têm cortes, tremores e momentos convenientes. Nenhuma imagem mostra o objeto com clareza absoluta.</p>
 <p>As testemunhas principais são próximas dele ou aparecem com versões incompletas.</p>
-<p>A campanha de ajuda, os vídeos emocionados e as novas revelações parecem seguir uma narrativa criada para prender o público.</p>
-<p>Talvez Marcos não tenha planejado tudo desde o começo. Mas, para você, ele percebeu a força da história e continuou alimentando a polêmica.</p>
 <p>Para você, ele mentiu ou encenou mais do que contou.</p>
-<div id="resultMentindo"></div>
-<div id="ctaMentindo"></div>
+<div id="resultMentindo"></div><div id="likesMentindo"></div><div id="ctaMentindo"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 </div>
-</section>
-
-</div>
-
 <div class="buttons" id="nav">
 <button class="prev" onclick="prevPage()">Voltar</button>
 <button class="next" onclick="nextPage()">Próxima</button>
 </div>
-
-</div>
-</div>
-
+</div></div>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
-  authDomain: "voce-e-o-juiz.firebaseapp.com",
-  projectId: "voce-e-o-juiz",
-  storageBucket: "voce-e-o-juiz.firebasestorage.app",
-  messagingSenderId: "642064514915",
-  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56",
-  measurementId: "G-R5XH79YPX2"
-};
+const firebaseConfig={apiKey:"AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",authDomain:"voce-e-o-juiz.firebaseapp.com",projectId:"voce-e-o-juiz",storageBucket:"voce-e-o-juiz.firebasestorage.app",messagingSenderId:"642064514915",appId:"1:642064514915:web:5ac2245b8b5554c38ddd56"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storyRef = db.collection("historias").doc("marcos");
+const db=firebase.firestore(),storyRef=db.collection("historias").doc("marcos");
+storyRef.set({acessos:firebase.firestore.FieldValue.increment(1)},{merge:true});
+const CHAVE="votou_marcos",CHAVE_LIKE="like_marcos";
+const nomes={verdade:"Marcos Está Falando a Verdade",mentindo:"Marcos Está Mentindo"};
+const ctaHTML=`<div class="cta-historia"><p>✍️ <strong>Tem uma história para nos contar?</strong><br>Mande seu caso para virar um episódio!</p><a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a></div>`;
+let current=0;
+const pages=document.querySelectorAll(".page"),TOTAL=40;
+const counter=document.getElementById("counter"),nav=document.getElementById("nav"),prevBtn=nav.querySelector(".prev");
 
-storyRef.set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true })
-  .catch(err => console.error("Erro ao contar acesso:", err));
+function renderAreaEscolha(){const jV=localStorage.getItem(CHAVE),area=document.getElementById("areaEscolha");if(jV){area.innerHTML=`<div class="ja-escolheu"><h3>Seu veredito está selado.</h3><p>Você escolheu:</p><p><strong style="color:#ffd166;font-size:17px">${nomes[jV]}</strong></p><p style="color:#888;font-size:14px">O outro final permanece oculto para sempre.</p><button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button></div>`;}else{area.innerHTML=`<div class="buttons"><button class="choice" onclick="vote('verdade')">Marcos está falando a verdade</button><button class="choice2" onclick="vote('mentindo')">Marcos está mentindo</button></div>`;}}
 
-const CHAVE = "votou_marcos";
-const nomes = { verdade: "Marcos Está Falando a Verdade", mentindo: "Marcos Está Mentindo" };
+function irParaFinalSalvo(){const v=localStorage.getItem(CHAVE);showPage(v==="verdade"?TOTAL:TOTAL+1);showResults();}
 
-const ctaHTML = `
-<div class="cta-historia">
-  <p>✍️ <strong>Tem uma história para nos contar?</strong><br>
-  Mande o seu caso, polêmica ou mistério para virar um episódio de Você é o Juiz!</p>
-  <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a>
-</div>`;
-
-let current = 0;
-const pages = document.querySelectorAll(".page");
-const totalStoryPages = 40;
-const counter = document.getElementById("counter");
-const nav = document.getElementById("nav");
-const prevBtn = nav.querySelector(".prev");
-
-function renderAreaEscolha() {
-  const jaVotou = localStorage.getItem(CHAVE);
-  const area = document.getElementById("areaEscolha");
-  if (jaVotou) {
-    area.innerHTML = `
-      <div class="ja-escolheu">
-        <h3>Seu veredito está selado.</h3>
-        <p>Neste dispositivo, você escolheu:</p>
-        <p><strong style="color:#ffd166;font-size:17px">${nomes[jaVotou]}</strong></p>
-        <p style="color:#888;font-size:14px;margin-top:8px">O outro final permanece oculto para sempre.</p>
-        <button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button>
-      </div>`;
-  } else {
-    area.innerHTML = `
-      <div class="buttons">
-        <button class="choice" onclick="vote('verdade')">Marcos está falando a verdade</button>
-        <button class="choice2" onclick="vote('mentindo')">Marcos está mentindo</button>
-      </div>`;
-  }
+function showPage(index){
+  pages.forEach(p=>p.classList.remove("active"));pages[index].classList.add("active");current=index;
+  if(index===TOTAL-1){counter.innerText="Página 40 de 40";nav.style.display="flex";prevBtn.disabled=false;document.querySelector("#nav .next").disabled=true;renderAreaEscolha();}
+  else if(index<TOTAL-1){counter.innerText="Página "+(index+1)+" de 40";nav.style.display="flex";prevBtn.disabled=(index===0);document.querySelector("#nav .next").disabled=false;}
+  else{counter.innerText="Resultado";nav.style.display="none";}
 }
 
-function irParaFinalSalvo() {
-  const jaVotou = localStorage.getItem(CHAVE);
-  if (jaVotou === "verdade") showPage(totalStoryPages);
-  else showPage(totalStoryPages + 1);
-  showResults();
+function nextPage(){if(current<TOTAL-1)showPage(current+1);}
+function prevPage(){if(current>0)showPage(current-1);}
+
+function vote(choice){
+  if(localStorage.getItem(CHAVE)){irParaFinalSalvo();return;}
+  const overlay=document.getElementById("overlay"),st=document.getElementById("suspenseTexto");
+  const frases=["Avaliando as evidências...","O júri analisa cada detalhe...","A verdade está prestes a ser revelada...","Não há como voltar atrás..."];
+  let i=0;overlay.classList.add("ativo");st.innerText=frases[0];
+  const iv=setInterval(()=>{i++;if(i<frases.length){st.innerText=frases[i];}else{clearInterval(iv);overlay.classList.remove("ativo");localStorage.setItem(CHAVE,choice);storyRef.set({[choice==="verdade"?"votoVerdade":"votoMentindo"]:firebase.firestore.FieldValue.increment(1)},{merge:true});showPage(choice==="verdade"?TOTAL:TOTAL+1);showResults();}},1400);
 }
 
-function showPage(index) {
-  pages.forEach(p => p.classList.remove("active"));
-  pages[index].classList.add("active");
-  current = index;
+function showResults(){storyRef.get().then(doc=>{const d=doc.exists?doc.data():{};const vV=d.votoVerdade||0,vM=d.votoMentindo||0,tot=vV+vM;const pv=tot?Math.round(vV/tot*100):0,pm=tot?Math.round(vM/tot*100):0;const html=`<div class="voteBox"><h3>Votos de todos os leitores</h3><p>Marcos está falando a verdade: ${vV} voto(s) — ${pv}%</p><div class="bar"><div class="fill" style="width:${pv}%"></div></div><p>Marcos está mentindo: ${vM} voto(s) — ${pm}%</p><div class="bar"><div class="fill" style="width:${pm}%"></div></div><p>Total: ${tot} voto(s)</p></div>`;document.getElementById("resultVerdade").innerHTML=html;document.getElementById("resultMentindo").innerHTML=html;document.getElementById("ctaVerdade").innerHTML=ctaHTML;document.getElementById("ctaMentindo").innerHTML=ctaHTML;renderLikes();});}
 
-  if (index < totalStoryPages - 1) {
-    counter.innerText = "Página " + (index + 1) + " de " + totalStoryPages;
-    nav.style.display = "flex";
-    prevBtn.disabled = (index === 0);
-  } else if (index === totalStoryPages - 1) {
-    counter.innerText = "Página " + totalStoryPages + " de " + totalStoryPages;
-    nav.style.display = "flex";
-    prevBtn.disabled = false;
-    renderAreaEscolha();
-  } else {
-    counter.innerText = "Resultado";
-    nav.style.display = "none";
-  }
-}
+function renderLikes(){const jL=localStorage.getItem(CHAVE_LIKE);storyRef.get().then(doc=>{const d=doc.exists?doc.data():{};const likes=d.likes||0,dislikes=d.dislikes||0;const html=`<div class="like-box"><button class="like-btn ${jL==='like'?'voted':''}" onclick="registrarLike('like')">👍<span class="like-count">${likes}</span></button><button class="like-btn ${jL==='dislike'?'voted':''}" onclick="registrarLike('dislike')">👎<span class="like-count">${dislikes}</span></button></div>`;document.getElementById("likesVerdade").innerHTML=html;document.getElementById("likesMentindo").innerHTML=html;});}
 
-function nextPage() {
-  if (current < totalStoryPages - 1) showPage(current + 1);
-}
+function registrarLike(tipo){if(localStorage.getItem(CHAVE_LIKE))return;localStorage.setItem(CHAVE_LIKE,tipo);storyRef.set({[tipo==="like"?"likes":"dislikes"]:firebase.firestore.FieldValue.increment(1)},{merge:true}).then(()=>renderLikes());}
 
-function prevPage() {
-  if (current > 0) showPage(current - 1);
-}
-
-function vote(choice) {
-  if (localStorage.getItem(CHAVE)) { irParaFinalSalvo(); return; }
-
-  const overlay = document.getElementById("overlay");
-  const suspenseTexto = document.getElementById("suspenseTexto");
-  const frases = [
-    "Avaliando as evidências...",
-    "O júri analisa cada detalhe...",
-    "A verdade está prestes a ser revelada...",
-    "Não há como voltar atrás..."
-  ];
-  let i = 0;
-  overlay.classList.add("ativo");
-  suspenseTexto.innerText = frases[0];
-
-  const intervalo = setInterval(() => {
-    i++;
-    if (i < frases.length) {
-      suspenseTexto.innerText = frases[i];
-    } else {
-      clearInterval(intervalo);
-      overlay.classList.remove("ativo");
-      localStorage.setItem(CHAVE, choice);
-      if (choice === "verdade") {
-        storyRef.set({ votoVerdade: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages);
-      } else {
-        storyRef.set({ votoMentindo: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages + 1);
-      }
-      showResults();
-    }
-  }, 1200);
-}
-
-function showResults() {
-  storyRef.get().then(doc => {
-    const data = doc.exists ? doc.data() : {};
-    const votoVerdade = data.votoVerdade || 0;
-    const votoMentindo = data.votoMentindo || 0;
-    const total = votoVerdade + votoMentindo;
-    const pv = total ? Math.round((votoVerdade / total) * 100) : 0;
-    const pm = total ? Math.round((votoMentindo / total) * 100) : 0;
-
-    const html = `
-    <div class="voteBox">
-      <h3>Votos de todos os leitores</h3>
-      <p>Marcos está falando a verdade: ${votoVerdade} voto(s) — ${pv}%</p>
-      <div class="bar"><div class="fill" style="width:${pv}%"></div></div>
-      <p>Marcos está mentindo: ${votoMentindo} voto(s) — ${pm}%</p>
-      <div class="bar"><div class="fill" style="width:${pm}%"></div></div>
-      <p>Total: ${total} voto(s)</p>
-    </div>`;
-
-    document.getElementById("resultVerdade").innerHTML = html;
-    document.getElementById("resultMentindo").innerHTML = html;
-    document.getElementById("ctaVerdade").innerHTML = ctaHTML;
-    document.getElementById("ctaMentindo").innerHTML = ctaHTML;
-  }).catch(() => {
-    const errHtml = `<div class="voteBox"><p>Não foi possível carregar os votos agora.</p></div>`;
-    document.getElementById("resultVerdade").innerHTML = errHtml;
-    document.getElementById("resultMentindo").innerHTML = errHtml;
-    document.getElementById("ctaVerdade").innerHTML = ctaHTML;
-    document.getElementById("ctaMentindo").innerHTML = ctaHTML;
-  });
-}
-
-function restart() { showPage(0); }
-
+function restart(){showPage(0);}
 showPage(0);
 </script>
-</body>
-</html>
+</body></html>
