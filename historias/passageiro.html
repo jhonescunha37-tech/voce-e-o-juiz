@@ -15,7 +15,10 @@ h1,h2{color:#ffcc66}
 p{font-size:18px;line-height:1.55}
 .page{display:none}
 .page.active{display:block}
-.counter{color:#aaa;font-size:14px;margin-bottom:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.counter{color:#aaa;font-size:14px}
+.home-btn{display:flex;align-items:center;background:#222;border:1px solid #444;border-radius:8px;padding:6px 12px;text-decoration:none;color:#ffcc66;font-size:14px;font-weight:bold;gap:6px}
+.home-btn:hover{background:#333}
 .buttons{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
 button{flex:1;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:0.5;cursor:not-allowed}
@@ -23,54 +26,45 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 .prev{background:#444;color:white}
 .choice{background:#b00020;color:white}
 .choice2{background:#0b5f7a;color:white}
+.restart{background:#06d6a0;color:#06281f}
+.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
 .voteBox{background:#222;padding:16px;border-radius:14px;margin-top:20px}
 .bar{height:18px;background:#333;border-radius:20px;overflow:hidden;margin:8px 0 16px}
 .fill{height:100%;width:0%;background:#ffcc66;transition:width 0.6s ease}
-.restart{background:#06d6a0;color:#06281f}
-.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
-
-.cta-historia{background:#0d0a00;border:1px solid #ffcc66;border-radius:14px;padding:20px;margin-top:24px;text-align:center}
-.cta-historia p{font-size:15px;color:#ddd;margin:0 0 10px;line-height:1.5}
-.cta-historia a{color:#ffcc66;font-weight:bold;word-break:break-all}
-
 .aviso-permanente{background:#0d0808;border:1px solid #b00020;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center}
 .aviso-permanente p{font-size:15px;color:#ffaaaa;margin:0;line-height:1.5}
 .aviso-permanente strong{color:#b00020}
-
 #overlay{display:none;position:fixed;inset:0;background:#000;z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
 #overlay.ativo{display:flex}
 .suspense-texto{color:#ffcc66;font-size:22px;font-weight:bold;animation:pulsar 0.8s ease-in-out infinite alternate}
 @keyframes pulsar{from{opacity:0.2}to{opacity:1}}
 .suspense-sub{color:#aaa;font-size:15px;margin-top:16px}
-
 .ja-escolheu{background:#111;border:1px solid #555;border-radius:14px;padding:20px;text-align:center;margin-top:16px}
 .ja-escolheu h3{color:#ffcc66;margin-top:0}
 .ja-escolheu p{font-size:15px;color:#ccc;margin:6px 0}
 .btn-ver-final{display:inline-block;margin-top:14px;padding:12px 24px;background:#ffcc66;color:#111;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;border:none;width:100%}
+.cta-historia{background:#0d0a00;border:1px solid #ffcc66;border-radius:14px;padding:20px;margin-top:24px;text-align:center}
+.cta-historia p{font-size:15px;color:#ddd;margin:0 0 10px;line-height:1.5}
+.cta-historia a{color:#ffcc66;font-weight:bold;word-break:break-all}
+.like-box{display:flex;gap:12px;margin-top:16px;justify-content:center}
+.like-btn{flex:1;max-width:140px;padding:12px;border:0;border-radius:12px;font-size:22px;cursor:pointer;font-weight:bold;background:#1e1e22;border:1px solid #444;color:#f2f2f2;transition:background 0.2s}
+.like-btn:hover{background:#333}
+.like-btn.voted{border-color:#ffcc66}
+.like-count{font-size:13px;display:block;margin-top:4px;color:#aaa}
 </style>
 </head>
 <body>
-
 <div id="overlay">
-  <div class="suspense-texto" id="suspenseTexto">O destino está sendo revelado...</div>
+  <div class="suspense-texto" id="suspenseTexto">A última viagem começa...</div>
   <div class="suspense-sub">Não há como voltar atrás.</div>
 </div>
-
-<div class="app">
-<div class="book">
-
-<div class="counter" id="counter"></div>
+<div class="app"><div class="book">
+<div class="topbar">
+  <div class="counter" id="counter"></div>
+  <a class="home-btn" href="../index.html">🏠 Home</a>
+</div>
 <div id="pages">
-
-<section class="page active">
-<h1>Você é o Juiz</h1>
-<h2>O Passageiro da Última Viagem</h2>
-<p>Marcelo dirigia a última linha de ônibus da cidade.</p>
-<p>Terminal Central até Bairro das Pedras.</p>
-<p>Todos diziam que, depois da meia-noite, aquela linha não deveria mais existir.</p>
-<p>Mas Marcelo precisava do dinheiro.</p>
-</section>
-
+<section class="page active"><h1>Você é o Juiz</h1><h2>O Passageiro da Última Viagem</h2><p>Marcelo dirigia a última linha de ônibus da cidade.</p><p>Terminal Central até Bairro das Pedras.</p><p>Todos diziam que, depois da meia-noite, aquela linha não deveria mais existir.</p><p>Mas Marcelo precisava do dinheiro.</p></section>
 <section class="page"><h2>Página 2</h2><p>A linha saía todos os dias às 23h40. Quase sempre vazia. Um bêbado, uma enfermeira, dois trabalhadores cansados. Nada além disso.</p></section>
 <section class="page"><h2>Página 3</h2><p>Na primeira noite de chuva, Marcelo viu uma mulher parada no ponto da antiga fábrica. Ela usava um vestido branco, sujo na barra.</p></section>
 <section class="page"><h2>Página 4</h2><p>Ela entrou sem dizer nada, pagou com três moedas antigas e sentou no último banco.</p></section>
@@ -106,68 +100,43 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 <section class="page"><h2>Página 34</h2><p>A família nunca contou isso a ele. Pelo menos era o que Marcelo dizia.</p></section>
 <section class="page"><h2>Página 35</h2><p>Lívia reapareceu dois dias depois, viva, perto do cemitério velho.</p></section>
 <section class="page"><h2>Página 36</h2><p>Ela estava em choque e repetia: "A mulher me tirou do ônibus antes dele chegar."</p></section>
-<section class="page"><h2>Página 37</h2><p>Antes dele chegar.</p><p>Quem era "ele"?</p></section>
+<section class="page"><h2>Página 37</h2><p>Antes dele chegar. Quem era "ele"?</p></section>
 <section class="page"><h2>Página 38</h2><p>A última câmera da estrada mostrou o ônibus parado. Uma sombra desceu pela porta da frente.</p></section>
 <section class="page"><h2>Página 39</h2><p>A sombra parecia uma mulher. Mas, quando a imagem clareou, parecia Marcelo usando um vestido.</p></section>
-
-<!-- PÁGINA 40 — ESCOLHA -->
 <section class="page" id="paginaEscolha">
 <h2>Página 40</h2>
-
-<div class="aviso-permanente">
-  <p><strong>⚠ Atenção: escolha irreversível.</strong><br>
-  Você só poderá ver <strong>um dos finais</strong>.<br>
-  O outro permanecerá para sempre oculto neste dispositivo.<br>
-  Pense bem antes de decidir.</p>
-</div>
-
-<p>Agora você é o juiz.</p>
-<p>Marcelo estava enlouquecendo e encenou tudo?</p>
-<p>Ou Amélia realmente voltou para salvar Lívia de algo pior?</p>
-
+<div class="aviso-permanente"><p><strong>⚠ Atenção: escolha irreversível.</strong><br>Você só poderá ver <strong>um dos finais</strong>.<br>O outro permanecerá para sempre oculto neste dispositivo.</p></div>
+<p>Agora você é o juiz. Marcelo estava enlouquecendo e encenou tudo? Ou Amélia realmente voltou para salvar Lívia de algo pior?</p>
 <div id="areaEscolha"></div>
 </section>
-
-<!-- FINAL HUMANO -->
 <section class="page" id="finalHumano">
 <h2>A Verdade Era Humana</h2>
 <p>Marcelo nunca viu fantasma algum. A passageira era uma criação da mente dele, alimentada por remédios, culpa familiar e noites sem dormir.</p>
 <p>As moedas antigas estavam no armário porque ele mesmo as comprou. O vestido branco era usado para encenar aparições e assustar passageiros.</p>
 <p>Lívia não foi salva por um espírito. Ela fugiu ao perceber que Marcelo não estava bem.</p>
 <p>A sombra na câmera era Marcelo. A cidade queria acreditar em uma lenda, mas o terror era humano.</p>
-<div id="resultHumano"></div>
-<div id="ctaHumano"></div>
+<div id="resultHumano"></div><div id="likesHumano"></div><div id="ctaHumano"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
-</div>
-</section>
-
-<!-- FINAL SOBRENATURAL -->
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 <section class="page" id="finalSobrenatural">
 <h2>A Verdade Era Sobrenatural</h2>
 <p>Amélia realmente voltou naquela linha. Não para assustar, mas para impedir que a história se repetisse.</p>
 <p>Marcelo não era o monstro. Ele era apenas o único adulto capaz de ver o aviso.</p>
 <p>As moedas eram a marca da presença dela. O vestido encontrado na garagem nunca pertenceu a Marcelo.</p>
 <p>Lívia foi retirada do ônibus antes que algo pior acontecesse. A mulher da curva ainda estava trabalhando na última viagem.</p>
-<div id="resultSobrenatural"></div>
-<div id="ctaSobrenatural"></div>
+<div id="resultSobrenatural"></div><div id="likesSobrenatural"></div><div id="ctaSobrenatural"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 </div>
-</section>
-
-</div>
-
 <div class="buttons" id="nav">
 <button class="prev" onclick="prevPage()">Voltar</button>
 <button class="next" onclick="nextPage()">Próxima</button>
 </div>
-
-</div>
-</div>
-
+</div></div>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
@@ -175,160 +144,97 @@ const firebaseConfig = {
   projectId: "voce-e-o-juiz",
   storageBucket: "voce-e-o-juiz.firebasestorage.app",
   messagingSenderId: "642064514915",
-  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56",
-  measurementId: "G-R5XH79YPX2"
+  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storyRef = db.collection("historias").doc("passageiro");
+storyRef.set({acessos:firebase.firestore.FieldValue.increment(1)},{merge:true});
 
-storyRef.set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true })
-  .catch(err => console.error("Erro ao contar acesso:", err));
+const CHAVE="votou_passageiro", CHAVE_LIKE="like_passageiro";
+const nomes={humano:"A Verdade Era Humana",sobrenatural:"A Verdade Era Sobrenatural"};
+const ctaHTML=`<div class="cta-historia"><p>✍️ <strong>Tem uma história para nos contar?</strong><br>Mande seu caso para virar um episódio!</p><a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a></div>`;
+let current=0;
+const pages=document.querySelectorAll(".page");
+const TOTAL=40;
+const counter=document.getElementById("counter");
+const nav=document.getElementById("nav");
+const prevBtn=nav.querySelector(".prev");
 
-const CHAVE = "votou_passageiro";
-const nomes = { humano: "A Verdade Era Humana", sobrenatural: "A Verdade Era Sobrenatural" };
-
-const ctaHTML = `
-<div class="cta-historia">
-  <p>✍️ <strong>Tem uma história para nos contar?</strong><br>
-  Mande o seu caso, polêmica ou mistério para virar um episódio de Você é o Juiz!</p>
-  <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a>
-</div>`;
-
-let current = 0;
-const pages = document.querySelectorAll(".page");
-const totalStoryPages = 40;
-const counter = document.getElementById("counter");
-const nav = document.getElementById("nav");
-const prevBtn = nav.querySelector(".prev");
-
-function renderAreaEscolha() {
-  const jaVotou = localStorage.getItem(CHAVE);
-  const area = document.getElementById("areaEscolha");
-  if (jaVotou) {
-    area.innerHTML = `
-      <div class="ja-escolheu">
-        <h3>Seu destino está selado.</h3>
-        <p>Neste dispositivo, você escolheu:</p>
-        <p><strong style="color:#ffcc66;font-size:17px">${nomes[jaVotou]}</strong></p>
-        <p style="color:#888;font-size:14px;margin-top:8px">O outro final permanece oculto para sempre.</p>
-        <button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button>
-      </div>`;
-  } else {
-    area.innerHTML = `
-      <div class="buttons">
-        <button class="choice" onclick="vote('humano')">A verdade era humana</button>
-        <button class="choice2" onclick="vote('sobrenatural')">A verdade era sobrenatural</button>
-      </div>`;
-  }
+function renderAreaEscolha(){
+  const jV=localStorage.getItem(CHAVE);
+  const area=document.getElementById("areaEscolha");
+  if(jV){area.innerHTML=`<div class="ja-escolheu"><h3>Seu destino está selado.</h3><p>Você escolheu:</p><p><strong style="color:#ffcc66;font-size:17px">${nomes[jV]}</strong></p><p style="color:#888;font-size:14px">O outro final permanece oculto para sempre.</p><button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button></div>`;}
+  else{area.innerHTML=`<div class="buttons"><button class="choice" onclick="vote('humano')">A verdade era humana</button><button class="choice2" onclick="vote('sobrenatural')">A verdade era sobrenatural</button></div>`;}
 }
 
-function irParaFinalSalvo() {
-  const jaVotou = localStorage.getItem(CHAVE);
-  if (jaVotou === "humano") showPage(totalStoryPages);
-  else showPage(totalStoryPages + 1);
-  showResults();
-}
+function irParaFinalSalvo(){const v=localStorage.getItem(CHAVE);showPage(v==="humano"?TOTAL:TOTAL+1);showResults();}
 
-function showPage(index) {
-  pages.forEach(p => p.classList.remove("active"));
+function showPage(index){
+  pages.forEach(p=>p.classList.remove("active"));
   pages[index].classList.add("active");
-  current = index;
-
-  if (index < totalStoryPages - 1) {
-    counter.innerText = "Página " + (index + 1) + " de " + totalStoryPages;
-    nav.style.display = "flex";
-    prevBtn.disabled = (index === 0);
-  } else if (index === totalStoryPages - 1) {
-    counter.innerText = "Página " + totalStoryPages + " de " + totalStoryPages;
-    nav.style.display = "flex";
-    prevBtn.disabled = false;
+  current=index;
+  if(index===TOTAL-1){
+    counter.innerText="Página 40 de 40";
+    nav.style.display="flex";prevBtn.disabled=false;
+    document.querySelector("#nav .next").disabled=true;
     renderAreaEscolha();
-  } else {
-    counter.innerText = "Resultado";
-    nav.style.display = "none";
-  }
+  } else if(index<TOTAL-1){
+    counter.innerText="Página "+(index+1)+" de 40";
+    nav.style.display="flex";prevBtn.disabled=(index===0);
+    document.querySelector("#nav .next").disabled=false;
+  } else {counter.innerText="Resultado";nav.style.display="none";}
 }
 
-function nextPage() {
-  if (current < totalStoryPages - 1) showPage(current + 1);
+function nextPage(){if(current<TOTAL-1)showPage(current+1);}
+function prevPage(){if(current>0)showPage(current-1);}
+
+function vote(choice){
+  if(localStorage.getItem(CHAVE)){irParaFinalSalvo();return;}
+  const overlay=document.getElementById("overlay"),st=document.getElementById("suspenseTexto");
+  const frases=["A última viagem começa...","A passageira observa sua escolha...","O ônibus não vai mais parar...","Não há como voltar atrás..."];
+  let i=0;overlay.classList.add("ativo");st.innerText=frases[0];
+  const iv=setInterval(()=>{i++;if(i<frases.length){st.innerText=frases[i];}else{
+    clearInterval(iv);overlay.classList.remove("ativo");
+    localStorage.setItem(CHAVE,choice);
+    const campo=choice==="humano"?"votoHumano":"votoSobrenatural";
+    storyRef.set({[campo]:firebase.firestore.FieldValue.increment(1)},{merge:true});
+    showPage(choice==="humano"?TOTAL:TOTAL+1);showResults();
+  }},1400);
 }
 
-function prevPage() {
-  if (current > 0) showPage(current - 1);
-}
-
-function vote(choice) {
-  if (localStorage.getItem(CHAVE)) { irParaFinalSalvo(); return; }
-
-  const overlay = document.getElementById("overlay");
-  const suspenseTexto = document.getElementById("suspenseTexto");
-  const frases = [
-    "A última viagem começa...",
-    "A passageira observa sua escolha...",
-    "O ônibus não vai mais parar...",
-    "Não há como voltar atrás..."
-  ];
-  let i = 0;
-  overlay.classList.add("ativo");
-  suspenseTexto.innerText = frases[0];
-
-  const intervalo = setInterval(() => {
-    i++;
-    if (i < frases.length) {
-      suspenseTexto.innerText = frases[i];
-    } else {
-      clearInterval(intervalo);
-      overlay.classList.remove("ativo");
-      localStorage.setItem(CHAVE, choice);
-      if (choice === "humano") {
-        storyRef.set({ votoHumano: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages);
-      } else {
-        storyRef.set({ votoSobrenatural: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages + 1);
-      }
-      showResults();
-    }
-  }, 1200);
-}
-
-function showResults() {
-  storyRef.get().then(doc => {
-    const data = doc.exists ? doc.data() : {};
-    const votoHumano = data.votoHumano || 0;
-    const votoSobrenatural = data.votoSobrenatural || 0;
-    const total = votoHumano + votoSobrenatural;
-    const ph = total ? Math.round((votoHumano / total) * 100) : 0;
-    const ps = total ? Math.round((votoSobrenatural / total) * 100) : 0;
-
-    const html = `
-    <div class="voteBox">
-      <h3>Votos de todos os leitores</h3>
-      <p>A verdade era humana: ${votoHumano} voto(s) — ${ph}%</p>
-      <div class="bar"><div class="fill" style="width:${ph}%"></div></div>
-      <p>A verdade era sobrenatural: ${votoSobrenatural} voto(s) — ${ps}%</p>
-      <div class="bar"><div class="fill" style="width:${ps}%"></div></div>
-      <p>Total: ${total} voto(s)</p>
-    </div>`;
-
-    document.getElementById("resultHumano").innerHTML = html;
-    document.getElementById("resultSobrenatural").innerHTML = html;
-    document.getElementById("ctaHumano").innerHTML = ctaHTML;
-    document.getElementById("ctaSobrenatural").innerHTML = ctaHTML;
-  }).catch(() => {
-    const errHtml = `<div class="voteBox"><p>Não foi possível carregar os votos agora.</p></div>`;
-    document.getElementById("resultHumano").innerHTML = errHtml;
-    document.getElementById("resultSobrenatural").innerHTML = errHtml;
-    document.getElementById("ctaHumano").innerHTML = ctaHTML;
-    document.getElementById("ctaSobrenatural").innerHTML = ctaHTML;
+function showResults(){
+  storyRef.get().then(doc=>{
+    const d=doc.exists?doc.data():{};
+    const vH=d.votoHumano||0,vS=d.votoSobrenatural||0,tot=vH+vS;
+    const ph=tot?Math.round(vH/tot*100):0,ps=tot?Math.round(vS/tot*100):0;
+    const html=`<div class="voteBox"><h3>Votos de todos os leitores</h3><p>A verdade era humana: ${vH} voto(s) — ${ph}%</p><div class="bar"><div class="fill" style="width:${ph}%"></div></div><p>A verdade era sobrenatural: ${vS} voto(s) — ${ps}%</p><div class="bar"><div class="fill" style="width:${ps}%"></div></div><p>Total: ${tot} voto(s)</p></div>`;
+    document.getElementById("resultHumano").innerHTML=html;
+    document.getElementById("resultSobrenatural").innerHTML=html;
+    document.getElementById("ctaHumano").innerHTML=ctaHTML;
+    document.getElementById("ctaSobrenatural").innerHTML=ctaHTML;
+    renderLikes();
   });
 }
 
-function restart() { showPage(0); }
+function renderLikes(){
+  const jL=localStorage.getItem(CHAVE_LIKE);
+  storyRef.get().then(doc=>{
+    const d=doc.exists?doc.data():{};
+    const likes=d.likes||0,dislikes=d.dislikes||0;
+    const html=`<div class="like-box"><button class="like-btn ${jL==='like'?'voted':''}" onclick="registrarLike('like')">👍<span class="like-count">${likes}</span></button><button class="like-btn ${jL==='dislike'?'voted':''}" onclick="registrarLike('dislike')">👎<span class="like-count">${dislikes}</span></button></div>`;
+    document.getElementById("likesHumano").innerHTML=html;
+    document.getElementById("likesSobrenatural").innerHTML=html;
+  });
+}
 
+function registrarLike(tipo){
+  if(localStorage.getItem(CHAVE_LIKE))return;
+  localStorage.setItem(CHAVE_LIKE,tipo);
+  storyRef.set({[tipo==="like"?"likes":"dislikes"]:firebase.firestore.FieldValue.increment(1)},{merge:true}).then(()=>renderLikes());
+}
+
+function restart(){showPage(0);}
 showPage(0);
 </script>
-</body>
-</html>
-
+</body></html>
