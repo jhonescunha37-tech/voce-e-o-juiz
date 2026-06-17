@@ -15,7 +15,10 @@ h1,h2{color:#ffd166}
 p{font-size:18px;line-height:1.55}
 .page{display:none}
 .page.active{display:block}
-.counter{color:#aaa;font-size:14px;margin-bottom:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.counter{color:#aaa;font-size:14px}
+.home-btn{display:flex;align-items:center;justify-content:center;background:#222;border:1px solid #444;border-radius:8px;padding:6px 12px;text-decoration:none;color:#ffd166;font-size:14px;font-weight:bold;gap:6px}
+.home-btn:hover{background:#333}
 .buttons{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
 button{flex:1;padding:14px;border:0;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:0.5;cursor:not-allowed}
@@ -23,107 +26,45 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 .prev{background:#444;color:white}
 .choice{background:#ef476f;color:white}
 .choice2{background:#118ab2;color:white}
+.restart{background:#06d6a0;color:#06281f}
+.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
 .voteBox{background:#222;padding:16px;border-radius:14px;margin-top:20px}
 .bar{height:18px;background:#333;border-radius:20px;overflow:hidden;margin:8px 0 16px}
 .fill{height:100%;width:0%;background:#ffd166;transition:width 0.6s ease}
-.restart{background:#06d6a0;color:#06281f}
-.other{flex:1;display:flex;align-items:center;justify-content:center;background:#555;color:white;border-radius:12px;text-decoration:none;font-weight:bold;font-size:16px;padding:14px;text-align:center}
-
+.aviso-permanente{background:#1a0a0a;border:1px solid #ef476f;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center}
+.aviso-permanente p{font-size:15px;color:#ffaaaa;margin:0;line-height:1.5}
+.aviso-permanente strong{color:#ef476f}
+#overlay{display:none;position:fixed;inset:0;background:#000;z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+#overlay.ativo{display:flex}
+.suspense-texto{color:#ffd166;font-size:22px;font-weight:bold;animation:pulsar 0.8s ease-in-out infinite alternate}
+@keyframes pulsar{from{opacity:0.2}to{opacity:1}}
+.suspense-sub{color:#aaa;font-size:15px;margin-top:16px}
+.ja-escolheu{background:#111;border:1px solid #555;border-radius:14px;padding:20px;text-align:center;margin-top:16px}
+.ja-escolheu h3{color:#ffd166;margin-top:0}
+.ja-escolheu p{font-size:15px;color:#ccc;margin:6px 0}
+.btn-ver-final{display:inline-block;margin-top:14px;padding:12px 24px;background:#ffd166;color:#111;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer;border:none;width:100%}
 .cta-historia{background:#1a1500;border:1px solid #ffd166;border-radius:14px;padding:20px;margin-top:24px;text-align:center}
 .cta-historia p{font-size:15px;color:#ddd;margin:0 0 10px;line-height:1.5}
 .cta-historia a{color:#ffd166;font-weight:bold;word-break:break-all}
-
-/* Aviso de escolha permanente */
-.aviso-permanente{
-  background:#1a0a0a;
-  border:1px solid #ef476f;
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:20px;
-  text-align:center;
-}
-.aviso-permanente p{font-size:15px;color:#ffaaaa;margin:0;line-height:1.5}
-.aviso-permanente strong{color:#ef476f}
-
-/* Overlay de suspense */
-#overlay{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#000;
-  z-index:999;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:30px;
-}
-#overlay.ativo{display:flex}
-.suspense-texto{
-  color:#ffd166;
-  font-size:22px;
-  font-weight:bold;
-  animation: pulsar 0.8s ease-in-out infinite alternate;
-}
-@keyframes pulsar{
-  from{opacity:0.2}
-  to{opacity:1}
-}
-.suspense-sub{
-  color:#aaa;
-  font-size:15px;
-  margin-top:16px;
-}
-
-/* Bloqueio — já escolheu */
-.ja-escolheu{
-  background:#111;
-  border:1px solid #555;
-  border-radius:14px;
-  padding:20px;
-  text-align:center;
-  margin-top:16px;
-}
-.ja-escolheu h3{color:#ffd166;margin-top:0}
-.ja-escolheu p{font-size:15px;color:#ccc;margin:6px 0}
-.btn-ver-final{
-  display:inline-block;
-  margin-top:14px;
-  padding:12px 24px;
-  background:#ffd166;
-  color:#111;
-  border-radius:12px;
-  font-weight:bold;
-  font-size:16px;
-  cursor:pointer;
-  border:none;
-  width:100%;
-}
+.like-box{display:flex;gap:12px;margin-top:16px;justify-content:center}
+.like-btn{flex:1;max-width:140px;padding:12px;border:0;border-radius:12px;font-size:22px;cursor:pointer;font-weight:bold;background:#1e1e22;border:1px solid #444;color:#f2f2f2;transition:background 0.2s}
+.like-btn:hover{background:#333}
+.like-btn.voted{border-color:#ffd166}
+.like-count{font-size:13px;display:block;margin-top:4px;color:#aaa}
 </style>
 </head>
 <body>
-
-<!-- Overlay de suspense -->
 <div id="overlay">
-  <div class="suspense-texto" id="suspenseTexto">O veredito está sendo revelado...</div>
+  <div class="suspense-texto" id="suspenseTexto">Analisando as evidências...</div>
   <div class="suspense-sub">Não há como voltar atrás.</div>
 </div>
-
-<div class="app">
-<div class="book">
-
-<div class="counter" id="counter"></div>
+<div class="app"><div class="book">
+<div class="topbar">
+  <div class="counter" id="counter"></div>
+  <a class="home-btn" href="../index.html">🏠 Home</a>
+</div>
 <div id="pages">
-
-<section class="page active">
-<h1>Você é o Juiz</h1>
-<h2>O Caso da Casa 17</h2>
-<p>Na pequena cidade de Santa Aurora, todos conheciam a Casa 17. Ela ficava no fim da rua das mangueiras, sempre fechada, sempre silenciosa.</p>
-<p>Até a manhã em que encontraram Helena Duarte morta dentro da sala.</p>
-<p>E ao lado do corpo havia apenas uma frase escrita no espelho:</p>
-<p><b>"Ele voltou para terminar."</b></p>
-</section>
-
+<section class="page active"><h1>Você é o Juiz</h1><h2>O Caso da Casa 17</h2><p>Na pequena cidade de Santa Aurora, todos conheciam a Casa 17. Ela ficava no fim da rua das mangueiras, sempre fechada, sempre silenciosa.</p><p>Até a manhã em que encontraram Helena Duarte morta dentro da sala.</p><p>E ao lado do corpo havia apenas uma frase escrita no espelho:</p><p><b>"Ele voltou para terminar."</b></p></section>
 <section class="page"><h2>Página 2</h2><p>O primeiro suspeito foi Daniel, filho de Helena. Ele havia discutido com a mãe na noite anterior. Vizinhos ouviram gritos, móveis arrastando e um copo quebrando.</p></section>
 <section class="page"><h2>Página 3</h2><p>Daniel dizia que saiu da casa às 21h10. A câmera da padaria mostrou ele passando às 21h18, nervoso, olhando para trás.</p></section>
 <section class="page"><h2>Página 4</h2><p>Mas o laudo apontou que Helena morreu entre 22h e 23h. Daniel, nesse horário, estava em uma farmácia comprando remédio para ansiedade.</p></section>
@@ -162,95 +103,61 @@ button:disabled{opacity:0.5;cursor:not-allowed}
 <section class="page"><h2>Página 37</h2><p>A mensagem dizia: "Você tem até meia-noite para me devolver a carta. Ou conto tudo."</p></section>
 <section class="page"><h2>Página 38</h2><p>O destinatário da mensagem era Daniel.</p></section>
 <section class="page"><h2>Página 39</h2><p>Mas às 23h58, Clara recebeu uma ligação de Helena. A chamada durou apenas sete segundos.</p></section>
-
-<!-- PÁGINA 40 — ESCOLHA -->
 <section class="page" id="paginaEscolha">
 <h2>Página 40</h2>
-
-<div class="aviso-permanente">
-  <p><strong>⚠ Atenção: escolha irreversível.</strong><br>
-  Você só poderá ver <strong>um dos finais</strong>.<br>
-  O outro permanecerá para sempre oculto neste dispositivo.<br>
-  Pense bem antes de decidir.</p>
-</div>
-
-<p>Agora você é o juiz.</p>
-<p>Daniel tinha motivo, recebeu ameaça e mentiu sobre a carta.</p>
-<p>Clara tinha a chave, recebeu a última ligação e podia estar envolvida desde o incêndio.</p>
+<div class="aviso-permanente"><p><strong>⚠ Atenção: escolha irreversível.</strong><br>Você só poderá ver <strong>um dos finais</strong>.<br>O outro permanecerá para sempre oculto neste dispositivo.</p></div>
+<p>Agora você é o juiz. Daniel tinha motivo, recebeu ameaça e mentiu sobre a carta. Clara tinha a chave, recebeu a última ligação e podia estar envolvida desde o incêndio.</p>
 <p>Quem matou Helena?</p>
-
 <div id="areaEscolha"></div>
 </section>
-
-<!-- FINAL DANIEL -->
 <section class="page" id="finalDaniel">
 <h2>Final X — Daniel é o culpado</h2>
 <p>Daniel matou Helena porque ela descobriu que ele havia participado do incêndio de dez anos atrás. A carta escondida no porão provava que ele manipulou Raul para levar a culpa.</p>
 <p>A frase no espelho foi escrita por Daniel para parecer que Raul havia voltado. O pedaço de papel com "DAN" era a tentativa desesperada de Helena de escrever o nome do filho antes de morrer.</p>
 <p>A farmácia era seu álibi preparado. Ele saiu, comprou o remédio, voltou pela entrada dos fundos e terminou o que começou.</p>
-<div id="resultDaniel"></div>
-<div id="ctaDaniel"></div>
+<div id="resultDaniel"></div><div id="likesDaniel"></div><div id="ctaDaniel"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
-</div>
-</section>
-
-<!-- FINAL CLARA -->
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 <section class="page" id="finalClara">
 <h2>Final Y — Clara é a culpada</h2>
 <p>Clara matou Helena porque sabia que a irmã revelaria o segredo da família. Ela tinha a chave dos fundos, conhecia os horários da casa e sabia como incriminar Daniel e Raul.</p>
 <p>O pedágio foi usado como álibi. Clara emprestou o carro para outra pessoa passar pela praça enquanto ela permanecia na cidade.</p>
 <p>A ligação de sete segundos foi Helena reconhecendo a irmã no último instante. Clara desligou antes que qualquer palavra pudesse ser gravada.</p>
-<div id="resultClara"></div>
-<div id="ctaClara"></div>
+<div id="resultClara"></div><div id="likesClara"></div><div id="ctaClara"></div>
 <div class="buttons" style="margin-top:16px">
-<button class="restart" onclick="restart()">Recomeçar história</button>
-<a class="other" href="../index.html">Outras histórias</a>
+<button class="restart" onclick="restart()">Recomeçar</button>
+<a class="other" href="../index.html">🏠 Home</a>
+</div></section>
 </div>
-</section>
-
-</div>
-
 <div class="buttons" id="nav">
 <button class="prev" onclick="prevPage()">Voltar</button>
 <button class="next" onclick="nextPage()">Próxima</button>
 </div>
-
-</div>
-</div>
-
+</div></div>
 <script>
-// ---- Firebase ----
 const firebaseConfig = {
   apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
   authDomain: "voce-e-o-juiz.firebaseapp.com",
   projectId: "voce-e-o-juiz",
   storageBucket: "voce-e-o-juiz.firebasestorage.app",
   messagingSenderId: "642064514915",
-  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56",
-  measurementId: "G-R5XH79YPX2"
+  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storyRef = db.collection("historias").doc("casa17");
-
-storyRef.set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true })
-  .catch(err => console.error("Erro ao contar acesso:", err));
+storyRef.set({acessos:firebase.firestore.FieldValue.increment(1)},{merge:true});
 
 const CHAVE = "votou_casa17";
-const nomes = { daniel: "Final X — Daniel é o culpado", clara: "Final Y — Clara é a culpada" };
-
-const ctaHTML = `
-<div class="cta-historia">
-  <p>✍️ <strong>Tem uma história para nos contar?</strong><br>
-  Mande o seu caso, polêmica ou mistério para virar um episódio de Você é o Juiz!</p>
-  <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a>
-</div>`;
+const CHAVE_LIKE = "like_casa17";
+const nomes = {daniel:"Final X — Daniel é o culpado", clara:"Final Y — Clara é a culpada"};
+const ctaHTML = `<div class="cta-historia"><p>✍️ <strong>Tem uma história para nos contar?</strong><br>Mande seu caso para virar um episódio!</p><a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a></div>`;
 
 let current = 0;
 const pages = document.querySelectorAll(".page");
-const totalStoryPages = 40;
+const TOTAL = 40; // páginas da história (índices 0-39), finais em 40 e 41
 const counter = document.getElementById("counter");
 const nav = document.getElementById("nav");
 const prevBtn = nav.querySelector(".prev");
@@ -259,27 +166,15 @@ function renderAreaEscolha() {
   const jaVotou = localStorage.getItem(CHAVE);
   const area = document.getElementById("areaEscolha");
   if (jaVotou) {
-    area.innerHTML = `
-      <div class="ja-escolheu">
-        <h3>Seu destino está selado.</h3>
-        <p>Neste dispositivo, você escolheu:</p>
-        <p><strong style="color:#ffd166;font-size:17px">${nomes[jaVotou]}</strong></p>
-        <p style="color:#888;font-size:14px;margin-top:8px">O outro final permanece oculto para sempre.</p>
-        <button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button>
-      </div>`;
+    area.innerHTML = `<div class="ja-escolheu"><h3>Seu destino está selado.</h3><p>Você escolheu:</p><p><strong style="color:#ffd166;font-size:17px">${nomes[jaVotou]}</strong></p><p style="color:#888;font-size:14px">O outro final permanece oculto para sempre.</p><button class="btn-ver-final" onclick="irParaFinalSalvo()">Ver meu final novamente</button></div>`;
   } else {
-    area.innerHTML = `
-      <div class="buttons">
-        <button class="choice" onclick="vote('daniel')">Final X: Daniel</button>
-        <button class="choice2" onclick="vote('clara')">Final Y: Clara</button>
-      </div>`;
+    area.innerHTML = `<div class="buttons"><button class="choice" onclick="vote('daniel')">Final X: Daniel</button><button class="choice2" onclick="vote('clara')">Final Y: Clara</button></div>`;
   }
 }
 
 function irParaFinalSalvo() {
-  const jaVotou = localStorage.getItem(CHAVE);
-  if (jaVotou === "daniel") showPage(totalStoryPages);
-  else showPage(totalStoryPages + 1);
+  const v = localStorage.getItem(CHAVE);
+  showPage(v === "daniel" ? TOTAL : TOTAL + 1);
   showResults();
 }
 
@@ -287,106 +182,85 @@ function showPage(index) {
   pages.forEach(p => p.classList.remove("active"));
   pages[index].classList.add("active");
   current = index;
-
-  if (index < totalStoryPages) {
-    counter.innerText = "Página " + (index + 1) + " de " + totalStoryPages;
-    nav.style.display = "flex";
-    prevBtn.disabled = (index === 0);
-  } else if (index === totalStoryPages - 1) {
-    counter.innerText = "Página " + totalStoryPages + " de " + totalStoryPages;
+  if (index === TOTAL - 1) { // página 40 (índice 39) — escolha
+    counter.innerText = "Página 40 de 40";
     nav.style.display = "flex";
     prevBtn.disabled = false;
+    document.querySelector("#nav .next").disabled = true;
     renderAreaEscolha();
+  } else if (index < TOTAL - 1) {
+    counter.innerText = "Página " + (index + 1) + " de 40";
+    nav.style.display = "flex";
+    prevBtn.disabled = (index === 0);
+    document.querySelector("#nav .next").disabled = false;
   } else {
     counter.innerText = "Resultado";
     nav.style.display = "none";
   }
 }
 
-function nextPage() {
-  if (current < totalStoryPages - 1) showPage(current + 1);
-}
-
-function prevPage() {
-  if (current > 0) showPage(current - 1);
-}
+function nextPage() { if (current < TOTAL - 1) showPage(current + 1); }
+function prevPage() { if (current > 0) showPage(current - 1); }
 
 function vote(choice) {
-  if (localStorage.getItem(CHAVE)) {
-    irParaFinalSalvo();
-    return;
-  }
-
-  // Animação de suspense
+  if (localStorage.getItem(CHAVE)) { irParaFinalSalvo(); return; }
   const overlay = document.getElementById("overlay");
-  const suspenseTexto = document.getElementById("suspenseTexto");
-  const frases = [
-    "Analisando as evidências...",
-    "O júri delibera...",
-    "O veredito é irreversível...",
-    "Não há como voltar atrás..."
-  ];
+  const st = document.getElementById("suspenseTexto");
+  const frases = ["Analisando as evidências...","O júri delibera...","O veredito é irreversível...","Não há como voltar atrás..."];
   let i = 0;
   overlay.classList.add("ativo");
-  suspenseTexto.innerText = frases[0];
-
-  const intervalo = setInterval(() => {
+  st.innerText = frases[0];
+  const iv = setInterval(() => {
     i++;
-    if (i < frases.length) {
-      suspenseTexto.innerText = frases[i];
-    } else {
-      clearInterval(intervalo);
+    if (i < frases.length) { st.innerText = frases[i]; }
+    else {
+      clearInterval(iv);
       overlay.classList.remove("ativo");
       localStorage.setItem(CHAVE, choice);
-      if (choice === "daniel") {
-        storyRef.set({ votoDaniel: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages);
-      } else {
-        storyRef.set({ votoClara: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-        showPage(totalStoryPages + 1);
-      }
+      const campo = choice === "daniel" ? "votoDaniel" : "votoClara";
+      storyRef.set({[campo]: firebase.firestore.FieldValue.increment(1)},{merge:true});
+      showPage(choice === "daniel" ? TOTAL : TOTAL + 1);
       showResults();
     }
-  }, 1200);
+  }, 1400);
 }
 
 function showResults() {
   storyRef.get().then(doc => {
-    const data = doc.exists ? doc.data() : {};
-    const votoDaniel = data.votoDaniel || 0;
-    const votoClara = data.votoClara || 0;
-    const total = votoDaniel + votoClara;
-    const pd = total ? Math.round((votoDaniel / total) * 100) : 0;
-    const pc = total ? Math.round((votoClara / total) * 100) : 0;
-
-    const html = `
-    <div class="voteBox">
-      <h3>Votos de todos os leitores</h3>
-      <p>Daniel: ${votoDaniel} voto(s) — ${pd}%</p>
-      <div class="bar"><div class="fill" style="width:${pd}%"></div></div>
-      <p>Clara: ${votoClara} voto(s) — ${pc}%</p>
-      <div class="bar"><div class="fill" style="width:${pc}%"></div></div>
-      <p>Total: ${total} voto(s)</p>
-    </div>`;
-
+    const d = doc.exists ? doc.data() : {};
+    const vD = d.votoDaniel||0, vC = d.votoClara||0, tot = vD+vC;
+    const pd = tot ? Math.round(vD/tot*100):0, pc = tot ? Math.round(vC/tot*100):0;
+    const html = `<div class="voteBox"><h3>Votos de todos os leitores</h3><p>Daniel: ${vD} voto(s) — ${pd}%</p><div class="bar"><div class="fill" style="width:${pd}%"></div></div><p>Clara: ${vC} voto(s) — ${pc}%</p><div class="bar"><div class="fill" style="width:${pc}%"></div></div><p>Total: ${tot} voto(s)</p></div>`;
     document.getElementById("resultDaniel").innerHTML = html;
     document.getElementById("resultClara").innerHTML = html;
     document.getElementById("ctaDaniel").innerHTML = ctaHTML;
     document.getElementById("ctaClara").innerHTML = ctaHTML;
-  }).catch(() => {
-    const errHtml = `<div class="voteBox"><p>Não foi possível carregar os votos agora.</p></div>`;
-    document.getElementById("resultDaniel").innerHTML = errHtml;
-    document.getElementById("resultClara").innerHTML = errHtml;
-    document.getElementById("ctaDaniel").innerHTML = ctaHTML;
-    document.getElementById("ctaClara").innerHTML = ctaHTML;
+    renderLikes();
   });
 }
 
-function restart() {
-  showPage(0);
+function renderLikes() {
+  const jaLikei = localStorage.getItem(CHAVE_LIKE);
+  storyRef.get().then(doc => {
+    const d = doc.exists ? doc.data() : {};
+    const likes = d.likes||0, dislikes = d.dislikes||0;
+    const html = `<div class="like-box">
+      <button class="like-btn ${jaLikei==='like'?'voted':''}" onclick="registrarLike('like')">👍<span class="like-count">${likes}</span></button>
+      <button class="like-btn ${jaLikei==='dislike'?'voted':''}" onclick="registrarLike('dislike')">👎<span class="like-count">${dislikes}</span></button>
+    </div>`;
+    document.getElementById("likesDaniel").innerHTML = html;
+    document.getElementById("likesClara").innerHTML = html;
+  });
 }
 
+function registrarLike(tipo) {
+  if (localStorage.getItem(CHAVE_LIKE)) return;
+  localStorage.setItem(CHAVE_LIKE, tipo);
+  const campo = tipo === "like" ? "likes" : "dislikes";
+  storyRef.set({[campo]: firebase.firestore.FieldValue.increment(1)},{merge:true}).then(()=>renderLikes());
+}
+
+function restart() { showPage(0); }
 showPage(0);
 </script>
-</body>
-</html>
+</body></html>
