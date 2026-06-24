@@ -179,6 +179,10 @@ input:checked+.slider::before{transform:translateX(20px)}
           </div>
         </div>
 
+        <div class="msg ok ativo" style="display:block;margin-bottom:16px">
+          Para publicar sem Firebase Storage: envie o vídeo para a pasta <b>videos</b> no GitHub e cole o caminho aqui, por exemplo <b>videos/neymar.mp4</b>. Para capa, cole uma URL de imagem.
+        </div>
+
         <div class="form-row">
           <div class="field">
             <label>Imagem de capa</label>
@@ -191,8 +195,8 @@ input:checked+.slider::before{transform:translateX(20px)}
             </div>
             <img id="preview-capa" class="preview-img">
             <div class="field" style="margin-top:8px">
-              <label style="font-size:11px">Ou cole a URL da imagem</label>
-              <input type="text" id="f-capa-url" placeholder="https://..." onchange="previewCapaUrl(this.value)">
+              <label style="font-size:11px">Cole a URL da imagem</label>
+              <input type="text" id="f-capa-url" placeholder="https://picsum.photos/1200/675" onchange="previewCapaUrl(this.value)">
             </div>
           </div>
 
@@ -206,8 +210,8 @@ input:checked+.slider::before{transform:translateX(20px)}
               <div class="upload-status" id="status-video"></div>
             </div>
             <div class="field" style="margin-top:8px">
-              <label style="font-size:11px">Ou cole a URL do vídeo</label>
-              <input type="text" id="f-video-url" placeholder="https://...">
+              <label style="font-size:11px">Cole a URL ou caminho do vídeo</label>
+              <input type="text" id="f-video-url" placeholder="videos/neymar.mp4">
             </div>
           </div>
         </div>
@@ -398,13 +402,13 @@ async function salvarHistoria() {
   const opcaoA = document.getElementById('f-opcaoA').value.trim();
   const opcaoB = document.getElementById('f-opcaoB').value.trim();
 
-  if (!titulo || !descricao || !opcaoA || !opcaoB) {
-    mostrarMsg('historia', 'Preencha: Título, Descrição, Opção A e Opção B.', 'erro');
+  if (!titulo || !descricao || !opcaoA || !opcaoB || !videoFinal) {
+    mostrarMsg('historia', 'Preencha: Título, Descrição, Opção A, Opção B e URL/caminho do vídeo.', 'erro');
     return;
   }
 
-  const capaFinal = capaUrl || document.getElementById('f-capa-url').value.trim();
-  const videoFinal = videoUrl || document.getElementById('f-video-url').value.trim();
+  const capaFinal = document.getElementById('f-capa-url').value.trim() || capaUrl;
+  const videoFinal = document.getElementById('f-video-url').value.trim() || videoUrl;
 
   const dados = {
     titulo,
@@ -412,7 +416,7 @@ async function salvarHistoria() {
     opcaoA,
     opcaoB,
     duracao: document.getElementById('f-duracao').value.trim(),
-    capa: capaFinal,
+    capa: capaFinal || 'https://picsum.photos/1200/675',
     video: videoFinal,
     ordem: parseInt(document.getElementById('f-ordem').value) || 1,
     destaque: document.getElementById('f-destaque').checked,
@@ -449,6 +453,9 @@ async function deletarStory(id) {
 
 // ---- UPLOAD CAPA ----
 function uploadCapa(input) {
+  mostrarMsg('historia', 'Para capa, cole uma URL no campo "Cole a URL da imagem". Upload direto pelo Firebase Storage não está ativo.', 'erro');
+  input.value = '';
+  return;
   const file = input.files[0];
   if (!file) return;
   const prog = document.getElementById('prog-capa');
@@ -492,6 +499,9 @@ function previewCapaUrl(url) {
 
 // ---- UPLOAD VÍDEO ----
 function uploadVideo(input) {
+  mostrarMsg('historia', 'Para vídeo, cole a URL/caminho no campo "Cole a URL do vídeo". Exemplo: videos/neymar.mp4', 'erro');
+  input.value = '';
+  return;
   const file = input.files[0];
   if (!file) return;
   const prog = document.getElementById('prog-video');
