@@ -388,7 +388,7 @@ function abrirVideo(s) {
   if (s.video) {
     videoEl.style.display = 'block';
     semUrl.style.display = 'none';
-    videoEl.src = s.video;
+    videoEl.src = "videos/neymar.mp4"; // vídeo local temporário
     videoEl.play().catch(()=>{});
     videoEl.onended = () => {
       trackEvent('video_concluido', { historia: s.titulo });
