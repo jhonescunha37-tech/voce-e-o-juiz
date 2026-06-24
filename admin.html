@@ -401,14 +401,13 @@ async function salvarHistoria() {
   const descricao = document.getElementById('f-descricao').value.trim();
   const opcaoA = document.getElementById('f-opcaoA').value.trim();
   const opcaoB = document.getElementById('f-opcaoB').value.trim();
+  const capaFinal = document.getElementById('f-capa-url').value.trim() || capaUrl;
+  const videoFinal = document.getElementById('f-video-url').value.trim() || videoUrl;
 
   if (!titulo || !descricao || !opcaoA || !opcaoB || !videoFinal) {
     mostrarMsg('historia', 'Preencha: Título, Descrição, Opção A, Opção B e URL/caminho do vídeo.', 'erro');
     return;
   }
-
-  const capaFinal = document.getElementById('f-capa-url').value.trim() || capaUrl;
-  const videoFinal = document.getElementById('f-video-url').value.trim() || videoUrl;
 
   const dados = {
     titulo,
