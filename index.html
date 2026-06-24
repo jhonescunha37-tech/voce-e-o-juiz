@@ -367,6 +367,26 @@ function renderGrid() {
   }).join('');
 }
 
+// ---- PEGAR URL DO VÍDEO ----
+function getVideoUrl(s) {
+  if (!s) return '';
+
+  // 1) Se existir URL cadastrada no Firebase/Firestore, usa ela.
+  if (s.video && String(s.video).trim() !== '') {
+    return String(s.video).trim();
+  }
+
+  // 2) Fallback temporário para o primeiro vídeo do Neymar hospedado no GitHub.
+  // Para funcionar, envie o arquivo comprimido para: videos/neymar.mp4
+  const titulo = (s.titulo || '').toLowerCase();
+  if (titulo.includes('neymar')) {
+    return 'videos/neymar.mp4';
+  }
+
+  // 3) Se não tiver vídeo, mostra a tela "Vídeo não disponível".
+  return '';
+}
+
 // ---- ABRIR VÍDEO ----
 function abrirVideo(s) {
   if (!s) return;
@@ -385,10 +405,13 @@ function abrirVideo(s) {
   document.body.style.overflow = 'hidden';
 
   const semUrl = document.getElementById('video-sem-url');
-  if (s.video) {
+  const videoUrl = getVideoUrl(s);
+
+  if (videoUrl) {
     videoEl.style.display = 'block';
     semUrl.style.display = 'none';
-    videoEl.src = "videos/neymar.mp4"; // vídeo local temporário
+    videoEl.src = videoUrl;
+    videoEl.load();
     videoEl.play().catch(()=>{});
     videoEl.onended = () => {
       trackEvent('video_concluido', { historia: s.titulo });
