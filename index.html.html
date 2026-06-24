@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Você é o Juiz</title>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R5XH79YPX2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-R5XH79YPX2');
+  function trackEvent(name, params){
+    if(typeof gtag === 'function') gtag('event', name, params || {});
+  }
+</script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ouro:#c9a227;
+  --ouro-claro:#e8c86a;
+  --fundo:#05060a;
+  --card:#0f111a;
+  --card2:#151822;
+  --borda:#1e2133;
+  --texto:#f0f0f0;
+  --texto2:#9aa0b8;
+}
+html{scroll-behavior:smooth}
+body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ---- HEADER ---- */
+header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(5,6,10,0.95),transparent)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{font-size:26px}
+.logo-text{font-size:20px;font-weight:900;letter-spacing:1px;color:var(--ouro);text-transform:uppercase}
+.logo-sub{font-size:10px;color:var(--texto2);letter-spacing:3px;text-transform:uppercase;display:block;margin-top:-4px}
+nav a{color:var(--texto2);text-decoration:none;font-size:14px;margin-left:20px;transition:color 0.2s}
+nav a:hover{color:var(--ouro)}
+
+/* ---- HERO ---- */
+#hero{position:relative;width:100%;height:100vh;min-height:500px;display:flex;align-items:flex-end;padding:0 24px 60px;overflow:hidden}
+#hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 0.8s}
+#hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(5,6,10,1) 0%,rgba(5,6,10,0.7) 40%,rgba(5,6,10,0.2) 100%)}
+.hero-content{position:relative;z-index:1;max-width:640px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,162,39,0.15);border:1px solid var(--ouro);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--ouro);text-transform:uppercase;margin-bottom:16px}
+.hero-badge::before{content:'';width:6px;height:6px;background:var(--ouro);border-radius:50%;animation:pisca 1.5s infinite}
+@keyframes pisca{0%,100%{opacity:1}50%{opacity:0.3}}
+#hero-titulo{font-size:clamp(28px,5vw,54px);font-weight:900;line-height:1.1;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
+#hero-desc{font-size:16px;color:var(--texto2);line-height:1.6;margin-bottom:8px;max-width:480px}
+#hero-dur{font-size:13px;color:var(--ouro);margin-bottom:28px;display:flex;align-items:center;gap:8px}
+#hero-dur::before{content:'▶';font-size:10px}
+.btn-assistir{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:16px;font-weight:900;padding:14px 32px;border-radius:8px;border:none;cursor:pointer;letter-spacing:1px;transition:transform 0.2s,box-shadow 0.2s;text-transform:uppercase}
+.btn-assistir:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(201,162,39,0.4)}
+.btn-assistir svg{width:20px;height:20px}
+
+/* ---- SEÇÕES ---- */
+section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
+.sec-titulo{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ouro);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.sec-titulo::after{content:'';flex:1;height:1px;background:var(--borda)}
+
+/* ---- GRID DE HISTÓRIAS ---- */
+#grid-historias{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:60px}
+.story-card{background:var(--card);border:1px solid var(--borda);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+.story-card:hover{transform:translateY(-4px);border-color:var(--ouro)}
+.story-card-capa{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#111}
+.story-card-capa-placeholder{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#0f111a,#1a1f2e);display:flex;align-items:center;justify-content:center;font-size:40px}
+.story-card-body{padding:14px}
+.story-card-titulo{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3}
+.story-card-desc{font-size:12px;color:var(--texto2);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.story-card-meta{display:flex;align-items:center;justify-content:space-between}
+.story-card-dur{font-size:11px;color:var(--ouro);display:flex;align-items:center;gap:4px}
+.story-card-votos{font-size:11px;color:var(--texto2)}
+.story-card-novo{position:absolute;top:10px;left:10px;background:var(--ouro);color:#05060a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px;text-transform:uppercase}
+
+/* ---- HISTÓRIAS ANTERIORES ---- */
+#grid-anteriores{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:60px}
+.anterior-card{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:16px;text-decoration:none;color:var(--texto);transition:border-color 0.2s,transform 0.2s;display:block}
+.anterior-card:hover{border-color:var(--ouro);transform:translateY(-3px)}
+.anterior-card-tag{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin-bottom:8px;display:block}
+.anterior-card-titulo{font-size:14px;font-weight:700;margin-bottom:6px;line-height:1.3}
+.anterior-card-desc{font-size:12px;color:var(--texto2);line-height:1.5}
+
+/* ---- LOADING ---- */
+#loading{position:fixed;inset:0;background:var(--fundo);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.5s}
+#loading.hide{opacity:0;pointer-events:none}
+.loader{width:40px;height:40px;border:3px solid var(--borda);border-top-color:var(--ouro);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{color:var(--texto2);font-size:14px;letter-spacing:2px}
+
+/* ---- VIDEO MODAL ---- */
+#video-modal{display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column}
+#video-modal.ativo{display:flex}
+#video-modal header{position:absolute;top:0;left:0;right:0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);z-index:10}
+#video-titulo-modal{font-size:16px;font-weight:700;color:#fff}
+#btn-fechar-video{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+#btn-fechar-video:hover{background:rgba(255,255,255,0.25)}
+#video-player{width:100%;height:100%;object-fit:contain;background:#000}
+#video-sem-url{display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--texto2);text-align:center;padding:40px}
+#video-sem-url span{font-size:48px}
+#video-sem-url p{font-size:16px}
+#video-sem-url small{font-size:13px;opacity:0.6}
+
+/* ---- DECISÃO ---- */
+#decisao-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(5,6,10,0.97);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#decisao-overlay.ativo{display:flex}
+.decisao-linha{width:60px;height:3px;background:var(--ouro);margin:0 auto 24px;border-radius:2px}
+#decisao-historia-nome{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--ouro);margin-bottom:12px}
+.decisao-titulo-grande{font-size:clamp(28px,6vw,52px);font-weight:900;margin-bottom:8px;letter-spacing:2px;text-transform:uppercase}
+.decisao-sub{font-size:14px;color:var(--texto2);margin-bottom:40px}
+.decisao-opcoes{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;width:100%;max-width:600px}
+.btn-opcao{flex:1;min-width:200px;max-width:260px;padding:20px 24px;border-radius:10px;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;line-height:1.3}
+.btn-opcao.a{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border-color:var(--ouro)}
+.btn-opcao.b{background:transparent;color:#fff;border-color:rgba(255,255,255,0.3)}
+.btn-opcao.a:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(201,162,39,0.5)}
+.btn-opcao.b:hover{border-color:#fff;transform:scale(1.04)}
+.decisao-aviso{font-size:11px;color:var(--texto2);margin-top:28px;opacity:0.7}
+
+/* ---- RESULTADO ---- */
+#resultado-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(5,6,10,0.98);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#resultado-overlay.ativo{display:flex}
+.resultado-icone{font-size:48px;margin-bottom:16px}
+.resultado-titulo{font-size:24px;font-weight:900;color:var(--ouro);margin-bottom:6px}
+.resultado-voto-label{font-size:13px;color:var(--texto2);margin-bottom:4px}
+.resultado-voto-escolha{font-size:18px;font-weight:700;margin-bottom:32px;color:#fff}
+.resultado-barras{width:100%;max-width:480px;margin:0 auto 32px}
+.barra-item{margin-bottom:16px;text-align:left}
+.barra-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.barra-label span:first-child{font-weight:600}
+.barra-label span:last-child{color:var(--ouro);font-weight:700}
+.barra-bg{height:10px;background:var(--borda);border-radius:10px;overflow:hidden}
+.barra-fill{height:100%;border-radius:10px;transition:width 1s ease;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro))}
+.barra-fill.b{background:linear-gradient(90deg,#4a5280,#6b7ab8)}
+.resultado-total{font-size:13px;color:var(--texto2);margin-bottom:28px}
+.btn-resultado{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;letter-spacing:1px;text-transform:uppercase}
+.btn-resultado.voltar{background:var(--card2);color:var(--texto2);border:1px solid var(--borda);margin-right:10px}
+.btn-resultado.home{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a}
+.resultado-ja-votou{font-size:13px;color:var(--ouro);margin-bottom:16px;background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.3);padding:8px 16px;border-radius:6px}
+
+/* ---- EMPTY STATE ---- */
+.empty-state{text-align:center;padding:60px 24px;color:var(--texto2)}
+.empty-state span{font-size:48px;display:block;margin-bottom:16px}
+.empty-state p{font-size:15px}
+.empty-state small{font-size:12px;opacity:0.6;display:block;margin-top:8px}
+
+/* ---- FOOTER ---- */
+footer{border-top:1px solid var(--borda);padding:30px 24px;text-align:center;color:var(--texto2);font-size:13px;margin-top:40px}
+footer a{color:var(--ouro);text-decoration:none}
+
+/* ---- RESPONSIVO ---- */
+@media(max-width:600px){
+  #hero{padding:0 16px 50px}
+  .decisao-opcoes{flex-direction:column;align-items:center}
+  .btn-opcao{max-width:100%;width:100%}
+  nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="loader"></div>
+  <p>CARREGANDO</p>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <span class="logo-icon">⚖️</span>
+    <div>
+      <span class="logo-text">Você é o Juiz</span>
+      <span class="logo-sub">Assista. Decida. Julgue.</span>
+    </div>
+  </a>
+  <nav>
+    <a href="#videos">Vídeos</a>
+    <a href="#anteriores">Histórias</a>
+    <a href="mailto:bbdosebooks@gmail.com">Contato</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div id="hero">
+  <div id="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">⚡ Em destaque</div>
+    <h1 id="hero-titulo">Carregando...</h1>
+    <p id="hero-desc"></p>
+    <div id="hero-dur"></div>
+    <button class="btn-assistir" id="btn-hero-assistir" onclick="abrirVideo(storyDestaque)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      ASSISTIR AGORA
+    </button>
+  </div>
+</div>
+
+<!-- GRID DE VÍDEOS -->
+<section id="videos">
+  <div class="sec-titulo">Todas as histórias</div>
+  <div id="grid-historias">
+    <div class="empty-state" style="grid-column:1/-1">
+      <span>🎬</span>
+      <p>Carregando histórias...</p>
+    </div>
+  </div>
+</section>
+
+<!-- HISTÓRIAS ANTERIORES (texto) -->
+<section id="anteriores">
+  <div class="sec-titulo">Histórias em texto</div>
+  <div id="grid-anteriores">
+    <a class="anterior-card" href="historias/casa-17.html">
+      <span class="anterior-card-tag">Mistério / Suspense</span>
+      <div class="anterior-card-titulo">O Caso da Casa 17</div>
+      <div class="anterior-card-desc">Um corpo, uma frase no espelho e quatro suspeitos. Quem matou Helena?</div>
+    </a>
+    <a class="anterior-card" href="historias/passageiro.html">
+      <span class="anterior-card-tag">Terror</span>
+      <div class="anterior-card-titulo">O Passageiro da Última Viagem</div>
+      <div class="anterior-card-desc">Uma mulher pagou com moedas antigas e desapareceu. Real ou alucinação?</div>
+    </a>
+    <a class="anterior-card" href="historias/marcos-pantera.html">
+      <span class="anterior-card-tag">Polêmica / OVNI</span>
+      <div class="anterior-card-titulo">O Caso Marcos Pantera</div>
+      <div class="anterior-card-desc">Uma gravação misteriosa divide a internet. Ele está mentindo?</div>
+    </a>
+    <a class="anterior-card" href="historias/hexa.html">
+      <span class="anterior-card-tag">Futebol / Ficção</span>
+      <div class="anterior-card-titulo">O Hexa Está em Suas Mãos</div>
+      <div class="anterior-card-desc">O Brasil na final da Copa. Você escolhe o adversário. Neymar bate o pênalti.</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Você é o Juiz · <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a> · <a href="admin.html">Admin</a></p>
+</footer>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal">
+  <header>
+    <span id="video-titulo-modal"></span>
+    <button id="btn-fechar-video" onclick="fecharVideo()">✕</button>
+  </header>
+  <video id="video-player" controls playsinline></video>
+  <div id="video-sem-url">
+    <span>🎬</span>
+    <p>Vídeo não disponível</p>
+    <small>URL do vídeo não configurada</small>
+    <button class="btn-assistir" style="margin-top:20px" onclick="irParaDecisao()">Ir para a decisão →</button>
+  </div>
+</div>
+
+<!-- DECISÃO -->
+<div id="decisao-overlay">
+  <div class="decisao-linha"></div>
+  <div id="decisao-historia-nome"></div>
+  <div class="decisao-titulo-grande">A DECISÃO<br>É SUA</div>
+  <div class="decisao-sub">Escolha com cuidado. Não há como voltar atrás.</div>
+  <div class="decisao-opcoes">
+    <button class="btn-opcao a" id="btn-opcao-a" onclick="votar('A')"></button>
+    <button class="btn-opcao b" id="btn-opcao-b" onclick="votar('B')"></button>
+  </div>
+  <div class="decisao-aviso">⚠️ Sua escolha é permanente neste dispositivo.</div>
+</div>
+
+<!-- RESULTADO -->
+<div id="resultado-overlay">
+  <div class="resultado-icone">⚖️</div>
+  <div class="resultado-titulo">Veredito registrado</div>
+  <div class="resultado-voto-label">Você escolheu:</div>
+  <div class="resultado-voto-escolha" id="resultado-escolha-texto"></div>
+  <div id="resultado-ja-votou-msg"></div>
+  <div class="resultado-barras" id="resultado-barras"></div>
+  <div class="resultado-total" id="resultado-total"></div>
+  <div>
+    <button class="btn-resultado voltar" onclick="fecharResultado()">← Voltar</button>
+    <button class="btn-resultado home" onclick="irParaHome()">🏠 Página inicial</button>
+  </div>
+</div>
+
+<script>
+// ---- Firebase ----
+const firebaseConfig = {
+  apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
+  authDomain: "voce-e-o-juiz.firebaseapp.com",
+  projectId: "voce-e-o-juiz",
+  storageBucket: "voce-e-o-juiz.firebasestorage.app",
+  messagingSenderId: "642064514915",
+  appId: "1:642064514915:web:5ac2245b8b5554c38ddd56"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let stories = [];
+let storyDestaque = null;
+let storyAtual = null;
+const videoEl = document.getElementById('video-player');
+let inicioLeitura = Date.now();
+
+// ---- CARREGAR HISTÓRIAS ----
+async function carregarHistorias() {
+  try {
+    const snap = await db.collection('plataforma').orderBy('ordem','asc').get();
+    stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (stories.length === 0) {
+      document.getElementById('grid-historias').innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <span>🎬</span>
+          <p>Nenhuma história publicada ainda.</p>
+          <small>Acesse o painel admin para adicionar a primeira.</small>
+        </div>`;
+      document.getElementById('hero-titulo').innerText = 'Em breve';
+      document.getElementById('hero-desc').innerText = 'Novas histórias chegando em breve.';
+      document.getElementById('btn-hero-assistir').style.display = 'none';
+    } else {
+      storyDestaque = stories.find(s => s.destaque) || stories[0];
+      renderHero(storyDestaque);
+      renderGrid();
+    }
+  } catch(e) {
+    console.error(e);
+  }
+  document.getElementById('loading').classList.add('hide');
+}
+
+function renderHero(s) {
+  const bg = document.getElementById('hero-bg');
+  if (s.capa) bg.style.backgroundImage = `url('${s.capa}')`;
+  document.getElementById('hero-titulo').innerText = s.titulo || '';
+  document.getElementById('hero-desc').innerText = s.descricao || '';
+  document.getElementById('hero-dur').innerText = s.duracao || '';
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid-historias');
+  grid.innerHTML = stories.map((s,i) => {
+    const tot = (s.votoA||0) + (s.votoB||0);
+    const pA = tot ? Math.round((s.votoA||0)/tot*100) : 0;
+    const capa = s.capa
+      ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo}" loading="lazy">`
+      : `<div class="story-card-capa-placeholder">🎬</div>`;
+    const novo = i === 0 ? '<div class="story-card-novo">Novo</div>' : '';
+    return `
+      <div class="story-card" onclick="abrirVideo(stories[${i}])">
+        ${novo}
+        ${capa}
+        <div class="story-card-body">
+          <div class="story-card-titulo">${s.titulo}</div>
+          <div class="story-card-desc">${s.descricao||''}</div>
+          <div class="story-card-meta">
+            <span class="story-card-dur">${s.duracao||''}</span>
+            <span class="story-card-votos">${tot} votos</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ---- ABRIR VÍDEO ----
+function abrirVideo(s) {
+  if (!s) return;
+  storyAtual = s;
+  inicioLeitura = Date.now();
+
+  // Contagem de acesso
+  db.collection('plataforma').doc(s.id)
+    .set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+
+  // GA
+  trackEvent('video_iniciado', { historia: s.titulo });
+
+  document.getElementById('video-titulo-modal').innerText = s.titulo;
+  document.getElementById('video-modal').classList.add('ativo');
+  document.body.style.overflow = 'hidden';
+
+  const semUrl = document.getElementById('video-sem-url');
+  if (s.video) {
+    videoEl.style.display = 'block';
+    semUrl.style.display = 'none';
+    videoEl.src = "videos/neymar.mp4"; // vídeo local temporário
+    videoEl.play().catch(()=>{});
+    videoEl.onended = () => {
+      trackEvent('video_concluido', { historia: s.titulo });
+      irParaDecisao();
+    };
+  } else {
+    videoEl.style.display = 'none';
+    semUrl.style.display = 'flex';
+  }
+}
+
+function fecharVideo() {
+  videoEl.pause();
+  videoEl.src = '';
+  document.getElementById('video-modal').classList.remove('ativo');
+  document.body.style.overflow = '';
+}
+
+function irParaDecisao() {
+  const s = storyAtual;
+  if (!s) return;
+  fecharVideo();
+
+  const jaVotou = localStorage.getItem('voto_' + s.id);
+
+  document.getElementById('decisao-historia-nome').innerText = s.titulo;
+  document.getElementById('btn-opcao-a').innerText = s.opcaoA || 'Opção A';
+  document.getElementById('btn-opcao-b').innerText = s.opcaoB || 'Opção B';
+
+  document.getElementById('decisao-overlay').classList.add('ativo');
+  document.body.style.overflow = 'hidden';
+
+  if (jaVotou) {
+    // Já votou: vai direto pro resultado
+    trackEvent('tentativa_novo_voto', { historia: s.titulo, voto_anterior: jaVotou });
+    setTimeout(() => mostrarResultado(jaVotou, true), 400);
+  }
+}
+
+// ---- VOTAR ----
+function votar(opcao) {
+  const s = storyAtual;
+  if (!s) return;
+
+  const jaVotou = localStorage.getItem('voto_' + s.id);
+  if (jaVotou) {
+    trackEvent('tentativa_novo_voto', { historia: s.titulo });
+    mostrarResultado(jaVotou, true);
+    return;
+  }
+
+  localStorage.setItem('voto_' + s.id, opcao);
+  const campo = opcao === 'A' ? 'votoA' : 'votoB';
+  db.collection('plataforma').doc(s.id)
+    .set({ [campo]: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+
+  // Tempo de leitura
+  const seg = Math.round((Date.now() - inicioLeitura) / 1000);
+  trackEvent('tempo_leitura', { historia: s.titulo, segundos: seg });
+  trackEvent('voto_realizado', {
+    historia: s.titulo,
+    voto: opcao === 'A' ? s.opcaoA : s.opcaoB
+  });
+
+  document.getElementById('decisao-overlay').classList.remove('ativo');
+  mostrarResultado(opcao, false);
+}
+
+async function mostrarResultado(opcaoVotada, jaVotou) {
+  document.getElementById('decisao-overlay').classList.remove('ativo');
+  const s = storyAtual;
+  if (!s) return;
+
+  const escolhaTexto = opcaoVotada === 'A' ? s.opcaoA : s.opcaoB;
+  document.getElementById('resultado-escolha-texto').innerText = escolhaTexto || opcaoVotada;
+
+  const msgJaVotou = document.getElementById('resultado-ja-votou-msg');
+  msgJaVotou.innerHTML = jaVotou
+    ? '<div class="resultado-ja-votou">✓ Você já havia votado nesta história.</div>'
+    : '';
+
+  // Busca votos atualizados
+  const doc = await db.collection('plataforma').doc(s.id).get();
+  const data = doc.exists ? doc.data() : {};
+  const vA = data.votoA || 0, vB = data.votoB || 0;
+  const tot = vA + vB;
+  const pA = tot ? Math.round(vA/tot*100) : 0;
+  const pB = tot ? Math.round(vB/tot*100) : 0;
+
+  document.getElementById('resultado-barras').innerHTML = `
+    <div class="barra-item">
+      <div class="barra-label"><span>${s.opcaoA||'Opção A'}</span><span>${pA}%</span></div>
+      <div class="barra-bg"><div class="barra-fill" style="width:0%" data-w="${pA}%"></div></div>
+    </div>
+    <div class="barra-item">
+      <div class="barra-label"><span>${s.opcaoB||'Opção B'}</span><span>${pB}%</span></div>
+      <div class="barra-bg"><div class="barra-fill b" style="width:0%" data-w="${pB}%"></div></div>
+    </div>`;
+
+  document.getElementById('resultado-total').innerText = `${tot} voto${tot !== 1 ? 's' : ''} no total`;
+  document.getElementById('resultado-overlay').classList.add('ativo');
+  document.body.style.overflow = 'hidden';
+
+  // Anima barras
+  setTimeout(() => {
+    document.querySelectorAll('.barra-fill').forEach(el => {
+      el.style.width = el.dataset.w;
+    });
+  }, 100);
+}
+
+function fecharResultado() {
+  document.getElementById('resultado-overlay').classList.remove('ativo');
+  document.body.style.overflow = '';
+}
+
+function irParaHome() {
+  document.getElementById('resultado-overlay').classList.remove('ativo');
+  document.body.style.overflow = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ---- INIT ----
+carregarHistorias();
+
+// Tempo de leitura ao sair
+window.addEventListener('beforeunload', () => {
+  if (storyAtual) {
+    const seg = Math.round((Date.now() - inicioLeitura) / 1000);
+    trackEvent('tempo_leitura', { historia: storyAtual.titulo, segundos: seg });
+  }
+});
+</script>
+</body>
+</html>
