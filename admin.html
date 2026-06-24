@@ -61,7 +61,7 @@ body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,san
 #form-story.ativo{display:block}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:600px){.form-row{grid-template-columns:1fr}}
-.upload-area{background:var(--card2);border:2px dashed var(--borda);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative}
+.upload-area{display:none!important;background:var(--card2);border:2px dashed var(--borda);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative}
 .upload-area:hover{border-color:var(--ouro)}
 .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .upload-area p{font-size:13px;color:var(--texto2);margin-top:6px}
@@ -180,12 +180,14 @@ input:checked+.slider::before{transform:translateX(20px)}
         </div>
 
         <div class="msg ok ativo" style="display:block;margin-bottom:16px">
-          Para publicar sem Firebase Storage: envie o vídeo para a pasta <b>videos</b> no GitHub e cole o caminho aqui, por exemplo <b>videos/neymar.mp4</b>. Para capa, cole uma URL de imagem.
+          MODO SIMPLES: primeiro envie o vídeo/imagem para o GitHub. Depois cole aqui o caminho.<br>
+          Exemplo de vídeo: <b>videos/neymar.mp4</b><br>
+          Exemplo de imagem: <b>imagens/neymar-capa.jpg</b>
         </div>
 
         <div class="form-row">
           <div class="field">
-            <label>Imagem de capa</label>
+            <label>Imagem de capa por URL</label>
             <div class="upload-area" id="area-capa">
               <input type="file" id="file-capa" accept="image/*" onchange="uploadCapa(this)">
               <span>🖼️</span>
@@ -196,12 +198,12 @@ input:checked+.slider::before{transform:translateX(20px)}
             <img id="preview-capa" class="preview-img">
             <div class="field" style="margin-top:8px">
               <label style="font-size:11px">Cole a URL da imagem</label>
-              <input type="text" id="f-capa-url" placeholder="https://picsum.photos/1200/675" onchange="previewCapaUrl(this.value)">
+              <input type="text" id="f-capa-url" placeholder="imagens/neymar-capa.jpg ou https://..." onchange="previewCapaUrl(this.value)">
             </div>
           </div>
 
           <div class="field">
-            <label>Vídeo MP4</label>
+            <label>Vídeo MP4 por URL/caminho *</label>
             <div class="upload-area" id="area-video">
               <input type="file" id="file-video" accept="video/*" onchange="uploadVideo(this)">
               <span>🎬</span>
@@ -401,8 +403,8 @@ async function salvarHistoria() {
   const descricao = document.getElementById('f-descricao').value.trim();
   const opcaoA = document.getElementById('f-opcaoA').value.trim();
   const opcaoB = document.getElementById('f-opcaoB').value.trim();
-  const capaFinal = document.getElementById('f-capa-url').value.trim() || capaUrl;
-  const videoFinal = document.getElementById('f-video-url').value.trim() || videoUrl;
+  const capaFinal = document.getElementById('f-capa-url').value.trim() || 'https://picsum.photos/1200/675';
+  const videoFinal = document.getElementById('f-video-url').value.trim();
 
   if (!titulo || !descricao || !opcaoA || !opcaoB || !videoFinal) {
     mostrarMsg('historia', 'Preencha: Título, Descrição, Opção A, Opção B e URL/caminho do vídeo.', 'erro');
@@ -415,7 +417,7 @@ async function salvarHistoria() {
     opcaoA,
     opcaoB,
     duracao: document.getElementById('f-duracao').value.trim(),
-    capa: capaFinal || 'https://picsum.photos/1200/675',
+    capa: capaFinal,
     video: videoFinal,
     ordem: parseInt(document.getElementById('f-ordem').value) || 1,
     destaque: document.getElementById('f-destaque').checked,
@@ -452,40 +454,8 @@ async function deletarStory(id) {
 
 // ---- UPLOAD CAPA ----
 function uploadCapa(input) {
-  mostrarMsg('historia', 'Para capa, cole uma URL no campo "Cole a URL da imagem". Upload direto pelo Firebase Storage não está ativo.', 'erro');
+  mostrarMsg('historia', 'Use o campo de URL da imagem. Exemplo: imagens/neymar-capa.jpg', 'erro');
   input.value = '';
-  return;
-  const file = input.files[0];
-  if (!file) return;
-  const prog = document.getElementById('prog-capa');
-  const fill = document.getElementById('prog-capa-fill');
-  const status = document.getElementById('status-capa');
-  prog.style.display = 'block';
-  status.style.display = 'block';
-  status.className = 'upload-status';
-  status.innerText = 'Enviando imagem...';
-
-  const ref = storage.ref('capas/' + Date.now() + '_' + file.name);
-  const task = ref.put(file);
-
-  task.on('state_changed',
-    snap => {
-      const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-      fill.style.width = pct + '%';
-    },
-    err => {
-      status.className = 'upload-status erro';
-      status.innerText = 'Erro no upload: ' + err.message;
-    },
-    async () => {
-      capaUrl = await task.snapshot.ref.getDownloadURL();
-      status.className = 'upload-status ok';
-      status.innerText = '✓ Imagem enviada!';
-      const prev = document.getElementById('preview-capa');
-      prev.src = capaUrl;
-      prev.style.display = 'block';
-    }
-  );
 }
 
 function previewCapaUrl(url) {
@@ -498,38 +468,8 @@ function previewCapaUrl(url) {
 
 // ---- UPLOAD VÍDEO ----
 function uploadVideo(input) {
-  mostrarMsg('historia', 'Para vídeo, cole a URL/caminho no campo "Cole a URL do vídeo". Exemplo: videos/neymar.mp4', 'erro');
+  mostrarMsg('historia', 'Use o campo de URL/caminho do vídeo. Exemplo: videos/neymar.mp4', 'erro');
   input.value = '';
-  return;
-  const file = input.files[0];
-  if (!file) return;
-  const prog = document.getElementById('prog-video');
-  const fill = document.getElementById('prog-video-fill');
-  const status = document.getElementById('status-video');
-  prog.style.display = 'block';
-  status.style.display = 'block';
-  status.className = 'upload-status';
-  status.innerText = 'Enviando vídeo... (pode demorar alguns minutos)';
-
-  const ref = storage.ref('videos/' + Date.now() + '_' + file.name);
-  const task = ref.put(file);
-
-  task.on('state_changed',
-    snap => {
-      const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-      fill.style.width = pct + '%';
-      status.innerText = `Enviando vídeo... ${pct}%`;
-    },
-    err => {
-      status.className = 'upload-status erro';
-      status.innerText = 'Erro no upload: ' + err.message;
-    },
-    async () => {
-      videoUrl = await task.snapshot.ref.getDownloadURL();
-      status.className = 'upload-status ok';
-      status.innerText = '✓ Vídeo enviado! Pronto para publicar.';
-    }
-  );
 }
 
 // ---- ANALYTICS VÍDEOS ----
