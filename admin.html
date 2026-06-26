@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--ouro:#c9a227;--ouro-claro:#e8c86a;--fundo:#05060a;--card:#0f111a;--card2:#151822;--borda:#1e2133;--texto:#f0f0f0;--texto2:#9aa0b8;--verde:#06d6a0;--vermelho:#ef476f}
@@ -34,12 +35,13 @@ body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,san
 
 /* ADMIN LAYOUT */
 #admin-screen{display:none;min-height:100vh}
-.admin-header{background:var(--card);border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.admin-header{background:var(--card);border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-wrap:wrap;gap:10px}
 .admin-logo{color:var(--ouro);font-weight:900;font-size:16px;letter-spacing:1px}
-.admin-nav{display:flex;gap:8px}
+.admin-nav{display:flex;gap:8px;flex-wrap:wrap}
 .admin-nav button{background:transparent;border:1px solid var(--borda);color:var(--texto2);padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;transition:all 0.2s}
 .admin-nav button.ativo,.admin-nav button:hover{border-color:var(--ouro);color:var(--ouro)}
 .admin-body{padding:24px;max-width:900px;margin:0 auto}
+.badge-num{display:inline-block;background:var(--vermelho);color:#fff;border-radius:10px;font-size:10px;padding:1px 7px;margin-left:6px;vertical-align:middle}
 
 /* TABS */
 .tab{display:none}
@@ -53,25 +55,18 @@ body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,san
 .story-item-info{flex:1;min-width:0}
 .story-item-titulo{font-size:15px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-item-meta{font-size:12px;color:var(--texto2)}
-.story-item-opcoes{display:flex;gap:8px;flex-shrink:0}
+.story-item-opcoes{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
 .story-destaque-badge{display:inline-block;background:rgba(201,162,39,0.15);border:1px solid var(--ouro);color:var(--ouro);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:1px;text-transform:uppercase;margin-left:8px}
+.mini-badge{display:inline-block;background:var(--card2);border:1px solid var(--borda);color:var(--texto2);font-size:10px;padding:2px 8px;border-radius:10px;margin-left:6px}
 
 /* FORM NOVA HISTÓRIA */
 #form-story{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:24px;margin-bottom:24px;display:none}
 #form-story.ativo{display:block}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:600px){.form-row{grid-template-columns:1fr}}
-.upload-area{display:none!important;background:var(--card2);border:2px dashed var(--borda);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative}
-.upload-area:hover{border-color:var(--ouro)}
-.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
-.upload-area p{font-size:13px;color:var(--texto2);margin-top:6px}
-.upload-area span{font-size:28px}
-.progress-bar{height:6px;background:var(--borda);border-radius:10px;overflow:hidden;margin-top:10px;display:none}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro));width:0%;transition:width 0.3s}
-.preview-img{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:10px;display:none}
-.upload-status{font-size:12px;margin-top:6px;display:none}
-.upload-status.ok{color:var(--verde)}
-.upload-status.erro{color:var(--vermelho)}
+.avisos-grid{display:flex;flex-wrap:wrap;gap:8px}
+.avisos-grid label{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--borda);border-radius:16px;padding:6px 12px;font-size:12px;color:var(--texto);cursor:pointer;text-transform:none;letter-spacing:0;margin:0}
+.avisos-grid input{width:auto}
 .switch-row{display:flex;align-items:center;gap:10px;margin-top:8px}
 .switch{position:relative;width:44px;height:24px}
 .switch input{opacity:0;width:0;height:0}
@@ -79,6 +74,7 @@ body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,san
 .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s}
 input:checked+.slider{background:var(--ouro)}
 input:checked+.slider::before{transform:translateX(20px)}
+.preview-img{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:10px;display:none}
 
 /* ANALYTICS */
 .analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px}
@@ -93,13 +89,33 @@ input:checked+.slider::before{transform:translateX(20px)}
 .bar-mini-fill{height:100%;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro));transition:width 0.6s}
 .bar-mini-fill.b{background:linear-gradient(90deg,#4a5280,#6b7ab8)}
 
+/* COMUNIDADE (pendentes) */
+.pend-card{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;margin-bottom:14px}
+.pend-card.aprovada{border-color:rgba(6,214,160,0.4)}
+.pend-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.pend-head h3{font-size:16px}
+.pend-autor{font-size:12px;color:var(--ouro)}
+.pend-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:12px}
+.pend-status.pendente{background:rgba(255,209,102,0.12);border:1px solid #ffd166;color:#ffd166}
+.pend-status.aprovada{background:rgba(6,214,160,0.12);border:1px solid var(--verde);color:var(--verde)}
+.pend-status.rejeitada{background:rgba(239,71,111,0.12);border:1px solid var(--vermelho);color:var(--vermelho)}
+.pend-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pend-tag{font-size:11px;background:var(--card2);border:1px solid var(--borda);color:var(--texto2);padding:3px 9px;border-radius:10px}
+.pend-texto{font-size:13px;color:var(--texto2);line-height:1.6;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:12px;margin:10px 0;max-height:160px;overflow-y:auto;white-space:pre-wrap}
+.pend-finais{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0;font-size:13px}
+@media(max-width:560px){.pend-finais{grid-template-columns:1fr}}
+.pend-final{background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px}
+.pend-final b{color:var(--ouro);display:block;font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.pend-acoes{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pend-class-edit{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--texto2);margin-top:8px}
+.pend-class-edit select{background:var(--card2);border:1px solid var(--borda);border-radius:6px;color:var(--texto);padding:5px 10px;font-size:12px}
+
 /* MENSAGENS */
 .msg{padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
 .msg.ok{background:rgba(6,214,160,0.1);border:1px solid var(--verde);color:var(--verde)}
 .msg.erro{background:rgba(239,71,111,0.1);border:1px solid var(--vermelho);color:var(--vermelho)}
 .msg.ativo{display:block}
 
-/* LOADING INLINE */
 .loading-inline{text-align:center;padding:40px;color:var(--texto2);font-size:14px}
 </style>
 </head>
@@ -110,12 +126,21 @@ input:checked+.slider::before{transform:translateX(20px)}
   <div id="login-box">
     <h1>⚖️ Admin</h1>
     <p>Você é o Juiz — Painel de controle</p>
-    <div class="field">
-      <label>Senha</label>
-      <input type="password" id="input-senha" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')entrar()">
+
+    <button class="btn btn-ouro" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px" onclick="loginAdmin()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/></svg>
+      Entrar com Google
+    </button>
+
+    <div id="login-erro"></div>
+
+    <!-- aparece quando o usuário loga mas NÃO é admin: mostra o UID p/ cadastrar -->
+    <div id="login-naoadmin" style="display:none;margin-top:18px;text-align:left;background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:14px">
+      <p style="color:var(--vermelho);font-size:13px;margin-bottom:10px">Sua conta ainda não é administradora.</p>
+      <p style="color:var(--texto2);font-size:12px;margin-bottom:8px">Para virar admin, copie o código abaixo e siga o guia (LEIA-ME-leva3):</p>
+      <code id="meu-uid" style="display:block;background:#05060a;border:1px solid var(--borda);border-radius:6px;padding:8px;font-size:12px;color:var(--ouro);word-break:break-all;cursor:pointer" onclick="copiarUid()" title="Clique para copiar"></code>
+      <button class="btn btn-card btn-sm" style="margin-top:10px" onclick="logoutAdmin()">Sair</button>
     </div>
-    <button class="btn btn-ouro" style="width:100%" onclick="entrar()">Entrar</button>
-    <div id="login-erro">Senha incorreta.</div>
   </div>
 </div>
 
@@ -125,6 +150,7 @@ input:checked+.slider::before{transform:translateX(20px)}
     <span class="admin-logo">⚖️ VOCÊ É O JUIZ — Admin</span>
     <div class="admin-nav">
       <button class="ativo" onclick="mudarTab('historias',this)">Histórias</button>
+      <button onclick="mudarTab('comunidade',this)">Comunidade <span class="badge-num" id="badge-pendentes" style="display:none">0</span></button>
       <button onclick="mudarTab('analytics',this)">Analytics</button>
       <button onclick="mudarTab('textos',this)">Histórias Texto</button>
       <button class="btn-card btn-sm" onclick="sair()">Sair</button>
@@ -136,7 +162,6 @@ input:checked+.slider::before{transform:translateX(20px)}
     <!-- TAB HISTÓRIAS -->
     <div class="tab ativo" id="tab-historias">
       <div class="sec-titulo">Histórias em vídeo</div>
-
       <div id="msg-historia" class="msg"></div>
 
       <div style="margin-bottom:16px;display:flex;gap:10px">
@@ -149,7 +174,6 @@ input:checked+.slider::before{transform:translateX(20px)}
         <div class="sec-titulo" style="margin-bottom:16px">
           <span id="form-titulo-label">Nova história</span>
         </div>
-
         <input type="hidden" id="edit-id">
 
         <div class="form-row">
@@ -179,56 +203,64 @@ input:checked+.slider::before{transform:translateX(20px)}
           </div>
         </div>
 
+        <!-- NOVOS CAMPOS: categoria + classificação -->
+        <div class="form-row">
+          <div class="field">
+            <label>Categoria</label>
+            <select id="f-categoria"></select>
+          </div>
+          <div class="field">
+            <label>Classificação indicativa</label>
+            <select id="f-classificacao"></select>
+          </div>
+        </div>
+
+        <!-- NOVO: avisos de conteúdo -->
+        <div class="field">
+          <label>Avisos de conteúdo</label>
+          <div class="avisos-grid" id="f-avisos"></div>
+        </div>
+
         <div class="msg ok ativo" style="display:block;margin-bottom:16px">
           MODO SIMPLES: primeiro envie o vídeo/imagem para o GitHub. Depois cole aqui o caminho.<br>
-          Exemplo de vídeo: <b>videos/neymar.mp4</b><br>
-          Exemplo de imagem: <b>imagens/neymar-capa.jpg</b>
+          Exemplo de vídeo: <b>videos/neymar.mp4</b> · Exemplo de imagem: <b>imagens/neymar-capa.jpg</b>
         </div>
 
         <div class="form-row">
           <div class="field">
             <label>Imagem de capa por URL</label>
-            <div class="upload-area" id="area-capa">
-              <input type="file" id="file-capa" accept="image/*" onchange="uploadCapa(this)">
-              <span>🖼️</span>
-              <p>Clique para escolher a imagem<br><small>JPG, PNG até 5MB</small></p>
-              <div class="progress-bar" id="prog-capa"><div class="progress-fill" id="prog-capa-fill"></div></div>
-              <div class="upload-status" id="status-capa"></div>
-            </div>
+            <input type="text" id="f-capa-url" placeholder="imagens/neymar-capa.jpg ou https://..." onchange="previewCapaUrl(this.value)">
             <img id="preview-capa" class="preview-img">
-            <div class="field" style="margin-top:8px">
-              <label style="font-size:11px">Cole a URL da imagem</label>
-              <input type="text" id="f-capa-url" placeholder="imagens/neymar-capa.jpg ou https://..." onchange="previewCapaUrl(this.value)">
-            </div>
           </div>
-
           <div class="field">
             <label>Vídeo MP4 por URL/caminho *</label>
-            <div class="upload-area" id="area-video">
-              <input type="file" id="file-video" accept="video/*" onchange="uploadVideo(this)">
-              <span>🎬</span>
-              <p>Clique para escolher o vídeo<br><small>MP4 recomendado</small></p>
-              <div class="progress-bar" id="prog-video"><div class="progress-fill" id="prog-video-fill"></div></div>
-              <div class="upload-status" id="status-video"></div>
-            </div>
-            <div class="field" style="margin-top:8px">
-              <label style="font-size:11px">Cole a URL ou caminho do vídeo</label>
-              <input type="text" id="f-video-url" placeholder="videos/neymar.mp4">
-            </div>
+            <input type="text" id="f-video-url" placeholder="videos/neymar.mp4">
           </div>
         </div>
 
-        <div class="field">
-          <label>Ordem de exibição</label>
-          <input type="number" id="f-ordem" value="1" min="1">
+        <!-- NOVOS: história do dia + contador -->
+        <div class="form-row">
+          <div class="field">
+            <label>Encerramento da votação (história do dia — opcional)</label>
+            <input type="datetime-local" id="f-fimVotacao">
+          </div>
+          <div class="field">
+            <label>Ordem de exibição</label>
+            <input type="number" id="f-ordem" value="1" min="1">
+          </div>
         </div>
 
         <div class="switch-row">
-          <label class="switch">
-            <input type="checkbox" id="f-destaque">
-            <span class="slider"></span>
-          </label>
+          <label class="switch"><input type="checkbox" id="f-destaque"><span class="slider"></span></label>
           <span style="font-size:13px;color:var(--texto2)">Destacar no hero da página inicial</span>
+        </div>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="f-historiaDoDia"><span class="slider"></span></label>
+          <span style="font-size:13px;color:var(--texto2)">Marcar como "História do dia"</span>
+        </div>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="f-premium"><span class="slider"></span></label>
+          <span style="font-size:13px;color:var(--texto2)">💎 História Premium (exclusiva de assinante)</span>
         </div>
 
         <div style="display:flex;gap:10px;margin-top:20px">
@@ -237,10 +269,21 @@ input:checked+.slider::before{transform:translateX(20px)}
         </div>
       </div>
 
-      <!-- LISTA -->
-      <div id="lista-historias">
-        <div class="loading-inline">Carregando...</div>
+      <div id="lista-historias"><div class="loading-inline">Carregando...</div></div>
+    </div>
+
+    <!-- TAB COMUNIDADE -->
+    <div class="tab" id="tab-comunidade">
+      <div class="sec-titulo">Histórias enviadas pela comunidade</div>
+      <div id="msg-comunidade" class="msg"></div>
+      <div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-card btn-sm" onclick="filtrarComunidade('pendente')" id="fc-pendente">Pendentes</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarComunidade('aprovada')" id="fc-aprovada">Aprovadas</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarComunidade('rejeitada')" id="fc-rejeitada">Rejeitadas</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarComunidade('todas')" id="fc-todas">Todas</button>
+        <button class="btn btn-card btn-sm" onclick="carregarComunidadeAdmin()">↻ Atualizar</button>
       </div>
+      <div id="lista-comunidade"><div class="loading-inline">Carregando...</div></div>
     </div>
 
     <!-- TAB ANALYTICS -->
@@ -273,30 +316,82 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
 
-const SENHA = 'vocejuiz2024';
+let adminUser = null;
 let stories = [];
-let capaUrl = '';
-let videoUrl = '';
 let editando = false;
+let comunidadeCache = [];
+let filtroCom = 'pendente';
 
-// ---- LOGIN ----
-function entrar() {
-  const s = document.getElementById('input-senha').value;
-  if (s === SENHA) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-screen').style.display = 'block';
-    carregarHistorias();
-    carregarAnalyticsTextos();
+// Config compartilhada com o site
+const CATEGORIAS = [
+  {chave:'futebol',label:'⚽ Futebol'},{chave:'terror',label:'👻 Terror'},{chave:'romance',label:'❤️ Romance'},
+  {chave:'misterio',label:'🕵️ Mistério'},{chave:'crime',label:'🚔 Crime'},{chave:'ficcao',label:'👽 Ficção'},
+  {chave:'humor',label:'😂 Humor'},{chave:'suspense',label:'😱 Suspense'},{chave:'reflexao',label:'🧠 Reflexão'},
+  {chave:'reais',label:'📜 Histórias Reais'},{chave:'drama',label:'🎭 Drama'},{chave:'aleatorias',label:'🎲 Aleatórias'}
+];
+const CLASSIFICACOES = [
+  {chave:'',label:'— Sem classificação —'},{chave:'livre',label:'Livre'},{chave:'10',label:'10+'},
+  {chave:'12',label:'12+'},{chave:'14',label:'14+'},{chave:'16',label:'16+'},{chave:'18',label:'18+'}
+];
+const AVISOS_LISTA = ['Violência','Sangue','Terror','Terror psicológico','Conteúdo sexual','Nudez','Drogas','Álcool','Linguagem ofensiva','Temas sensíveis','Suicídio','Abuso','Outros'];
+
+// ---- LOGIN COM GOOGLE + CHECAGEM DE ADMIN ----
+auth.onAuthStateChanged(async (user) => {
+  if (!user){ mostrarTelaLogin(); return; }
+  // verifica se o UID está na coleção "admins"
+  let ehAdmin = false;
+  try {
+    const doc = await db.collection('admins').doc(user.uid).get();
+    ehAdmin = doc.exists;
+  } catch(e){ console.warn('Erro ao checar admin:', e); }
+
+  if (ehAdmin){
+    adminUser = user;
+    abrirPainel();
   } else {
-    document.getElementById('login-erro').style.display = 'block';
+    // logado mas não é admin: mostra o UID para cadastrar
+    document.getElementById('login-naoadmin').style.display = 'block';
+    document.getElementById('meu-uid').innerText = user.uid;
+    document.getElementById('login-erro').innerText = '';
   }
-}
+});
 
-function sair() {
+async function loginAdmin(){
+  document.getElementById('login-erro').innerText = '';
+  try { await auth.signInWithPopup(provider); }
+  catch(e){ document.getElementById('login-erro').innerText = 'Não foi possível entrar: '+e.message; }
+}
+function logoutAdmin(){ auth.signOut(); }
+function sair(){ auth.signOut(); }
+
+function mostrarTelaLogin(){
+  adminUser = null;
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('admin-screen').style.display = 'none';
-  document.getElementById('input-senha').value = '';
+  document.getElementById('login-naoadmin').style.display = 'none';
+  document.getElementById('login-erro').innerText = '';
+}
+function abrirPainel(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  popularSelects();
+  carregarHistorias();
+  carregarAnalyticsTextos();
+  atualizarBadgePendentes();
+}
+function copiarUid(){
+  const uid = document.getElementById('meu-uid').innerText;
+  navigator.clipboard.writeText(uid).then(()=>{ document.getElementById('login-erro').innerText='Código copiado!'; });
+}
+
+// ---- popular selects e avisos do form ----
+function popularSelects(){
+  document.getElementById('f-categoria').innerHTML = CATEGORIAS.map(c=>`<option value="${c.chave}">${c.label}</option>`).join('');
+  document.getElementById('f-classificacao').innerHTML = CLASSIFICACOES.map(c=>`<option value="${c.chave}">${c.label}</option>`).join('');
+  document.getElementById('f-avisos').innerHTML = AVISOS_LISTA.map(a=>`<label><input type="checkbox" value="${a}"> ${a}</label>`).join('');
 }
 
 // ---- TABS ----
@@ -307,6 +402,7 @@ function mudarTab(nome, btn) {
   btn.classList.add('ativo');
   if (nome === 'analytics') carregarAnalytics();
   if (nome === 'textos') carregarAnalyticsTextos();
+  if (nome === 'comunidade') carregarComunidadeAdmin();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -323,18 +419,21 @@ function renderLista() {
     el.innerHTML = '<div class="loading-inline">Nenhuma história ainda. Clique em "+ Nova história".</div>';
     return;
   }
-  el.innerHTML = stories.map((s,i) => {
+  el.innerHTML = stories.map((s) => {
     const tot = (s.votoA||0) + (s.votoB||0);
     const capaHtml = s.capa
       ? `<img src="${s.capa}" style="width:60px;height:60px;border-radius:6px;object-fit:cover">`
       : `<div style="width:60px;height:60px;border-radius:6px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:24px">🎬</div>`;
     const dest = s.destaque ? '<span class="story-destaque-badge">Destaque</span>' : '';
+    const dia = s.historiaDoDia ? '<span class="mini-badge">📅 Dia</span>' : '';
+    const cat = s.categoria ? `<span class="mini-badge">${(CATEGORIAS.find(c=>c.chave===s.categoria)||{}).label||s.categoria}</span>` : '';
+    const cls = s.classificacao ? `<span class="mini-badge">${s.classificacao==='livre'?'Livre':s.classificacao+'+'}</span>` : '';
     return `
       <div class="story-item">
         <div class="story-item-capa">${capaHtml}</div>
         <div class="story-item-info">
-          <div class="story-item-titulo">${s.titulo||'Sem título'}${dest}</div>
-          <div class="story-item-meta">👁 ${s.acessos||0} acessos · 🗳 ${tot} votos · ⏱ ${s.duracao||'—'}</div>
+          <div class="story-item-titulo">${s.titulo||'Sem título'}${dest}${dia}</div>
+          <div class="story-item-meta">👁 ${s.acessos||0} acessos · 🗳 ${tot} votos · ⏱ ${s.duracao||'—'} ${cat}${cls}</div>
         </div>
         <div class="story-item-opcoes">
           <button class="btn btn-card btn-sm" onclick="editarStory('${s.id}')">✏️ Editar</button>
@@ -353,23 +452,22 @@ function toggleForm() {
   limparForm();
   f.classList.toggle('ativo');
 }
-
 function cancelarForm() {
   document.getElementById('form-story').classList.remove('ativo');
   limparForm();
 }
-
 function limparForm() {
-  ['f-titulo','f-duracao','f-descricao','f-opcaoA','f-opcaoB','f-capa-url','f-video-url'].forEach(id => {
+  ['f-titulo','f-duracao','f-descricao','f-opcaoA','f-opcaoB','f-capa-url','f-video-url','f-fimVotacao'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('f-ordem').value = stories.length + 1;
   document.getElementById('f-destaque').checked = false;
+  document.getElementById('f-historiaDoDia').checked = false;
+  document.getElementById('f-premium').checked = false;
+  document.getElementById('f-categoria').value = 'aleatorias';
+  document.getElementById('f-classificacao').value = '';
+  document.querySelectorAll('#f-avisos input').forEach(i=>i.checked=false);
   document.getElementById('preview-capa').style.display = 'none';
-  capaUrl = '';
-  videoUrl = '';
-  ['status-capa','status-video'].forEach(id => { document.getElementById(id).style.display='none'; });
-  ['prog-capa','prog-video'].forEach(id => { document.getElementById(id).style.display='none'; });
 }
 
 function editarStory(id) {
@@ -387,16 +485,24 @@ function editarStory(id) {
   document.getElementById('f-video-url').value = s.video || '';
   document.getElementById('f-ordem').value = s.ordem || 1;
   document.getElementById('f-destaque').checked = !!s.destaque;
-  capaUrl = s.capa || '';
-  videoUrl = s.video || '';
+  document.getElementById('f-historiaDoDia').checked = !!s.historiaDoDia;
+  document.getElementById('f-premium').checked = !!s.premium;
+  document.getElementById('f-categoria').value = s.categoria || 'aleatorias';
+  document.getElementById('f-classificacao').value = s.classificacao || '';
+  document.querySelectorAll('#f-avisos input').forEach(i=>{ i.checked = Array.isArray(s.avisos) && s.avisos.includes(i.value); });
+  // fimVotacao -> datetime-local
+  if (s.fimVotacao){
+    const ms = typeof s.fimVotacao==='number'?s.fimVotacao:new Date(s.fimVotacao).getTime();
+    if(!isNaN(ms)){ const d=new Date(ms - d0offset()); document.getElementById('f-fimVotacao').value = d.toISOString().slice(0,16); }
+  } else { document.getElementById('f-fimVotacao').value=''; }
   if (s.capa) {
     const prev = document.getElementById('preview-capa');
-    prev.src = s.capa;
-    prev.style.display = 'block';
+    prev.src = s.capa; prev.style.display = 'block';
   }
   document.getElementById('form-story').classList.add('ativo');
   document.getElementById('form-story').scrollIntoView({ behavior: 'smooth' });
 }
+function d0offset(){ return new Date().getTimezoneOffset()*60000; }
 
 async function salvarHistoria() {
   const titulo = document.getElementById('f-titulo').value.trim();
@@ -411,14 +517,21 @@ async function salvarHistoria() {
     return;
   }
 
+  const avisos = Array.from(document.querySelectorAll('#f-avisos input:checked')).map(i=>i.value);
+  const fimRaw = document.getElementById('f-fimVotacao').value;
+  const fimVotacao = fimRaw ? new Date(fimRaw).getTime() : null;
+
   const dados = {
-    titulo,
-    descricao,
-    opcaoA,
-    opcaoB,
+    titulo, descricao, opcaoA, opcaoB,
     duracao: document.getElementById('f-duracao').value.trim(),
     capa: capaFinal,
     video: videoFinal,
+    categoria: document.getElementById('f-categoria').value || 'aleatorias',
+    classificacao: document.getElementById('f-classificacao').value || '',
+    avisos,
+    fimVotacao: fimVotacao,
+    historiaDoDia: document.getElementById('f-historiaDoDia').checked,
+    premium: document.getElementById('f-premium').checked,
     ordem: parseInt(document.getElementById('f-ordem').value) || 1,
     destaque: document.getElementById('f-destaque').checked,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -430,9 +543,7 @@ async function salvarHistoria() {
       await db.collection('plataforma').doc(editId).update(dados);
       mostrarMsg('historia', 'História atualizada com sucesso!', 'ok');
     } else {
-      dados.votoA = 0;
-      dados.votoB = 0;
-      dados.acessos = 0;
+      dados.votoA = 0; dados.votoB = 0; dados.acessos = 0; dados.likes = 0;
       dados.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       await db.collection('plataforma').add(dados);
       mostrarMsg('historia', 'História publicada com sucesso! Já aparece no site.', 'ok');
@@ -452,24 +563,124 @@ async function deletarStory(id) {
   carregarHistorias();
 }
 
-// ---- UPLOAD CAPA ----
-function uploadCapa(input) {
-  mostrarMsg('historia', 'Use o campo de URL da imagem. Exemplo: imagens/neymar-capa.jpg', 'erro');
-  input.value = '';
-}
-
 function previewCapaUrl(url) {
   if (!url) return;
   const prev = document.getElementById('preview-capa');
-  prev.src = url;
-  prev.style.display = 'block';
-  capaUrl = url;
+  prev.src = url; prev.style.display = 'block';
 }
 
-// ---- UPLOAD VÍDEO ----
-function uploadVideo(input) {
-  mostrarMsg('historia', 'Use o campo de URL/caminho do vídeo. Exemplo: videos/neymar.mp4', 'erro');
-  input.value = '';
+// ============================================================
+//  COMUNIDADE — aprovar / rejeitar / publicar
+// ============================================================
+async function atualizarBadgePendentes(){
+  try {
+    const snap = await db.collection('comunidade').where('status','==','pendente').get();
+    const n = snap.size;
+    const badge = document.getElementById('badge-pendentes');
+    if (n>0){ badge.innerText = n; badge.style.display='inline-block'; }
+    else badge.style.display='none';
+  } catch(e){}
+}
+
+function filtrarComunidade(f){ filtroCom = f; renderComunidade(); }
+
+async function carregarComunidadeAdmin(){
+  document.getElementById('lista-comunidade').innerHTML = '<div class="loading-inline">Carregando...</div>';
+  try {
+    const snap = await db.collection('comunidade').orderBy('enviadaEm','desc').get();
+    comunidadeCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  } catch(e){
+    // se não tiver índice de orderBy, tenta sem ordenação
+    try {
+      const snap = await db.collection('comunidade').get();
+      comunidadeCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    } catch(e2){
+      document.getElementById('lista-comunidade').innerHTML = '<div class="loading-inline">Não foi possível carregar (verifique as regras do Firestore).</div>';
+      return;
+    }
+  }
+  renderComunidade();
+  atualizarBadgePendentes();
+}
+
+function renderComunidade(){
+  const el = document.getElementById('lista-comunidade');
+  let lista = comunidadeCache.slice();
+  if (filtroCom !== 'todas') lista = lista.filter(s => (s.status||'pendente') === filtroCom);
+
+  // destaca o botão de filtro ativo
+  ['pendente','aprovada','rejeitada','todas'].forEach(f=>{
+    const b=document.getElementById('fc-'+f);
+    if(b) b.classList.toggle('btn-ouro', f===filtroCom);
+  });
+
+  if (!lista.length){
+    el.innerHTML = `<div class="loading-inline">Nenhuma história ${filtroCom!=='todas'?('('+filtroCom+')'):''} no momento.</div>`;
+    return;
+  }
+  el.innerHTML = lista.map(s=>{
+    const st = s.status || 'pendente';
+    const tags = (s.avisos||[]).map(a=>`<span class="pend-tag">⚠ ${a}</span>`).join('');
+    const cat = (CATEGORIAS.find(c=>c.chave===s.categoria)||{}).label || s.categoria || '—';
+    const classSelect = `<select onchange="ajustarClass('${s.id}',this.value)">
+      ${CLASSIFICACOES.map(c=>`<option value="${c.chave}" ${c.chave===(s.classificacao||'')?'selected':''}>${c.label}</option>`).join('')}
+    </select>`;
+    return `<div class="pend-card ${st==='aprovada'?'aprovada':''}">
+      <div class="pend-head">
+        <div>
+          <h3>${s.titulo||'Sem título'}</h3>
+          <div class="pend-autor">por ${s.autorNome||'Anônimo'} · ${cat}</div>
+        </div>
+        <span class="pend-status ${st}">${st}</span>
+      </div>
+      <div class="pend-tags"><span class="pend-tag">${cat}</span>${tags}</div>
+      <div class="pend-texto">${(s.texto||s.descricao||'(sem texto)')}</div>
+      <div class="pend-finais">
+        <div class="pend-final"><b>Final A</b>${s.opcaoA||'—'}</div>
+        <div class="pend-final"><b>Final B</b>${s.opcaoB||'—'}</div>
+      </div>
+      <div class="pend-class-edit">Classificação: ${classSelect}</div>
+      <div class="pend-acoes">
+        ${st!=='aprovada'?`<button class="btn btn-verde btn-sm" onclick="aprovarHistoria('${s.id}')">✓ Aprovar e publicar</button>`:''}
+        ${st!=='rejeitada'?`<button class="btn btn-danger btn-sm" onclick="rejeitarHistoria('${s.id}')">✕ Rejeitar</button>`:''}
+        <button class="btn btn-card btn-sm" onclick="deletarComunidade('${s.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function ajustarClass(id, valor){
+  try { await db.collection('comunidade').doc(id).update({classificacao:valor});
+    const c = comunidadeCache.find(x=>x.id===id); if(c) c.classificacao=valor;
+    mostrarMsg('comunidade','Classificação atualizada.','ok');
+  } catch(e){ mostrarMsg('comunidade','Erro ao atualizar classificação.','erro'); }
+}
+
+async function aprovarHistoria(id){
+  try {
+    await db.collection('comunidade').doc(id).update({ status:'aprovada', aprovadaEm: firebase.firestore.FieldValue.serverTimestamp() });
+    const c = comunidadeCache.find(x=>x.id===id); if(c) c.status='aprovada';
+    mostrarMsg('comunidade','História aprovada! Já aparece na Comunidade do site.','ok');
+    renderComunidade(); atualizarBadgePendentes();
+  } catch(e){ mostrarMsg('comunidade','Erro ao aprovar: '+e.message,'erro'); }
+}
+async function rejeitarHistoria(id){
+  if(!confirm('Rejeitar esta história?')) return;
+  try {
+    await db.collection('comunidade').doc(id).update({ status:'rejeitada' });
+    const c = comunidadeCache.find(x=>x.id===id); if(c) c.status='rejeitada';
+    mostrarMsg('comunidade','História rejeitada.','ok');
+    renderComunidade(); atualizarBadgePendentes();
+  } catch(e){ mostrarMsg('comunidade','Erro ao rejeitar.','erro'); }
+}
+async function deletarComunidade(id){
+  if(!confirm('Excluir definitivamente?')) return;
+  try {
+    await db.collection('comunidade').doc(id).delete();
+    comunidadeCache = comunidadeCache.filter(x=>x.id!==id);
+    mostrarMsg('comunidade','Excluída.','ok');
+    renderComunidade(); atualizarBadgePendentes();
+  } catch(e){ mostrarMsg('comunidade','Erro ao excluir.','erro'); }
 }
 
 // ---- ANALYTICS VÍDEOS ----
@@ -478,11 +689,13 @@ async function carregarAnalytics() {
   const dados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   const totalAcessos = dados.reduce((a,s) => a + (s.acessos||0), 0);
   const totalVotos = dados.reduce((a,s) => a + (s.votoA||0) + (s.votoB||0), 0);
+  const totalLikes = dados.reduce((a,s) => a + (s.likes||0), 0);
 
   document.getElementById('analytics-totais').innerHTML = `
     <div class="analytics-card"><span class="num">${dados.length}</span><span class="lab">Histórias publicadas</span></div>
     <div class="analytics-card"><span class="num">${totalAcessos}</span><span class="lab">Total de acessos</span></div>
-    <div class="analytics-card"><span class="num">${totalVotos}</span><span class="lab">Total de votos</span></div>`;
+    <div class="analytics-card"><span class="num">${totalVotos}</span><span class="lab">Total de votos</span></div>
+    <div class="analytics-card"><span class="num">${totalLikes}</span><span class="lab">Total de curtidas</span></div>`;
 
   document.getElementById('analytics-stories').innerHTML = dados.map(s => {
     const vA = s.votoA||0, vB = s.votoB||0, tot = vA+vB;
@@ -492,6 +705,7 @@ async function carregarAnalytics() {
       <div class="stat-row"><span>👁 Acessos</span><span class="stat-val">${s.acessos||0}</span></div>
       <div class="stat-row"><span>${s.opcaoA||'Opção A'}</span><div class="bar-mini"><div class="bar-mini-fill" style="width:${pA}%"></div></div><span class="stat-val">${vA} (${pA}%)</span></div>
       <div class="stat-row"><span>${s.opcaoB||'Opção B'}</span><div class="bar-mini"><div class="bar-mini-fill b" style="width:${pB}%"></div></div><span class="stat-val">${vB} (${pB}%)</span></div>
+      <div class="stat-row"><span>❤️ Curtidas</span><span class="stat-val">${s.likes||0}</span></div>
       <div class="stat-row"><span>Total votos</span><span class="stat-val">${tot}</span></div>
     </div>`;
   }).join('');
@@ -504,7 +718,6 @@ const historiasTexto = [
   { id:'marcos', nome:'O Caso Marcos Pantera', vA:'votoVerdade', lbA:'Verdade', vB:'votoMentindo', lbB:'Mentindo' },
   { id:'hexa', nome:'O Hexa Está em Suas Mãos', vA:'votoArgentina', lbA:'Argentina', vB:'votoAlemanha', lbB:'Alemanha' }
 ];
-
 async function carregarAnalyticsTextos() {
   let totalAcessos = 0, totalVotos = 0, totalLikes = 0;
   const htmlCards = [];
@@ -514,9 +727,7 @@ async function carregarAnalyticsTextos() {
     const vA = d[h.vA]||0, vB = d[h.vB]||0;
     const tot = vA+vB;
     const pA = tot ? Math.round(vA/tot*100):0, pB = tot ? Math.round(vB/tot*100):0;
-    totalAcessos += d.acessos||0;
-    totalVotos += tot;
-    totalLikes += (d.likes||0) + (d.dislikes||0);
+    totalAcessos += d.acessos||0; totalVotos += tot; totalLikes += (d.likes||0) + (d.dislikes||0);
     htmlCards.push(`<div class="story-stats">
       <h3>${h.nome}</h3>
       <div class="stat-row"><span>👁 Acessos</span><span class="stat-val">${d.acessos||0}</span></div>
@@ -534,12 +745,11 @@ async function carregarAnalyticsTextos() {
 
 function mostrarMsg(area, texto, tipo) {
   const el = document.getElementById('msg-' + area);
+  if(!el) return;
   el.innerText = texto;
   el.className = 'msg ' + tipo + ' ativo';
   setTimeout(() => el.classList.remove('ativo'), 5000);
 }
-
-carregarAnalyticsTextos();
 </script>
 </body>
 </html>
