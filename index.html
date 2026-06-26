@@ -10,7 +10,7 @@
 <meta name="keywords" content="histórias interativas, votação, finais alternativos, suspense, terror, mistério, você é o juiz">
 <meta name="author" content="Você é o Juiz">
 <meta name="theme-color" content="#05060a">
-<link rel="canonical" href="https://voceeojuiz.com/">
+<link rel="canonical" href="https://vocejuiz.com.br/">
 
 <!-- Open Graph (WhatsApp, Facebook, Instagram) -->
 <meta property="og:type" content="website">
@@ -18,7 +18,7 @@
 <meta property="og:title" content="Você é o Juiz — Assista. Decida. Julgue.">
 <meta property="og:description" content="Assista histórias interativas, vote nos finais e veja a decisão da comunidade.">
 <meta property="og:image" content="https://picsum.photos/1200/630">
-<meta property="og:url" content="https://voceeojuiz.com/">
+<meta property="og:url" content="https://vocejuiz.com.br/">
 <meta property="og:locale" content="pt_BR">
 
 <!-- Twitter / X / TikTok -->
@@ -33,11 +33,11 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Você é o Juiz",
-  "url": "https://voceeojuiz.com/",
+  "url": "https://vocejuiz.com.br/",
   "description": "Histórias interativas onde você assiste, decide e julga o final.",
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://voceeojuiz.com/?busca={search_term_string}",
+    "target": "https://vocejuiz.com.br/?busca={search_term_string}",
     "query-input": "required name=search_term_string"
   }
 }
@@ -425,6 +425,81 @@ footer a{color:var(--ouro);text-decoration:none}
 .card-bloqueado{position:relative}
 .card-bloqueado::after{content:'💎 Premium';position:absolute;inset:0;background:rgba(5,6,10,0.78);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--ouro);border-radius:12px;backdrop-filter:blur(2px)}
 
+/* ============ LEVA 4 — HOME STREAMING / STORY PAGE / MOBILE ============ */
+/* Hero extras */
+.hero-botoes{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn-surpresa{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:15px;font-weight:700;padding:14px 22px;border-radius:8px;cursor:pointer;transition:all 0.2s}
+.btn-surpresa:hover{border-color:var(--ouro);color:var(--ouro);transform:scale(1.03)}
+#hero-selos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hero-selo{font-size:12px;font-weight:700;padding:4px 12px;border-radius:14px;background:rgba(15,17,26,0.7);border:1px solid var(--borda);backdrop-filter:blur(4px)}
+.hero-selo.votos{color:var(--ouro);border-color:rgba(201,162,39,0.4)}
+
+/* Barra de números */
+#stats-bar{display:flex;gap:10px;overflow-x:auto;max-width:1100px;margin:0 auto;padding:18px 24px 4px;scrollbar-width:none}
+#stats-bar::-webkit-scrollbar{display:none}
+.stat-mov{flex:1;min-width:120px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:14px 16px;text-align:center}
+.stat-mov b{display:block;font-size:24px;font-weight:900;color:var(--ouro);line-height:1;margin-bottom:4px}
+.stat-mov small{font-size:11px;color:var(--texto2);letter-spacing:0.5px}
+
+/* Rails (carrosséis horizontais) */
+.rail-sec{padding-top:30px}
+.rail{display:flex;gap:14px;overflow-x:auto;padding:4px 0 12px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+.rail::-webkit-scrollbar{height:6px}
+.rail::-webkit-scrollbar-thumb{background:var(--borda);border-radius:10px}
+.rail .story-card{flex:0 0 240px;scroll-snap-align:start}
+@media(max-width:600px){.rail .story-card{flex:0 0 200px}}
+.rail-vazio{color:var(--texto2);font-size:13px;padding:12px 2px}
+
+/* Comunidade abas */
+#com-abas .chip{font-size:12px}
+
+/* PÁGINA DA HISTÓRIA (imersiva) */
+.hp-hero{position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;background:var(--card2)}
+.hp-hero img,.hp-hero .hp-ph{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.hp-hero .hp-ph{display:flex;align-items:center;justify-content:center;font-size:54px;background:linear-gradient(135deg,#0f111a,#1a1f2e)}
+.hp-hero .hp-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,6,10,0.95),transparent 60%)}
+.hp-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70px;height:70px;border-radius:50%;background:rgba(201,162,39,0.92);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s}
+.hp-play:hover{transform:translate(-50%,-50%) scale(1.08)}
+.hp-play svg{width:30px;height:30px;fill:#05060a;margin-left:4px}
+.hp-titulo{font-size:clamp(22px,4vw,34px);font-weight:900;margin-bottom:10px;line-height:1.15}
+.hp-selos{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.hp-selo{font-size:12px;font-weight:700;padding:4px 12px;border-radius:14px;background:var(--card);border:1px solid var(--borda)}
+.hp-metas{display:flex;flex-wrap:wrap;gap:16px;color:var(--texto2);font-size:13px;margin-bottom:16px}
+.hp-metas b{color:var(--texto)}
+.hp-desc{font-size:15px;color:var(--texto);line-height:1.7;margin-bottom:20px}
+.hp-avisos{background:rgba(239,71,111,0.08);border:1px solid rgba(239,71,111,0.3);border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:var(--texto2)}
+.hp-avisos b{color:#ef476f}
+.hp-cta{width:100%;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:17px;font-weight:900;padding:16px;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:transform 0.15s;margin-bottom:14px}
+.hp-cta:hover{transform:scale(1.02)}
+.hp-sec{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin:28px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:8px}
+.hp-relacionadas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.hp-rel{background:var(--card);border:1px solid var(--borda);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color 0.2s}
+.hp-rel:hover{border-color:var(--ouro)}
+.hp-rel img,.hp-rel .hp-rel-ph{width:100%;aspect-ratio:16/9;object-fit:cover}
+.hp-rel .hp-rel-ph{display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--card2)}
+.hp-rel-tit{font-size:12px;font-weight:600;padding:8px 10px;line-height:1.3}
+
+/* Pós-voto impactante */
+.pv-headline{font-size:clamp(22px,5vw,32px);font-weight:900;line-height:1.2;margin-bottom:8px;color:#fff}
+.pv-headline .destaque{color:var(--ouro)}
+.pv-sub{font-size:15px;color:var(--texto2);margin-bottom:24px}
+.resultado-proxima{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.btn-proxima{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--borda);color:var(--texto);font-size:14px;font-weight:700;padding:11px 20px;border-radius:8px;cursor:pointer;transition:all 0.2s}
+.btn-proxima:hover{border-color:var(--ouro);color:var(--ouro)}
+.btn-proxima.destaque{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none}
+
+/* Compartilhar — opções */
+.share-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.share-btn{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--borda);color:var(--texto);font-size:13px;padding:10px 16px;border-radius:8px;cursor:pointer;transition:all 0.2s}
+.share-btn:hover{border-color:var(--ouro)}
+.share-btn.wpp:hover{border-color:#25d366;color:#25d366}
+
+/* Bottom nav mobile */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:rgba(10,12,18,0.97);border-top:1px solid var(--borda);backdrop-filter:blur(10px);padding:6px 4px env(safe-area-inset-bottom)}
+#bottom-nav a,#bottom-nav button{flex:1;background:none;border:none;color:var(--texto2);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;cursor:pointer;text-decoration:none;transition:color 0.2s}
+#bottom-nav a span,#bottom-nav button span{font-size:19px}
+#bottom-nav a:active,#bottom-nav button:active{color:var(--ouro)}
+
 /* ---- RESPONSIVO ---- */
 @media(max-width:820px){
   nav.menu-principal{display:none}
@@ -435,6 +510,14 @@ footer a{color:var(--ouro);text-decoration:none}
   #barra-filtros{top:60px}
   .decisao-opcoes{flex-direction:column;align-items:center}
   .btn-opcao{max-width:100%;width:100%}
+  #bottom-nav{display:flex}
+  body{padding-bottom:62px}
+  footer{margin-bottom:56px}
+  .btn-assistir,.btn-surpresa{flex:1;justify-content:center;padding:15px 18px;font-size:15px}
+  .hero-botoes{width:100%}
+  section{padding:40px 16px 16px}
+  .overlay-fechar{top:12px;right:12px}
+  .overlay-full{padding:60px 14px 80px}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
@@ -485,19 +568,32 @@ footer a{color:var(--ouro);text-decoration:none}
   <span id="topo"></span>
   <div id="hero-bg"></div>
   <div class="hero-content">
-    <div class="hero-badge" id="hero-badge">⚡ Em destaque</div>
+    <div class="hero-badge" id="hero-badge">🔥 História do dia</div>
     <h1 id="hero-titulo">Carregando...</h1>
     <p id="hero-desc"></p>
+    <div id="hero-selos"></div>
     <div id="hero-dur"></div>
     <div id="hero-contador">
       <span class="contador-label">Votação encerra em</span>
       <div class="contador-blocos" id="contador-blocos"></div>
     </div>
-    <button class="btn-assistir" id="btn-hero-assistir" onclick="abrirVideo(storyDestaque)">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      ASSISTIR AGORA
-    </button>
+    <div class="hero-botoes">
+      <button class="btn-assistir" id="btn-hero-assistir" onclick="abrirHistoria(storyDestaque)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        DECIDIR AGORA
+      </button>
+      <button class="btn-surpresa" onclick="surpreendaMe()">🎲 Surpreenda-me</button>
+    </div>
   </div>
+</div>
+
+<!-- BARRA DE NÚMEROS (sensação de movimento) -->
+<div id="stats-bar">
+  <div class="stat-mov"><b id="st-decisoes">—</b><small>decisões tomadas</small></div>
+  <div class="stat-mov"><b id="st-historias">—</b><small>histórias</small></div>
+  <div class="stat-mov"><b id="st-votos">—</b><small>votos totais</small></div>
+  <div class="stat-mov"><b id="st-comunidade">—</b><small>da comunidade</small></div>
+  <div class="stat-mov"><b id="st-juizes">—</b><small>juízes cadastrados</small></div>
 </div>
 
 <!-- BARRA DE CATEGORIAS + FILTROS -->
@@ -527,6 +623,24 @@ footer a{color:var(--ouro);text-decoration:none}
 <section id="em-alta">
   <div class="sec-titulo">🔥 Em Alta</div>
   <div id="grid-em-alta"></div>
+</section>
+
+<!-- RAILS DE STREAMING -->
+<section id="rail-novidades" class="rail-sec">
+  <div class="sec-titulo">🆕 Novidades</div>
+  <div class="rail" id="rail-novidades-track"></div>
+</section>
+<section id="rail-votadas" class="rail-sec">
+  <div class="sec-titulo">🗳 Mais Votadas</div>
+  <div class="rail" id="rail-votadas-track"></div>
+</section>
+<section id="rail-comentadas" class="rail-sec">
+  <div class="sec-titulo">💬 Mais Comentadas</div>
+  <div class="rail" id="rail-comentadas-track"></div>
+</section>
+<section id="rail-videos" class="rail-sec">
+  <div class="sec-titulo">🎥 Vídeos Novos</div>
+  <div class="rail" id="rail-videos-track"></div>
 </section>
 
 <!-- HISTÓRIAS ANTERIORES (texto) -->
@@ -559,10 +673,11 @@ footer a{color:var(--ouro);text-decoration:none}
 <!-- COMUNIDADE / ENVIE SUA HISTÓRIA / RANKING / PERFIL / PREMIUM (estrutura preparada p/ Leva 2 e 3) -->
 <section id="comunidade">
   <div class="sec-titulo">📚 Comunidade</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
     <p style="color:var(--texto2);font-size:14px;max-width:520px;line-height:1.5">Histórias escritas por leitores. Toda história passa por aprovação antes de aparecer aqui.</p>
     <button class="btn-login" onclick="abrirEnviarHistoria()" style="white-space:nowrap">✍️ Enviar minha história</button>
   </div>
+  <div class="chips" id="com-abas" style="margin-bottom:16px"></div>
   <div id="grid-comunidade">
     <div class="em-breve" style="grid-column:1/-1">
       <span class="eb-ic">✍️</span>
@@ -623,6 +738,12 @@ footer a{color:var(--ouro);text-decoration:none}
   <p>© 2025 Você é o Juiz · <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a> · <a href="admin.html">Admin</a></p>
 </footer>
 
+<!-- PÁGINA DA HISTÓRIA (overlay imersivo) -->
+<div id="historia-overlay" class="overlay-full">
+  <button class="overlay-fechar" onclick="fecharHistoria()">✕</button>
+  <div id="historia-conteudo" style="max-width:760px;margin:0 auto"></div>
+</div>
+
 <!-- VIDEO MODAL -->
 <div id="video-modal">
   <header>
@@ -671,20 +792,29 @@ footer a{color:var(--ouro);text-decoration:none}
 <!-- RESULTADO -->
 <div id="resultado-overlay">
   <div class="resultado-icone">⚖️</div>
-  <div class="resultado-titulo">Veredito registrado</div>
-  <div class="resultado-voto-label">Você escolheu:</div>
-  <div class="resultado-voto-escolha" id="resultado-escolha-texto"></div>
+  <div class="pv-headline" id="pv-headline"></div>
+  <div class="pv-sub" id="pv-sub"></div>
   <div id="resultado-ja-votou-msg"></div>
   <div class="resultado-resumo" id="resultado-resumo"></div>
   <div class="resultado-barras" id="resultado-barras"></div>
   <div class="resultado-total" id="resultado-total"></div>
-  <button class="btn-compartilhar" id="btn-compartilhar" onclick="compartilhar()">
-    🔗 Compartilhar este veredito
-  </button>
+
+  <div class="share-row">
+    <button class="share-btn wpp" onclick="compartilharWpp()">🟢 WhatsApp</button>
+    <button class="share-btn" onclick="compartilhar()">🔗 Compartilhar</button>
+    <button class="share-btn" onclick="copiarLink()">📋 Copiar link</button>
+  </div>
+
   <div class="resultado-convite" id="resultado-convite"></div>
-  <div>
+
+  <div class="resultado-proxima">
+    <button class="btn-proxima destaque" onclick="proximaHistoria('parecida')">▶ Próxima história</button>
+    <button class="btn-proxima" onclick="proximaHistoria('alta')">🔥 Em alta</button>
+    <button class="btn-proxima" onclick="surpreendaMe()">🎲 Aleatória</button>
+  </div>
+  <div style="margin-top:8px">
     <button class="btn-resultado voltar" onclick="fecharResultado()">← Voltar</button>
-    <button class="btn-resultado home" onclick="irParaHome()">🏠 Página inicial</button>
+    <button class="btn-resultado home" onclick="irParaHome()">🏠 Início</button>
   </div>
 
   <!-- COMENTÁRIOS -->
@@ -770,6 +900,15 @@ footer a{color:var(--ouro);text-decoration:none}
     </div>
   </div>
 </div>
+
+<!-- BOTTOM NAV MOBILE (sensação de app) -->
+<nav id="bottom-nav">
+  <a href="#topo" onclick="scrollTopo(event)"><span>🏠</span>Início</a>
+  <a href="#videos"><span>🎬</span>Histórias</a>
+  <button onclick="surpreendaMe()"><span>🎲</span>Surpresa</button>
+  <a href="#ranking"><span>🏆</span>Ranking</a>
+  <button onclick="navConta()"><span>👤</span>Perfil</button>
+</nav>
 
 <!-- TOAST -->
 <div id="toast"></div>
@@ -992,8 +1131,11 @@ async function carregarHistorias() {
     renderHero(storyDestaque);
     aplicarFiltros();
     renderEmAlta();
+    renderRails();
     carregarComunidade();
+    renderComAbas();
     renderRanking();
+    renderStatsBar();
 
   } catch(e) {
     console.error('Erro ao carregar Firebase. Usando história local:', e);
@@ -1002,7 +1144,9 @@ async function carregarHistorias() {
     renderHero(storyDestaque);
     aplicarFiltros();
     renderEmAlta();
+    renderRails();
     renderRanking();
+    renderStatsBar();
   }
 
   document.getElementById('loading').classList.add('hide');
@@ -1017,7 +1161,17 @@ function renderHero(s) {
   document.getElementById('hero-titulo').innerText = s.titulo || '';
   document.getElementById('hero-desc').innerText = s.descricao || '';
   document.getElementById('hero-dur').innerText = s.duracao || '';
-  document.getElementById('hero-badge').innerText = s.historiaDoDia ? '🗓️ História do dia' : '⚡ Em destaque';
+  document.getElementById('hero-badge').innerText = s.historiaDoDia ? '🔥 História do dia' : '⚡ Em destaque';
+
+  // selos do hero: categoria, classificação, votos
+  const ci = catInfo(s.categoria);
+  const cl = classInfo(s);
+  const tot = (s.votoA||0)+(s.votoB||0);
+  document.getElementById('hero-selos').innerHTML =
+    `<span class="hero-selo">${ci.ic} ${ci.label}</span>` +
+    (cl?`<span class="hero-selo" style="color:${cl.cor};border-color:${cl.cor}">${cl.label}</span>`:'') +
+    `<span class="hero-selo votos">🗳 ${tot} votos</span>`;
+
   iniciarContador(s);
 }
 
@@ -1083,7 +1237,7 @@ function renderGrid() {
       ? `<div class="story-card-tags">${s.avisos.slice(0,3).map(a=>`<span class="mini-tag">⚠ ${a}</span>`).join('')}</div>` : '';
     const encerrada = votacaoEncerrada(s) ? '<span class="mini-tag" style="border-color:#ef476f;color:#ef476f">Encerrada</span>' : '';
     return `
-      <div class="story-card" onclick="abrirVideo(stories[${idx}])">
+      <div class="story-card" onclick="abrirHistoria(stories[${idx}])">
         ${novo}
         ${selos}
         ${capa}
@@ -1126,7 +1280,7 @@ function renderEmAlta(){
     const idx = stories.indexOf(s);
     const tot=(s.votoA||0)+(s.votoB||0);
     const capa = s.capa?`<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`:`<div class="story-card-capa-placeholder">🎬</div>`;
-    return `<div class="story-card" onclick="abrirVideo(stories[${idx}])">
+    return `<div class="story-card" onclick="abrirHistoria(stories[${idx}])">
       <div class="story-card-novo">#${i+1}</div>${capa}
       <div class="story-card-body">
         <div class="story-card-titulo">${s.titulo||''}</div>
@@ -1336,7 +1490,6 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   if (!s) return;
 
   const escolhaTexto = opcaoVotada === 'A' ? s.opcaoA : s.opcaoB;
-  document.getElementById('resultado-escolha-texto').innerText = escolhaTexto || opcaoVotada;
 
   const msgJaVotou = document.getElementById('resultado-ja-votou-msg');
   if (soOficial){
@@ -1362,6 +1515,29 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   // resumo igual / diferente
   const pEscolha = opcaoVotada === 'A' ? pA : pB;
   const pOutro = 100 - pEscolha;
+
+  // HEADLINE IMPACTANTE
+  let headline, sub;
+  document.getElementById('pv-sub').innerHTML = `Você decidiu: <span style="color:var(--ouro);font-weight:700">${escolhaTexto||''}</span>`;
+  if (tot <= 1){
+    headline = `Você abriu o veredito! ⚖️`;
+    sub = `Seja o primeiro a decidir "${s.titulo}". <span style="color:var(--ouro)">${escolhaTexto||''}</span>`;
+  } else if (pEscolha >= 80){
+    headline = `Você faz parte dos <span class="destaque">${pEscolha}%</span> que pensaram igual.`;
+    sub = `Decisão quase unânime. Você decidiu: ${escolhaTexto||''}`;
+  } else if (pEscolha <= 20){
+    headline = `Você é dos raros <span class="destaque">${pEscolha}%</span> que escolheram esse final.`;
+    sub = `Opinião corajosa! A maioria foi pelo outro lado.`;
+  } else if (pEscolha < 50){
+    headline = `<span class="destaque">${pOutro}%</span> pensaram diferente de você.`;
+    sub = `Você está na minoria desta vez. Decidiu: ${escolhaTexto||''}`;
+  } else {
+    headline = `Você pensou igual à maioria — <span class="destaque">${pEscolha}%</span>.`;
+    sub = `Boa sintonia com a comunidade. Decidiu: ${escolhaTexto||''}`;
+  }
+  document.getElementById('pv-headline').innerHTML = headline;
+  document.getElementById('pv-sub').innerHTML = sub;
+
   document.getElementById('resultado-resumo').innerHTML = `
     <div class="resumo-item"><b>${pEscolha}%</b><small>Escolheram<br>igual a você</small></div>
     <div class="resumo-item dif"><b>${pOutro}%</b><small>Escolheram<br>o outro final</small></div>`;
@@ -1582,7 +1758,7 @@ function renderFavoritosPerfil(){
   if (!el) return;
   const lista = stories.filter(s => favs.includes(s.id));
   el.innerHTML = lista.length
-    ? lista.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--borda);cursor:pointer" onclick="fecharPerfil();abrirVideo(stories[${stories.indexOf(s)}])">⭐ ${s.titulo}</div>`).join('')
+    ? lista.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--borda);cursor:pointer" onclick="fecharPerfil();abrirHistoria(stories[${stories.indexOf(s)}])">⭐ ${s.titulo}</div>`).join('')
     : 'Você ainda não favoritou nenhuma história.';
 }
 function fecharPerfil(){ document.getElementById('perfil-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
@@ -1708,25 +1884,16 @@ async function enviarHistoria(){
 //  HISTÓRIAS DA COMUNIDADE (aprovadas)
 // ============================================================
 async function carregarComunidade(){
-  const grid = document.getElementById('grid-comunidade');
   try {
     const snap = await db.collection('comunidade').where('status','==','aprovada').get();
     const lista = snap.docs.map(d=>({id:d.id, ...d.data(), _comunidade:true}));
     if (!lista.length) return; // mantém o placeholder
-    // adiciona à coleção geral para reaproveitar abrirVideo/decisão
+    // adiciona à coleção geral para reaproveitar abrirHistoria/decisão
     lista.forEach(l=>{ if(!stories.find(s=>s.id===l.id)) stories.push(l); });
-    grid.innerHTML = lista.map(s=>{
-      const idx = stories.indexOf(s);
-      const tot=(s.votoA||0)+(s.votoB||0);
-      const capa = s.capa?`<img class="cc-capa" src="${s.capa}" loading="lazy">`:`<div class="cc-capa" style="display:flex;align-items:center;justify-content:center;font-size:34px">📖</div>`;
-      return `<div class="com-card" onclick="abrirVideo(stories[${idx}])">
-        ${capa}
-        <div class="cc-body">
-          <div class="cc-titulo">${s.titulo}</div>
-          <div class="cc-autor">por ${s.autorNome||'Anônimo'}</div>
-          <div class="cc-meta"><span>🗳 ${tot}</span><span>❤️ ${s.likes||0}</span><span>${catInfo(s.categoria).label}</span></div>
-        </div></div>`;
-    }).join('');
+    comunidadeLista = lista;
+    renderComAbas();
+    renderComunidadeGrid();
+    renderRails(); // comunidade pode entrar em "novidades"
   } catch(e){ console.warn('Comunidade indisponível:', e); }
 }
 
@@ -1799,6 +1966,10 @@ async function postarComentario(){
       comentarios: firebase.firestore.FieldValue.increment(1),
       pontos: firebase.firestore.FieldValue.increment(1)
     },{merge:true}).catch(()=>{});
+    // contador de comentários na história (para "Mais comentadas")
+    if (!String(s.id).includes('local')){
+      db.collection('plataforma').doc(s.id).set({ qtdComentarios: firebase.firestore.FieldValue.increment(1) },{merge:true}).catch(()=>{});
+    }
     trackEvent('comentario',{historia:s.titulo});
     carregarComentarios();
   } catch(e){ toast('Não foi possível enviar o comentário.'); }
@@ -1832,8 +2003,9 @@ function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'
 const RANK_ABAS = [
   { chave:'votadas',  label:'🗳 Mais votadas' },
   { chave:'curtidas', label:'❤️ Mais curtidas' },
+  { chave:'polemicas',label:'⚡ Mais polêmicas' },
   { chave:'autores',  label:'✍️ Autores' },
-  { chave:'usuarios', label:'👥 Participativos' }
+  { chave:'usuarios', label:'👥 Leitores' }
 ];
 let rankAbaAtual = 'votadas';
 
@@ -1848,6 +2020,25 @@ async function renderRanking(){
   const el = document.getElementById('ranking-conteudo');
   el.innerHTML = '<p style="color:var(--texto2);font-size:13px">Carregando ranking...</p>';
 
+  // Polêmicas: votos equilibrados (perto de 50/50) com volume mínimo
+  if (rankAbaAtual === 'polemicas'){
+    const lista = stories.slice()
+      .filter(s=>((s.votoA||0)+(s.votoB||0))>=2)
+      .sort((a,b)=>polemica(b)-polemica(a)).slice(0,10);
+    if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">⚡</span><h3>Sem polêmicas ainda</h3><p>Quando houver histórias com votação equilibrada, elas aparecem aqui.</p></div>`; return; }
+    el.innerHTML = `<div class="rank-lista">${lista.map((s,i)=>{
+      const idx = stories.indexOf(s);
+      const t = (s.votoA||0)+(s.votoB||0);
+      const pa = Math.round((s.votoA||0)/t*100);
+      const cap = s.capa?`<img class="rank-foto" src="${s.capa}">`:`<div class="rank-foto" style="display:flex;align-items:center;justify-content:center">🎬</div>`;
+      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoria(stories[${idx}])">
+        <div class="rank-pos ${i<3?'top':''}">${i+1}</div>${cap}
+        <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${pa}% × ${100-pa}% · ${t} votos</div></div>
+        <div class="rank-valor">⚡</div></div>`;
+    }).join('')}</div>`;
+    return;
+  }
+
   if (rankAbaAtual === 'votadas' || rankAbaAtual === 'curtidas'){
     const campo = rankAbaAtual === 'votadas'
       ? (s)=> (s.votoA||0)+(s.votoB||0)
@@ -1857,7 +2048,7 @@ async function renderRanking(){
     el.innerHTML = `<div class="rank-lista">${lista.map((s,i)=>{
       const idx = stories.indexOf(s);
       const cap = s.capa?`<img class="rank-foto" src="${s.capa}">`:`<div class="rank-foto" style="display:flex;align-items:center;justify-content:center">🎬</div>`;
-      return `<div class="rank-item" style="cursor:pointer" onclick="abrirVideo(stories[${idx}])">
+      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoria(stories[${idx}])">
         <div class="rank-pos ${i<3?'top':''}">${i+1}</div>${cap}
         <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${catInfo(s.categoria).label}</div></div>
         <div class="rank-valor">${campo(s)}</div></div>`;
@@ -1900,11 +2091,261 @@ function podeAbrir(s){
 }
 function assinarPremium(){
   exigirLogin(()=>{
-    // Estrutura preparada: aqui entraria o checkout real (ex: Stripe/Mercado Pago).
-    // Por enquanto, registra interesse e explica.
     trackEvent('interesse_premium');
     toast('Pagamento ainda não está ativo. Em breve! 💎');
   }, 'Entre com o Google para assinar o Premium.');
+}
+
+// ============================================================
+//  LEVA 4 — HOME STREAMING (rails, stats, surpresa, comunidade abas)
+// ============================================================
+
+// quantos comentários cada história tem (cache leve, opcional)
+function totVotos(s){ return (s.votoA||0)+(s.votoB||0); }
+
+function cardMini(s){
+  const idx = stories.indexOf(s);
+  const capa = s.capa
+    ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`
+    : `<div class="story-card-capa-placeholder">🎬</div>`;
+  const ci = catInfo(s.categoria);
+  const prem = s.premium ? '<span class="selo selo-premium" style="position:absolute;top:8px;right:8px">💎</span>' : '';
+  return `<div class="story-card" onclick="abrirHistoria(stories[${idx}])">
+    ${prem}${capa}
+    <div class="story-card-body">
+      <div class="story-card-titulo">${s.titulo||''}</div>
+      <div class="story-card-meta"><span class="story-card-dur">${ci.ic} ${ci.label}</span><span class="story-card-votos">🗳 ${totVotos(s)}</span></div>
+    </div></div>`;
+}
+
+function renderRail(elId, lista, vazioMsg){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const reais = lista.filter(s=>s.id!=='neymar-local' || stories.length===1);
+  if (!reais.length){ el.innerHTML = `<div class="rail-vazio">${vazioMsg||'Em breve por aqui.'}</div>`; return; }
+  el.innerHTML = reais.map(cardMini).join('');
+}
+
+function renderRails(){
+  // Novidades = maior "ordem" (mais recentes cadastradas)
+  const novidades = stories.slice().sort((a,b)=>(b.ordem||0)-(a.ordem||0)).slice(0,12);
+  renderRail('rail-novidades-track', novidades, 'Sem novidades ainda.');
+  // Mais votadas
+  const votadas = stories.slice().sort((a,b)=>totVotos(b)-totVotos(a)).filter(s=>totVotos(s)>0).slice(0,12);
+  renderRail('rail-votadas-track', votadas, 'Ninguém votou ainda — seja o primeiro!');
+  // Mais comentadas (usa campo qtdComentarios se existir, senão acessos)
+  const comentadas = stories.slice().sort((a,b)=>(b.qtdComentarios||0)-(a.qtdComentarios||0)).filter(s=>(s.qtdComentarios||0)>0).slice(0,12);
+  renderRail('rail-comentadas-track', comentadas.length?comentadas:[], 'As histórias mais comentadas aparecem aqui.');
+  // Vídeos novos = com vídeo configurado
+  const videos = stories.filter(s=>s.video || (s.titulo||'').toLowerCase().includes('neymar')).slice(0,12);
+  renderRail('rail-videos-track', videos, 'Novos vídeos em breve.');
+}
+
+// ---- Barra de números (sensação de movimento) ----
+function animarNum(elId, alvo){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const dur = 900; const t0 = performance.now();
+  function step(t){
+    const p = Math.min(1,(t-t0)/dur);
+    el.innerText = Math.round(alvo*p).toLocaleString('pt-BR');
+    if (p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+async function renderStatsBar(){
+  const nHist = stories.filter(s=>s.id!=='neymar-local').length || stories.length;
+  const nVotos = stories.reduce((a,s)=>a+totVotos(s),0);
+  animarNum('st-historias', nHist);
+  animarNum('st-votos', nVotos);
+  animarNum('st-decisoes', nVotos); // decisões = votos
+  // comunidade aprovadas + usuários: busca leve
+  let nCom = 0, nJuizes = 0;
+  try { const c = await db.collection('comunidade').where('status','==','aprovada').get(); nCom = c.size; } catch(e){}
+  try { const u = await db.collection('usuarios').get(); nJuizes = u.size; } catch(e){}
+  animarNum('st-comunidade', nCom);
+  animarNum('st-juizes', nJuizes);
+}
+
+// ---- Surpreenda-me / próxima história ----
+function historiasJogaveis(){
+  return stories.filter(s => podeAbrir(s));
+}
+function surpreendaMe(){
+  const lista = historiasJogaveis();
+  if (!lista.length){ toast('Nenhuma história disponível.'); return; }
+  const s = lista[Math.floor(Math.random()*lista.length)];
+  trackEvent('surpreenda_me',{historia:s.titulo});
+  fecharResultado();
+  abrirHistoria(s);
+}
+function proximaHistoria(tipo){
+  let cand = stories.filter(s => s !== storyAtual && podeAbrir(s));
+  if (!cand.length){ toast('Você já viu tudo por aqui!'); return; }
+  let escolha;
+  if (tipo === 'parecida' && storyAtual){
+    const mesma = cand.filter(s => (s.categoria||'')===(storyAtual.categoria||''));
+    escolha = (mesma.length?mesma:cand)[0];
+  } else if (tipo === 'alta'){
+    escolha = cand.slice().sort((a,b)=>(b.acessos||0)+totVotos(b)-((a.acessos||0)+totVotos(a)))[0];
+  } else {
+    escolha = cand[Math.floor(Math.random()*cand.length)];
+  }
+  fecharResultado();
+  abrirHistoria(escolha);
+}
+
+function navConta(){
+  if (usuarioAtual) abrirPerfil();
+  else pedirLogin('Entre com o Google para ter seu perfil de Juiz.');
+}
+
+// ---- Comunidade: abas ----
+const COM_ABAS = [
+  {chave:'recentes', label:'🆕 Recentes'},
+  {chave:'votadas',  label:'🗳 Mais votadas'},
+  {chave:'comentadas',label:'💬 Mais comentadas'},
+  {chave:'polemicas',label:'⚡ Mais polêmicas'}
+];
+let comAbaAtual = 'recentes';
+let comunidadeLista = [];
+function renderComAbas(){
+  const el = document.getElementById('com-abas');
+  if (!el) return;
+  el.innerHTML = COM_ABAS.map(a=>`<button class="chip ${a.chave===comAbaAtual?'ativo':''}" onclick="setComAba('${a.chave}')">${a.label}</button>`).join('');
+}
+function setComAba(ch){ comAbaAtual = ch; renderComAbas(); renderComunidadeGrid(); }
+function polemica(s){ // quão equilibrado (perto de 50/50)
+  const t = totVotos(s); if (!t) return 0;
+  const pa = (s.votoA||0)/t; return 1 - Math.abs(pa-0.5)*2; // 1 = empate
+}
+function renderComunidadeGrid(){
+  const grid = document.getElementById('grid-comunidade');
+  if (!comunidadeLista.length) return; // mantém placeholder
+  let lista = comunidadeLista.slice();
+  switch(comAbaAtual){
+    case 'votadas': lista.sort((a,b)=>totVotos(b)-totVotos(a)); break;
+    case 'comentadas': lista.sort((a,b)=>(b.qtdComentarios||0)-(a.qtdComentarios||0)); break;
+    case 'polemicas': lista.sort((a,b)=>polemica(b)-polemica(a)); break;
+    default: lista.sort((a,b)=>{
+      const ta = a.enviadaEm&&a.enviadaEm.toMillis?a.enviadaEm.toMillis():0;
+      const tb = b.enviadaEm&&b.enviadaEm.toMillis?b.enviadaEm.toMillis():0;
+      return tb-ta;
+    });
+  }
+  grid.innerHTML = lista.map(s=>{
+    const idx = stories.indexOf(s);
+    const tot=totVotos(s);
+    const capa = s.capa?`<img class="cc-capa" src="${s.capa}" loading="lazy">`:`<div class="cc-capa" style="display:flex;align-items:center;justify-content:center;font-size:34px">📖</div>`;
+    const cl = classInfo(s);
+    return `<div class="com-card" onclick="abrirHistoria(stories[${idx}])">
+      ${capa}
+      <div class="cc-body">
+        <div class="cc-titulo">${s.titulo}</div>
+        <div class="cc-autor">por ${s.autorNome||'Anônimo'}</div>
+        <div class="cc-meta"><span>🗳 ${tot}</span><span>❤️ ${s.likes||0}</span><span>${catInfo(s.categoria).label}</span>${cl?`<span style="color:${cl.cor}">${cl.label}</span>`:''}</div>
+      </div></div>`;
+  }).join('');
+}
+
+// ============================================================
+//  PÁGINA DA HISTÓRIA (overlay imersivo)
+// ============================================================
+function abrirHistoria(s){
+  if (!s) return;
+  storyAtual = s;
+  trackEvent('abrir_historia',{historia:s.titulo});
+
+  // bloqueio premium logo na entrada
+  if (s.premium && !ehPremiumUsuario()){
+    if (!usuarioAtual){ pedirLogin('Esta é uma história Premium. Entre e assine para desbloquear.'); }
+    else { document.getElementById('premium').scrollIntoView({behavior:'smooth'}); toast('💎 História exclusiva para assinantes Premium.'); }
+    return;
+  }
+
+  const ci = catInfo(s.categoria);
+  const cl = classInfo(s);
+  const tot = totVotos(s);
+  const capa = s.capa
+    ? `<img src="${s.capa}" alt="${s.titulo||''}">`
+    : `<div class="hp-ph">🎬</div>`;
+  const temVideo = !!getVideoUrl(s);
+  const playBtn = temVideo ? `<button class="hp-play" onclick="assistirDaHistoria()" aria-label="Assistir"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>` : '';
+
+  const avisosHtml = temAvisos(s)
+    ? `<div class="hp-avisos"><b>⚠️ Avisos de conteúdo:</b> ${s.avisos.join(' · ')}</div>` : '';
+
+  // relacionadas: mesma categoria, exclui a atual
+  const rel = stories.filter(x => x!==s && (x.categoria||'')===(s.categoria||'') && podeAbrir(x)).slice(0,4);
+  const relFallback = rel.length ? rel : stories.filter(x=>x!==s && podeAbrir(x)).slice(0,4);
+  const relHtml = relFallback.map(x=>{
+    const i = stories.indexOf(x);
+    const c = x.capa?`<img src="${x.capa}" loading="lazy">`:`<div class="hp-rel-ph">🎬</div>`;
+    return `<div class="hp-rel" onclick="abrirHistoria(stories[${i}])">${c}<div class="hp-rel-tit">${x.titulo||''}</div></div>`;
+  }).join('');
+
+  document.getElementById('historia-conteudo').innerHTML = `
+    <div class="hp-hero">${capa}<div class="hp-grad"></div>${playBtn}</div>
+    <div class="hp-selos">
+      <span class="hp-selo" style="color:var(--ouro)">${ci.ic} ${ci.label}</span>
+      ${cl?`<span class="hp-selo" style="color:${cl.cor};border-color:${cl.cor}">${cl.label}</span>`:''}
+      ${s.premium?'<span class="hp-selo" style="background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none">💎 Premium</span>':''}
+    </div>
+    <h1 class="hp-titulo">${s.titulo||''}</h1>
+    <div class="hp-metas">
+      <span>👁 <b>${s.acessos||0}</b> views</span>
+      <span>🗳 <b>${tot}</b> votos</span>
+      <span>❤️ <b>${s.likes||0}</b></span>
+      ${s.duracao?`<span>⏱ <b>${s.duracao}</b></span>`:''}
+      ${s.autorNome?`<span>✍️ <b>${s.autorNome}</b></span>`:''}
+    </div>
+    ${avisosHtml}
+    <p class="hp-desc">${s.descricao||''}</p>
+    <button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Assistir e decidir':'Decidir agora'}</button>
+    <div class="hp-sec">Histórias relacionadas</div>
+    <div class="hp-relacionadas">${relHtml||'<p style="color:var(--texto2);font-size:13px">Em breve mais histórias.</p>'}</div>
+  `;
+  document.getElementById('historia-overlay').classList.add('ativo');
+  document.body.style.overflow='hidden';
+  document.getElementById('historia-overlay').scrollTop = 0;
+
+  // conta acesso
+  if (!String(s.id).includes('local')){
+    db.collection('plataforma').doc(s.id).set({acessos:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(()=>{});
+  }
+}
+function fecharHistoria(){
+  document.getElementById('historia-overlay').classList.remove('ativo');
+  document.body.style.overflow='';
+}
+function assistirDaHistoria(){ fecharHistoria(); abrirVideoReal(storyAtual); }
+function decidirDaHistoria(){
+  fecharHistoria();
+  const temVideo = !!getVideoUrl(storyAtual);
+  if (temVideo) abrirVideoReal(storyAtual);
+  else irParaDecisao();
+}
+
+// ---- Compartilhamento extra ----
+function frasePartilha(s){
+  const escolha = s ? localStorage.getItem('voto_'+s.id) : null;
+  if (escolha && s){
+    const txt = escolha==='A'?s.opcaoA:s.opcaoB;
+    return `Eu decidi o final de "${s.titulo}" no Você é o Juiz: ${txt}. Você concordaria comigo? ⚖️`;
+  }
+  return `Eu decidi o final de uma história no Você é o Juiz. Você concordaria comigo? ⚖️`;
+}
+function compartilharWpp(){
+  const s = storyAtual;
+  const url = 'https://vocejuiz.com.br/';
+  const texto = frasePartilha(s);
+  trackEvent('compartilhar',{rede:'whatsapp',historia:s&&s.titulo});
+  window.open('https://wa.me/?text='+encodeURIComponent(texto+' '+url),'_blank');
+}
+async function copiarLink(){
+  const url = 'https://vocejuiz.com.br/';
+  try { await navigator.clipboard.writeText(frasePartilha(storyAtual)+' '+url); toast('Link copiado!'); }
+  catch(e){ toast('Não foi possível copiar.'); }
 }
 
 // ============================================================
