@@ -59,6 +59,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -294,6 +295,136 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 footer{border-top:1px solid var(--borda);padding:30px 24px;text-align:center;color:var(--texto2);font-size:13px;margin-top:40px}
 footer a{color:var(--ouro);text-decoration:none}
 
+/* ============ LEVA 2: AUTH / PERFIL / COMUNIDADE ============ */
+.conta-area{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-login{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--borda);color:var(--texto);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s}
+.btn-login:hover{border-color:var(--ouro);color:var(--ouro)}
+.avatar-btn{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--borda);border-radius:24px;padding:4px 12px 4px 4px;cursor:pointer;transition:border-color 0.2s}
+.avatar-btn:hover{border-color:var(--ouro)}
+.avatar-btn img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.avatar-btn .nome{font-size:13px;color:var(--texto);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){.avatar-btn .nome{display:none}}
+#conta-menu{display:none;position:fixed;top:60px;right:16px;background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:8px;min-width:200px;z-index:160;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+#conta-menu.aberto{display:block}
+#conta-menu .cm-head{padding:10px 12px;border-bottom:1px solid var(--borda);margin-bottom:6px}
+#conta-menu .cm-head b{display:block;font-size:14px}
+#conta-menu .cm-head small{font-size:11px;color:var(--texto2)}
+#conta-menu button{width:100%;text-align:left;background:transparent;border:none;color:var(--texto);font-size:13px;padding:9px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:9px}
+#conta-menu button:hover{background:var(--card2);color:var(--ouro)}
+.overlay-full{display:none;position:fixed;inset:0;z-index:620;background:rgba(5,6,10,0.98);overflow-y:auto;padding:70px 16px 40px}
+.overlay-full.ativo{display:block}
+.overlay-card{max-width:680px;margin:0 auto;background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:28px}
+.overlay-card h2{font-size:22px;margin-bottom:6px;color:var(--ouro)}
+.overlay-card .sub{font-size:13px;color:var(--texto2);margin-bottom:22px}
+.overlay-fechar{position:fixed;top:18px;right:20px;background:var(--card);border:1px solid var(--borda);color:var(--texto);width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;z-index:5}
+.campo{margin-bottom:16px}
+.campo label{display:block;font-size:12px;color:var(--texto2);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase}
+.campo input,.campo select,.campo textarea{width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:11px 14px;color:var(--texto);font-size:14px;outline:none;transition:border-color 0.2s}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--ouro)}
+.campo textarea{resize:vertical;min-height:120px}
+.campo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.campo-row{grid-template-columns:1fr}}
+.avisos-check{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.avisos-check label{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--borda);border-radius:16px;padding:6px 12px;font-size:12px;color:var(--texto);cursor:pointer;text-transform:none;letter-spacing:0;margin:0}
+.avisos-check input{width:auto}
+.switch-linha{display:flex;align-items:center;gap:10px;margin:8px 0 16px}
+.switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--borda);border-radius:24px;cursor:pointer;transition:0.3s}
+.slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s}
+.switch input:checked+.slider{background:var(--ouro)}
+.switch input:checked+.slider::before{transform:translateX(20px)}
+.btn-grande{width:100%;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:15px;font-weight:800;padding:14px;border:none;border-radius:10px;cursor:pointer;letter-spacing:0.5px;transition:transform 0.15s}
+.btn-grande:hover{transform:scale(1.02)}
+.btn-grande:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.perfil-topo{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.perfil-topo img{width:72px;height:72px;border-radius:50%;border:2px solid var(--ouro)}
+.perfil-topo h2{margin:0}
+.perfil-nivel{display:inline-block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ouro);border:1px solid var(--ouro);border-radius:14px;padding:2px 10px;margin-top:4px}
+.perfil-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-bottom:24px}
+.pstat{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:14px;text-align:center}
+.pstat b{display:block;font-size:24px;color:var(--ouro)}
+.pstat small{font-size:11px;color:var(--texto2);text-transform:uppercase;letter-spacing:0.5px}
+.perfil-sec-titulo{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--texto2);margin:20px 0 12px;border-bottom:1px solid var(--borda);padding-bottom:8px}
+.medalhas-grid{display:flex;flex-wrap:wrap;gap:10px}
+.medalha{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+.medalha.bloqueada{opacity:0.35}
+.medalha .me-ic{font-size:20px}
+.card-acoes{display:flex;gap:6px;margin-top:8px}
+.card-acao{flex:1;background:var(--card2);border:1px solid var(--borda);color:var(--texto2);font-size:12px;padding:6px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.2s}
+.card-acao:hover{border-color:var(--ouro);color:var(--ouro)}
+.card-acao.ativo{color:var(--ouro);border-color:var(--ouro);background:rgba(201,162,39,0.1)}
+.coment-area{max-width:680px;margin:0 auto;width:100%}
+.coment-form{display:flex;gap:10px;margin-bottom:20px}
+.coment-form img{width:38px;height:38px;border-radius:50%;flex-shrink:0}
+.coment-form textarea{flex:1;background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:10px 14px;color:var(--texto);font-size:14px;resize:vertical;min-height:44px;outline:none}
+.coment-form textarea:focus{border-color:var(--ouro)}
+.coment-enviar{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none;border-radius:10px;padding:0 18px;font-weight:700;cursor:pointer}
+.coment-item{background:var(--card2);border:1px solid var(--borda);border-radius:12px;padding:14px;margin-bottom:10px}
+.coment-item-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.coment-item-head img{width:30px;height:30px;border-radius:50%}
+.coment-item-head b{font-size:13px}
+.coment-item-head small{font-size:11px;color:var(--texto2)}
+.coment-texto{font-size:14px;color:var(--texto);line-height:1.5;margin-bottom:8px;white-space:pre-wrap}
+.coment-acoes{display:flex;gap:14px;font-size:12px;color:var(--texto2)}
+.coment-acoes button{background:none;border:none;color:var(--texto2);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
+.coment-acoes button:hover{color:var(--ouro)}
+.coment-login-aviso{text-align:center;color:var(--texto2);font-size:13px;background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:16px;margin-bottom:20px}
+.coment-login-aviso button{margin-top:8px}
+#grid-comunidade{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.com-card{background:var(--card);border:1px solid var(--borda);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative}
+.com-card:hover{border-color:var(--ouro);transform:translateY(-3px)}
+.com-card .cc-capa{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--card2)}
+.com-card .cc-body{padding:14px}
+.com-card .cc-titulo{font-size:15px;font-weight:700;margin-bottom:4px}
+.com-card .cc-autor{font-size:12px;color:var(--ouro);margin-bottom:8px}
+.com-card .cc-meta{font-size:11px;color:var(--texto2);display:flex;gap:10px}
+#login-modal{display:none;position:fixed;inset:0;z-index:640;background:rgba(5,6,10,0.96);align-items:center;justify-content:center;padding:24px}
+#login-modal.ativo{display:flex}
+.login-box{background:var(--card);border:1px solid var(--borda);border-radius:18px;padding:34px 28px;max-width:380px;width:100%;text-align:center}
+.login-box .lb-ic{font-size:40px;margin-bottom:10px}
+.login-box h2{font-size:21px;margin-bottom:8px}
+.login-box p{font-size:14px;color:var(--texto2);line-height:1.6;margin-bottom:24px}
+.btn-google{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1a1a1a;font-size:15px;font-weight:700;padding:13px;border:none;border-radius:10px;cursor:pointer;transition:transform 0.15s}
+.btn-google:hover{transform:scale(1.02)}
+.btn-google svg{width:20px;height:20px}
+.login-fechar{margin-top:16px;background:none;border:none;color:var(--texto2);font-size:13px;cursor:pointer}
+
+/* ---- RANKING ---- */
+.rank-aba{background:var(--card);border:1px solid var(--borda);color:var(--texto2);font-size:13px;padding:7px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s}
+.rank-aba:hover{border-color:var(--ouro);color:var(--texto)}
+.rank-aba.ativo{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border-color:var(--ouro);font-weight:700}
+.rank-lista{display:flex;flex-direction:column;gap:8px}
+.rank-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px 16px;transition:border-color 0.2s}
+.rank-item:hover{border-color:var(--ouro)}
+.rank-pos{font-size:20px;font-weight:900;color:var(--texto2);min-width:36px;text-align:center}
+.rank-pos.top{color:var(--ouro)}
+.rank-foto{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--card2);flex-shrink:0}
+.rank-info{flex:1;min-width:0}
+.rank-nome{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-sub{font-size:12px;color:var(--texto2)}
+.rank-valor{font-size:15px;font-weight:800;color:var(--ouro);flex-shrink:0}
+
+/* ---- PLANOS PREMIUM ---- */
+.planos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:720px}
+.plano{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:26px 22px;position:relative}
+.plano.destaque-plano{border-color:var(--ouro);box-shadow:0 0 30px rgba(201,162,39,0.12)}
+.plano-tag{position:absolute;top:-11px;left:22px;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:11px;font-weight:800;padding:4px 12px;border-radius:12px;text-transform:uppercase;letter-spacing:1px}
+.plano-nome{font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--texto2);margin-bottom:8px}
+.plano-preco{font-size:34px;font-weight:900;color:var(--ouro);margin-bottom:18px}
+.plano-preco small{font-size:14px;color:var(--texto2);font-weight:400}
+.plano-lista{list-style:none;margin-bottom:22px}
+.plano-lista li{font-size:14px;color:var(--texto);padding:7px 0 7px 26px;position:relative;border-bottom:1px solid var(--borda)}
+.plano-lista li::before{content:'✓';position:absolute;left:0;color:var(--ouro);font-weight:900}
+.btn-plano{width:100%;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:14px;font-weight:800;padding:13px;border:none;border-radius:10px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;transition:transform 0.15s}
+.btn-plano:hover{transform:scale(1.02)}
+.btn-plano.atual{background:var(--card2);color:var(--texto2);border:1px solid var(--borda);cursor:default}
+
+/* Selo premium no card */
+.selo-premium{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a!important;border:none!important;font-weight:800}
+.card-bloqueado{position:relative}
+.card-bloqueado::after{content:'💎 Premium';position:absolute;inset:0;background:rgba(5,6,10,0.78);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--ouro);border-radius:12px;backdrop-filter:blur(2px)}
+
 /* ---- RESPONSIVO ---- */
 @media(max-width:820px){
   nav.menu-principal{display:none}
@@ -328,8 +459,20 @@ footer a{color:var(--ouro);text-decoration:none}
     </div>
   </a>
   <nav class="menu-principal" id="menu-desktop"></nav>
+  <div class="conta-area" id="conta-area"></div>
   <button class="btn-menu-mobile" onclick="abrirMenuMobile()" aria-label="Abrir menu">☰</button>
 </header>
+
+<!-- DROPDOWN DA CONTA -->
+<div id="conta-menu">
+  <div class="cm-head">
+    <b id="cm-nome"></b>
+    <small id="cm-email"></small>
+  </div>
+  <button onclick="abrirPerfil()">👤 Meu perfil</button>
+  <button onclick="abrirEnviarHistoria()">✍️ Enviar história</button>
+  <button onclick="fazerLogout()">🚪 Sair</button>
+</div>
 
 <!-- MENU MOBILE -->
 <div id="menu-mobile">
@@ -416,31 +559,54 @@ footer a{color:var(--ouro);text-decoration:none}
 <!-- COMUNIDADE / ENVIE SUA HISTÓRIA / RANKING / PERFIL / PREMIUM (estrutura preparada p/ Leva 2 e 3) -->
 <section id="comunidade">
   <div class="sec-titulo">📚 Comunidade</div>
-  <div class="em-breve">
-    <span class="eb-ic">✍️</span>
-    <h3>Envie sua própria história</h3>
-    <p>Em breve você vai poder escrever histórias, escolher os dois finais e deixar a comunidade decidir. As histórias passam por aprovação antes de ir ao ar.</p>
-    <span class="eb-badge">Em breve · requer login</span>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+    <p style="color:var(--texto2);font-size:14px;max-width:520px;line-height:1.5">Histórias escritas por leitores. Toda história passa por aprovação antes de aparecer aqui.</p>
+    <button class="btn-login" onclick="abrirEnviarHistoria()" style="white-space:nowrap">✍️ Enviar minha história</button>
+  </div>
+  <div id="grid-comunidade">
+    <div class="em-breve" style="grid-column:1/-1">
+      <span class="eb-ic">✍️</span>
+      <h3>Seja o primeiro a publicar</h3>
+      <p>Ainda não há histórias da comunidade aprovadas. Envie a sua e, depois da revisão, ela aparece aqui para todo mundo votar.</p>
+    </div>
   </div>
 </section>
 
 <section id="ranking">
   <div class="sec-titulo">🏆 Ranking</div>
-  <div class="em-breve">
-    <span class="eb-ic">🏆</span>
-    <h3>Ranking e medalhas</h3>
-    <p>Histórias mais votadas, autores em alta e medalhas por participação. Crie seu perfil para entrar na disputa.</p>
-    <span class="eb-badge">Em breve</span>
-  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px" id="ranking-abas"></div>
+  <div id="ranking-conteudo"></div>
 </section>
 
 <section id="premium">
   <div class="sec-titulo">💎 Premium</div>
-  <div class="em-breve">
-    <span class="eb-ic">💎</span>
-    <h3>Experiência Premium</h3>
-    <p>Histórias exclusivas, finais secretos, acesso antecipado e desafios especiais. O site continua gratuito — Premium é só um extra.</p>
-    <span class="eb-badge">Em breve</span>
+  <p style="color:var(--texto2);font-size:14px;max-width:560px;line-height:1.5;margin-bottom:20px">O site continua 100% gratuito. O Premium é um extra para quem quer mais histórias, finais secretos e vantagens.</p>
+  <div class="planos-grid">
+    <div class="plano">
+      <div class="plano-nome">Grátis</div>
+      <div class="plano-preco">R$ 0</div>
+      <ul class="plano-lista">
+        <li>Ler e assistir histórias</li>
+        <li>Votar nos finais</li>
+        <li>Ver resultados da comunidade</li>
+        <li>Comentar e curtir</li>
+      </ul>
+      <button class="btn-plano atual" disabled>Seu plano atual</button>
+    </div>
+    <div class="plano destaque-plano">
+      <div class="plano-tag">Mais popular</div>
+      <div class="plano-nome">Premium</div>
+      <div class="plano-preco">R$ 9,90<small>/mês</small></div>
+      <ul class="plano-lista">
+        <li>Tudo do plano grátis</li>
+        <li>💎 Histórias exclusivas</li>
+        <li>🔒 Finais secretos</li>
+        <li>🚀 Acesso antecipado</li>
+        <li>🏅 Medalhas e ranking Premium</li>
+        <li>🎯 Desafios especiais</li>
+      </ul>
+      <button class="btn-plano" onclick="assinarPremium()">Quero ser Premium</button>
+    </div>
   </div>
 </section>
 
@@ -515,12 +681,93 @@ footer a{color:var(--ouro);text-decoration:none}
   <button class="btn-compartilhar" id="btn-compartilhar" onclick="compartilhar()">
     🔗 Compartilhar este veredito
   </button>
-  <div class="resultado-convite">
-    💡 <b>Em breve:</b> entre com o Google para salvar seu histórico de decisões, ganhar medalhas e acompanhar a comunidade.
-  </div>
+  <div class="resultado-convite" id="resultado-convite"></div>
   <div>
     <button class="btn-resultado voltar" onclick="fecharResultado()">← Voltar</button>
     <button class="btn-resultado home" onclick="irParaHome()">🏠 Página inicial</button>
+  </div>
+
+  <!-- COMENTÁRIOS -->
+  <div class="coment-area" style="margin-top:40px">
+    <div class="perfil-sec-titulo" style="text-align:left">💬 Comentários</div>
+    <div id="coment-form-wrap"></div>
+    <div id="coment-lista"></div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="login-box">
+    <div class="lb-ic">⚖️</div>
+    <h2 id="login-titulo">Entre para continuar</h2>
+    <p id="login-texto">Sua decisão fica registrada mesmo sem login. Entre com o Google para salvar seu histórico, ganhar medalhas, comentar e enviar histórias.</p>
+    <button class="btn-google" onclick="fazerLogin()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Entrar com Google
+    </button>
+    <button class="login-fechar" onclick="fecharLogin()">Agora não</button>
+  </div>
+</div>
+
+<!-- PERFIL -->
+<div id="perfil-overlay" class="overlay-full">
+  <button class="overlay-fechar" onclick="fecharPerfil()">✕</button>
+  <div class="overlay-card" id="perfil-conteudo"></div>
+</div>
+
+<!-- ENVIAR HISTÓRIA -->
+<div id="enviar-overlay" class="overlay-full">
+  <button class="overlay-fechar" onclick="fecharEnviarHistoria()">✕</button>
+  <div class="overlay-card">
+    <h2>✍️ Enviar sua história</h2>
+    <p class="sub">Preencha os campos abaixo. Sua história será analisada antes de ir ao ar.</p>
+    <div id="enviar-form">
+      <div class="campo">
+        <label>Título *</label>
+        <input id="eh-titulo" type="text" placeholder="Ex: O Bilhete na Geladeira">
+      </div>
+      <div class="campo-row">
+        <div class="campo">
+          <label>Categoria *</label>
+          <select id="eh-categoria"></select>
+        </div>
+        <div class="campo">
+          <label>Classificação indicativa *</label>
+          <select id="eh-classificacao"></select>
+        </div>
+      </div>
+      <div class="campo">
+        <label>Imagem de capa (URL — opcional)</label>
+        <input id="eh-capa" type="text" placeholder="https://... (deixe em branco se não tiver)">
+      </div>
+      <div class="campo">
+        <label>Texto principal da história *</label>
+        <textarea id="eh-texto" placeholder="Escreva a história até o momento da decisão..."></textarea>
+      </div>
+      <div class="campo-row">
+        <div class="campo">
+          <label>Final A *</label>
+          <input id="eh-finalA" type="text" placeholder="Ex: Ele abre o bilhete">
+        </div>
+        <div class="campo">
+          <label>Final B *</label>
+          <input id="eh-finalB" type="text" placeholder="Ex: Ele joga fora sem ler">
+        </div>
+      </div>
+      <div class="campo">
+        <label>Nome do autor</label>
+        <input id="eh-autor" type="text" placeholder="Como quer assinar">
+      </div>
+      <div class="switch-linha">
+        <label class="switch"><input type="checkbox" id="eh-anonimo"><span class="slider"></span></label>
+        <span style="font-size:13px;color:var(--texto2)">Publicar como anônimo</span>
+      </div>
+      <div class="campo">
+        <label>Avisos de conteúdo (marque os que se aplicam)</label>
+        <div class="avisos-check" id="eh-avisos"></div>
+      </div>
+      <button class="btn-grande" id="eh-btn" onclick="enviarHistoria()">Enviar para análise</button>
+    </div>
   </div>
 </div>
 
@@ -541,6 +788,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
+
+let usuarioAtual = null;       // objeto do Firebase Auth
+let perfilUsuario = null;      // doc Firestore do perfil
+let acaoAposLogin = null;      // função a executar depois do login
 
 let stories = [];           // todas as histórias (originais do banco)
 let storiesFiltradas = [];  // após categoria/busca/ordenação
@@ -605,6 +858,22 @@ const CLASSIFICACOES = {
   '16':    { label:'16+',   cor:'#ef476f' },
   '18':    { label:'18+',   cor:'#b5179e' }
 };
+
+const AVISOS_LISTA = ['Violência','Sangue','Terror','Terror psicológico','Conteúdo sexual','Nudez','Drogas','Álcool','Linguagem ofensiva','Temas sensíveis','Suicídio','Abuso','Outros'];
+
+// Níveis por pontos (votos dados + comentários + histórias)
+const NIVEIS = [
+  { nome:'Bronze',   min:0 },
+  { nome:'Prata',    min:10 },
+  { nome:'Ouro',     min:50 },
+  { nome:'Diamante', min:150 },
+  { nome:'Lenda',    min:500 }
+];
+function nivelDe(pontos){
+  let atual = NIVEIS[0];
+  for (const n of NIVEIS){ if (pontos >= n.min) atual = n; }
+  return atual.nome;
+}
 
 const HISTORIA_NEYMAR_PADRAO = {
   id: 'neymar-local',
@@ -723,6 +992,8 @@ async function carregarHistorias() {
     renderHero(storyDestaque);
     aplicarFiltros();
     renderEmAlta();
+    carregarComunidade();
+    renderRanking();
 
   } catch(e) {
     console.error('Erro ao carregar Firebase. Usando história local:', e);
@@ -731,6 +1002,7 @@ async function carregarHistorias() {
     renderHero(storyDestaque);
     aplicarFiltros();
     renderEmAlta();
+    renderRanking();
   }
 
   document.getElementById('loading').classList.add('hide');
@@ -804,6 +1076,7 @@ function renderGrid() {
     const cl = classInfo(s);
     const selos = `<div class="story-card-selos">
         <span class="selo selo-cat">${ci.ic} ${ci.label}</span>
+        ${s.premium?'<span class="selo selo-premium">💎 Premium</span>':''}
         ${cl?`<span class="selo selo-class" style="border-color:${cl.cor};color:${cl.cor}">${cl.label}</span>`:''}
       </div>`;
     const tagsConteudo = temAvisos(s)
@@ -822,6 +1095,10 @@ function renderGrid() {
             <span class="story-card-votos">${tot} votos ${encerrada}</span>
           </div>
           ${tagsConteudo}
+          <div class="card-acoes">
+            <button class="card-acao ${jaCurtiu(s)?'ativo':''}" onclick="curtirHistoria(${idx},event)">❤️ ${s.likes||0}</button>
+            <button class="card-acao ${jaFavoritou(s)?'ativo':''}" onclick="favoritarHistoria(${idx},event)">${jaFavoritou(s)?'⭐ Salvo':'☆ Salvar'}</button>
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -877,6 +1154,17 @@ let pendenteAposAviso = null;
 function abrirVideo(s) {
   if (!s) return;
   storyAtual = s;
+
+  // bloqueio premium
+  if (s.premium && !ehPremiumUsuario()){
+    if (!usuarioAtual){
+      pedirLogin('Esta é uma história Premium. Entre e assine para desbloquear.');
+    } else {
+      document.getElementById('premium').scrollIntoView({behavior:'smooth'});
+      toast('💎 História exclusiva para assinantes Premium.');
+    }
+    return;
+  }
 
   // Se a história tem classificação 16+/18+ OU avisos, mostra aviso antes
   const cl = classInfo(s);
@@ -1026,6 +1314,15 @@ function votar(opcao) {
   trackEvent('tempo_leitura', { historia: s.titulo, segundos: seg });
   trackEvent('voto_realizado', { historia: s.titulo, voto: opcao === 'A' ? s.opcaoA : s.opcaoB });
 
+  // se logado, conta o voto no perfil (medalhas/nível)
+  if (usuarioAtual){
+    db.collection('usuarios').doc(usuarioAtual.uid).set({
+      votosDados: firebase.firestore.FieldValue.increment(1),
+      pontos: firebase.firestore.FieldValue.increment(1)
+    },{merge:true}).catch(()=>{});
+    if (perfilUsuario){ perfilUsuario.votosDados=(perfilUsuario.votosDados||0)+1; perfilUsuario.pontos=(perfilUsuario.pontos||0)+1; }
+  }
+
   document.getElementById('decisao-overlay').classList.remove('ativo');
   mostrarResultado(opcao, false);
 }
@@ -1082,8 +1379,17 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
     </div>`;
 
   document.getElementById('resultado-total').innerText = `${tot} voto${tot !== 1 ? 's' : ''} no total`;
+
+  // convite de login dinâmico
+  const conv = document.getElementById('resultado-convite');
+  conv.innerHTML = usuarioAtual
+    ? `✓ <b>Voto salvo no seu perfil.</b> Você está no nível ${nivelDe((perfilUsuario&&perfilUsuario.pontos)||0)}.`
+    : `💡 <b>Entre com o Google</b> para salvar seu histórico de decisões, ganhar medalhas e comentar.`;
+
   document.getElementById('resultado-overlay').classList.add('ativo');
   document.body.style.overflow = 'hidden';
+
+  carregarComentarios();
 
   setTimeout(() => {
     document.querySelectorAll('.barra-fill').forEach(el => { el.style.width = el.dataset.w; });
@@ -1131,10 +1437,482 @@ function toast(msg){
 }
 
 // ============================================================
+// ============================================================
+//  LEVA 2 — AUTENTICAÇÃO COM GOOGLE
+// ============================================================
+auth.onAuthStateChanged(async (user) => {
+  usuarioAtual = user;
+  if (user){
+    await garantirPerfil(user);
+  } else {
+    perfilUsuario = null;
+  }
+  renderContaArea();
+  // re-render para atualizar estados de curtir/favoritar
+  if (stories.length) renderGrid();
+});
+
+async function garantirPerfil(user){
+  const ref = db.collection('usuarios').doc(user.uid);
+  try {
+    const doc = await ref.get();
+    if (!doc.exists){
+      const novo = {
+        nome: user.displayName || 'Leitor',
+        email: user.email || '',
+        foto: user.photoURL || '',
+        bio: '',
+        pontos: 0,
+        historiasEnviadas: 0,
+        votosDados: 0,
+        comentarios: 0,
+        favoritos: [],
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await ref.set(novo);
+      perfilUsuario = { id:user.uid, ...novo };
+      // medalha primeira: conta criada
+    } else {
+      perfilUsuario = { id:user.uid, ...doc.data() };
+    }
+  } catch(e){
+    console.warn('Não foi possível carregar/criar perfil:', e);
+    perfilUsuario = { id:user.uid, nome:user.displayName||'Leitor', email:user.email||'', foto:user.photoURL||'', pontos:0, favoritos:[] };
+  }
+}
+
+function renderContaArea(){
+  const area = document.getElementById('conta-area');
+  if (usuarioAtual){
+    const foto = usuarioAtual.photoURL || 'https://ui-avatars.com/api/?name='+encodeURIComponent(usuarioAtual.displayName||'L')+'&background=151822&color=c9a227';
+    area.innerHTML = `<div class="avatar-btn" onclick="toggleContaMenu(event)">
+      <img src="${foto}" alt="perfil"><span class="nome">${usuarioAtual.displayName||'Leitor'}</span></div>`;
+    document.getElementById('cm-nome').innerText = usuarioAtual.displayName||'Leitor';
+    document.getElementById('cm-email').innerText = usuarioAtual.email||'';
+  } else {
+    area.innerHTML = `<button class="btn-login" onclick="pedirLogin()">👤 Entrar</button>`;
+  }
+}
+
+function toggleContaMenu(e){ e.stopPropagation(); document.getElementById('conta-menu').classList.toggle('aberto'); }
+document.addEventListener('click', ()=>document.getElementById('conta-menu').classList.remove('aberto'));
+
+function pedirLogin(textoCustom){
+  if (textoCustom) document.getElementById('login-texto').innerText = textoCustom;
+  document.getElementById('login-modal').classList.add('ativo');
+  document.body.style.overflow='hidden';
+}
+function fecharLogin(){
+  document.getElementById('login-modal').classList.remove('ativo');
+  document.body.style.overflow='';
+  acaoAposLogin = null;
+}
+async function fazerLogin(){
+  try {
+    await auth.signInWithPopup(provider);
+    trackEvent('login_google');
+    fecharLogin();
+    toast('Bem-vindo! Login realizado.');
+    const acao = acaoAposLogin; acaoAposLogin = null;
+    if (typeof acao === 'function') setTimeout(acao, 300);
+  } catch(e){
+    console.error(e);
+    toast('Não foi possível entrar. Tente novamente.');
+  }
+}
+function fazerLogout(){
+  auth.signOut();
+  document.getElementById('conta-menu').classList.remove('aberto');
+  toast('Você saiu da conta.');
+}
+// exige login: se logado, roda fn; senão abre modal e guarda a ação
+function exigirLogin(fn, texto){
+  if (usuarioAtual){ fn(); }
+  else { acaoAposLogin = fn; pedirLogin(texto); }
+}
+
+// ============================================================
+//  PERFIL
+// ============================================================
+function abrirPerfil(){
+  document.getElementById('conta-menu').classList.remove('aberto');
+  if (!usuarioAtual){ pedirLogin('Entre para ver e montar seu perfil, com medalhas e histórico.'); return; }
+  const p = perfilUsuario || {};
+  const pontos = p.pontos || 0;
+  const foto = usuarioAtual.photoURL || 'https://ui-avatars.com/api/?name=L&background=151822&color=c9a227';
+  const favs = (p.favoritos||[]).length;
+
+  const medalhas = [
+    { ic:'🗳️', nome:'Primeira votação', ok:(p.votosDados||0) >= 1 },
+    { ic:'✍️', nome:'Primeira história', ok:(p.historiasEnviadas||0) >= 1 },
+    { ic:'💬', nome:'Comentador',        ok:(p.comentarios||0) >= 1 },
+    { ic:'🔥', nome:'100 pontos',         ok:pontos >= 100 },
+    { ic:'⭐', nome:'Leitor fiel',        ok:(p.votosDados||0) >= 20 },
+    { ic:'👑', nome:'Lenda',              ok:pontos >= 500 }
+  ];
+
+  document.getElementById('perfil-conteudo').innerHTML = `
+    <div class="perfil-topo">
+      <img src="${foto}" alt="foto">
+      <div>
+        <h2>${usuarioAtual.displayName||'Leitor'}</h2>
+        <span class="perfil-nivel">Nível ${nivelDe(pontos)} · ${pontos} pts</span>
+      </div>
+    </div>
+    <div class="perfil-stats">
+      <div class="pstat"><b>${p.votosDados||0}</b><small>Votos</small></div>
+      <div class="pstat"><b>${p.historiasEnviadas||0}</b><small>Histórias</small></div>
+      <div class="pstat"><b>${p.comentarios||0}</b><small>Comentários</small></div>
+      <div class="pstat"><b>${favs}</b><small>Favoritos</small></div>
+    </div>
+    <div class="perfil-sec-titulo">🏅 Medalhas</div>
+    <div class="medalhas-grid">
+      ${medalhas.map(m=>`<div class="medalha ${m.ok?'':'bloqueada'}"><span class="me-ic">${m.ic}</span>${m.nome}</div>`).join('')}
+    </div>
+    <div class="perfil-sec-titulo">⭐ Meus favoritos</div>
+    <div id="perfil-favoritos" style="font-size:13px;color:var(--texto2)">Carregando...</div>
+  `;
+  document.getElementById('perfil-overlay').classList.add('ativo');
+  document.body.style.overflow='hidden';
+  renderFavoritosPerfil();
+}
+function renderFavoritosPerfil(){
+  const favs = (perfilUsuario && perfilUsuario.favoritos) || [];
+  const el = document.getElementById('perfil-favoritos');
+  if (!el) return;
+  const lista = stories.filter(s => favs.includes(s.id));
+  el.innerHTML = lista.length
+    ? lista.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--borda);cursor:pointer" onclick="fecharPerfil();abrirVideo(stories[${stories.indexOf(s)}])">⭐ ${s.titulo}</div>`).join('')
+    : 'Você ainda não favoritou nenhuma história.';
+}
+function fecharPerfil(){ document.getElementById('perfil-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
+
+// ============================================================
+//  CURTIR / FAVORITAR
+// ============================================================
+function jaFavoritou(s){ return perfilUsuario && (perfilUsuario.favoritos||[]).includes(s.id); }
+function jaCurtiu(s){ return localStorage.getItem('curti_'+s.id) === '1'; }
+
+function curtirHistoria(idx, ev){
+  if (ev) ev.stopPropagation();
+  const s = stories[idx];
+  exigirLogin(async ()=>{
+    if (jaCurtiu(s)){ toast('Você já curtiu esta história.'); return; }
+    localStorage.setItem('curti_'+s.id,'1');
+    s.likes = (s.likes||0)+1;
+    if (!String(s.id).includes('local')){
+      db.collection('plataforma').doc(s.id).set({ likes: firebase.firestore.FieldValue.increment(1) },{merge:true}).catch(()=>{});
+    }
+    trackEvent('curtir_historia',{historia:s.titulo});
+    renderGrid();
+    toast('Curtido! ❤️');
+  }, 'Entre com o Google para curtir histórias.');
+}
+
+function favoritarHistoria(idx, ev){
+  if (ev) ev.stopPropagation();
+  const s = stories[idx];
+  exigirLogin(async ()=>{
+    const ref = db.collection('usuarios').doc(usuarioAtual.uid);
+    const favs = perfilUsuario.favoritos || [];
+    const tinha = favs.includes(s.id);
+    try {
+      if (tinha){
+        await ref.update({ favoritos: firebase.firestore.FieldValue.arrayRemove(s.id) });
+        perfilUsuario.favoritos = favs.filter(x=>x!==s.id);
+        toast('Removido dos favoritos.');
+      } else {
+        await ref.update({ favoritos: firebase.firestore.FieldValue.arrayUnion(s.id) });
+        perfilUsuario.favoritos = [...favs, s.id];
+        toast('Adicionado aos favoritos! ⭐');
+      }
+      trackEvent('favoritar',{historia:s.titulo});
+      renderGrid();
+    } catch(e){ toast('Não foi possível salvar o favorito.'); }
+  }, 'Entre com o Google para favoritar histórias.');
+}
+
+// ============================================================
+//  ENVIAR HISTÓRIA (comunidade — fila de aprovação)
+// ============================================================
+function abrirEnviarHistoria(){
+  document.getElementById('conta-menu').classList.remove('aberto');
+  exigirLogin(()=>{
+    // popula selects e checkboxes
+    document.getElementById('eh-categoria').innerHTML = CATEGORIAS.filter(c=>c.chave!=='todas')
+      .map(c=>`<option value="${c.chave}">${c.ic} ${c.label}</option>`).join('');
+    document.getElementById('eh-classificacao').innerHTML = Object.entries(CLASSIFICACOES)
+      .map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+    document.getElementById('eh-avisos').innerHTML = AVISOS_LISTA
+      .map(a=>`<label><input type="checkbox" value="${a}"> ${a}</label>`).join('');
+    document.getElementById('eh-autor').value = usuarioAtual.displayName || '';
+    document.getElementById('enviar-overlay').classList.add('ativo');
+    document.body.style.overflow='hidden';
+  }, 'Entre com o Google para enviar sua própria história.');
+}
+function fecharEnviarHistoria(){ document.getElementById('enviar-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
+
+async function enviarHistoria(){
+  const titulo = document.getElementById('eh-titulo').value.trim();
+  const texto = document.getElementById('eh-texto').value.trim();
+  const finalA = document.getElementById('eh-finalA').value.trim();
+  const finalB = document.getElementById('eh-finalB').value.trim();
+  if (!titulo || !texto || !finalA || !finalB){
+    toast('Preencha título, texto e os dois finais.');
+    return;
+  }
+  const avisos = Array.from(document.querySelectorAll('#eh-avisos input:checked')).map(i=>i.value);
+  const anonimo = document.getElementById('eh-anonimo').checked;
+  const btn = document.getElementById('eh-btn');
+  btn.disabled = true; btn.innerText = 'Enviando...';
+
+  const dados = {
+    titulo,
+    descricao: texto.slice(0,160),
+    texto,
+    opcaoA: finalA,
+    opcaoB: finalB,
+    categoria: document.getElementById('eh-categoria').value,
+    classificacao: document.getElementById('eh-classificacao').value,
+    avisos,
+    capa: document.getElementById('eh-capa').value.trim() || '',
+    autorNome: anonimo ? 'Anônimo' : (document.getElementById('eh-autor').value.trim() || 'Anônimo'),
+    autorId: usuarioAtual.uid,
+    anonimo,
+    status: 'pendente',     // <-- não publica direto; admin aprova
+    votoA: 0, votoB: 0, acessos: 0, likes: 0,
+    enviadaEm: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await db.collection('comunidade').add(dados);
+    // incrementa contador no perfil
+    db.collection('usuarios').doc(usuarioAtual.uid).set({
+      historiasEnviadas: firebase.firestore.FieldValue.increment(1),
+      pontos: firebase.firestore.FieldValue.increment(5)
+    },{merge:true}).catch(()=>{});
+    trackEvent('historia_enviada',{titulo});
+    fecharEnviarHistoria();
+    toast('História enviada! Ela aparece após a aprovação. ✅');
+    // limpa form
+    ['eh-titulo','eh-texto','eh-finalA','eh-finalB','eh-capa'].forEach(id=>document.getElementById(id).value='');
+  } catch(e){
+    console.error(e);
+    toast('Erro ao enviar. Tente novamente.');
+  } finally {
+    btn.disabled = false; btn.innerText = 'Enviar para análise';
+  }
+}
+
+// ============================================================
+//  HISTÓRIAS DA COMUNIDADE (aprovadas)
+// ============================================================
+async function carregarComunidade(){
+  const grid = document.getElementById('grid-comunidade');
+  try {
+    const snap = await db.collection('comunidade').where('status','==','aprovada').get();
+    const lista = snap.docs.map(d=>({id:d.id, ...d.data(), _comunidade:true}));
+    if (!lista.length) return; // mantém o placeholder
+    // adiciona à coleção geral para reaproveitar abrirVideo/decisão
+    lista.forEach(l=>{ if(!stories.find(s=>s.id===l.id)) stories.push(l); });
+    grid.innerHTML = lista.map(s=>{
+      const idx = stories.indexOf(s);
+      const tot=(s.votoA||0)+(s.votoB||0);
+      const capa = s.capa?`<img class="cc-capa" src="${s.capa}" loading="lazy">`:`<div class="cc-capa" style="display:flex;align-items:center;justify-content:center;font-size:34px">📖</div>`;
+      return `<div class="com-card" onclick="abrirVideo(stories[${idx}])">
+        ${capa}
+        <div class="cc-body">
+          <div class="cc-titulo">${s.titulo}</div>
+          <div class="cc-autor">por ${s.autorNome||'Anônimo'}</div>
+          <div class="cc-meta"><span>🗳 ${tot}</span><span>❤️ ${s.likes||0}</span><span>${catInfo(s.categoria).label}</span></div>
+        </div></div>`;
+    }).join('');
+  } catch(e){ console.warn('Comunidade indisponível:', e); }
+}
+
+// ============================================================
+//  COMENTÁRIOS  (por história, requer login para postar)
+// ============================================================
+function renderFormComentario(){
+  const wrap = document.getElementById('coment-form-wrap');
+  if (!wrap) return;
+  if (!usuarioAtual){
+    wrap.innerHTML = `<div class="coment-login-aviso">Entre para comentar nesta história.<br>
+      <button class="btn-login" onclick="pedirLogin('Entre com o Google para comentar.')">👤 Entrar com Google</button></div>`;
+    return;
+  }
+  const foto = usuarioAtual.photoURL || 'https://ui-avatars.com/api/?name=L&background=151822&color=c9a227';
+  wrap.innerHTML = `<div class="coment-form">
+    <img src="${foto}" alt="você">
+    <textarea id="coment-input" placeholder="Escreva um comentário..."></textarea>
+    <button class="coment-enviar" onclick="postarComentario()">Enviar</button>
+  </div>`;
+}
+
+async function carregarComentarios(){
+  const s = storyAtual;
+  const lista = document.getElementById('coment-lista');
+  if (!s || !lista) return;
+  renderFormComentario();
+  if (String(s.id).includes('local')){
+    lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Comentários ficam disponíveis nas histórias publicadas.</p>`;
+    return;
+  }
+  lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Carregando comentários...</p>`;
+  try {
+    const snap = await db.collection('plataforma').doc(s.id).collection('comentarios')
+      .orderBy('criadoEm','desc').limit(50).get();
+    const cs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    if (!cs.length){ lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Seja o primeiro a comentar.</p>`; return; }
+    lista.innerHTML = cs.map(c=>{
+      const foto = c.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(c.nome||'L')+'&background=151822&color=c9a227';
+      return `<div class="coment-item">
+        <div class="coment-item-head">
+          <img src="${foto}"><b>${c.nome||'Leitor'}</b><small>${tempoRelativo(c.criadoEm)}</small>
+        </div>
+        <div class="coment-texto">${escapeHtml(c.texto||'')}</div>
+        <div class="coment-acoes"><button onclick="curtirComentario('${s.id}','${c.id}')">👍 ${c.likes||0}</button></div>
+      </div>`;
+    }).join('');
+  } catch(e){
+    lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Não foi possível carregar os comentários.</p>`;
+  }
+}
+
+async function postarComentario(){
+  const s = storyAtual;
+  const input = document.getElementById('coment-input');
+  const txt = (input.value||'').trim();
+  if (!txt) return;
+  if (!usuarioAtual){ pedirLogin('Entre para comentar.'); return; }
+  input.value='';
+  try {
+    await db.collection('plataforma').doc(s.id).collection('comentarios').add({
+      texto: txt,
+      nome: usuarioAtual.displayName || 'Leitor',
+      foto: usuarioAtual.photoURL || '',
+      uid: usuarioAtual.uid,
+      likes: 0,
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    db.collection('usuarios').doc(usuarioAtual.uid).set({
+      comentarios: firebase.firestore.FieldValue.increment(1),
+      pontos: firebase.firestore.FieldValue.increment(1)
+    },{merge:true}).catch(()=>{});
+    trackEvent('comentario',{historia:s.titulo});
+    carregarComentarios();
+  } catch(e){ toast('Não foi possível enviar o comentário.'); }
+}
+
+async function curtirComentario(storyId, comId){
+  if (!usuarioAtual){ pedirLogin('Entre para curtir comentários.'); return; }
+  const k = 'curtiCom_'+comId;
+  if (localStorage.getItem(k)){ toast('Você já curtiu.'); return; }
+  localStorage.setItem(k,'1');
+  try {
+    await db.collection('plataforma').doc(storyId).collection('comentarios').doc(comId)
+      .set({ likes: firebase.firestore.FieldValue.increment(1) },{merge:true});
+    carregarComentarios();
+  } catch(e){}
+}
+
+function tempoRelativo(ts){
+  if (!ts || !ts.toDate) return 'agora';
+  const d = ts.toDate(); const diff = (Date.now()-d.getTime())/1000;
+  if (diff < 60) return 'agora';
+  if (diff < 3600) return Math.floor(diff/60)+' min';
+  if (diff < 86400) return Math.floor(diff/3600)+' h';
+  return Math.floor(diff/86400)+' d';
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ============================================================
+//  LEVA 3 — RANKING
+// ============================================================
+const RANK_ABAS = [
+  { chave:'votadas',  label:'🗳 Mais votadas' },
+  { chave:'curtidas', label:'❤️ Mais curtidas' },
+  { chave:'autores',  label:'✍️ Autores' },
+  { chave:'usuarios', label:'👥 Participativos' }
+];
+let rankAbaAtual = 'votadas';
+
+function renderRankingAbas(){
+  document.getElementById('ranking-abas').innerHTML = RANK_ABAS.map(a=>
+    `<button class="rank-aba ${a.chave===rankAbaAtual?'ativo':''}" onclick="setRankAba('${a.chave}')">${a.label}</button>`
+  ).join('');
+}
+function setRankAba(ch){ rankAbaAtual = ch; renderRankingAbas(); renderRanking(); }
+
+async function renderRanking(){
+  const el = document.getElementById('ranking-conteudo');
+  el.innerHTML = '<p style="color:var(--texto2);font-size:13px">Carregando ranking...</p>';
+
+  if (rankAbaAtual === 'votadas' || rankAbaAtual === 'curtidas'){
+    const campo = rankAbaAtual === 'votadas'
+      ? (s)=> (s.votoA||0)+(s.votoB||0)
+      : (s)=> (s.likes||0);
+    const lista = stories.slice().sort((a,b)=>campo(b)-campo(a)).slice(0,10).filter(s=>campo(s)>0);
+    if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">🏆</span><h3>Sem dados ainda</h3><p>Quando as histórias receberem votos e curtidas, o ranking aparece aqui.</p></div>`; return; }
+    el.innerHTML = `<div class="rank-lista">${lista.map((s,i)=>{
+      const idx = stories.indexOf(s);
+      const cap = s.capa?`<img class="rank-foto" src="${s.capa}">`:`<div class="rank-foto" style="display:flex;align-items:center;justify-content:center">🎬</div>`;
+      return `<div class="rank-item" style="cursor:pointer" onclick="abrirVideo(stories[${idx}])">
+        <div class="rank-pos ${i<3?'top':''}">${i+1}</div>${cap}
+        <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${catInfo(s.categoria).label}</div></div>
+        <div class="rank-valor">${campo(s)}</div></div>`;
+    }).join('')}</div>`;
+    return;
+  }
+
+  if (rankAbaAtual === 'usuarios' || rankAbaAtual === 'autores'){
+    try {
+      const campoOrdem = rankAbaAtual === 'autores' ? 'historiasEnviadas' : 'pontos';
+      const snap = await db.collection('usuarios').orderBy(campoOrdem,'desc').limit(10).get();
+      let lista = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(u=>(u[campoOrdem]||0)>0);
+      if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">👥</span><h3>Ninguém no ranking ainda</h3><p>Vote, comente e envie histórias para aparecer aqui.</p></div>`; return; }
+      el.innerHTML = `<div class="rank-lista">${lista.map((u,i)=>{
+        const foto = u.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.nome||'L')+'&background=151822&color=c9a227';
+        const valor = rankAbaAtual==='autores' ? `${u.historiasEnviadas||0} hist.` : `${u.pontos||0} pts`;
+        const sub = rankAbaAtual==='autores' ? 'Autor da comunidade' : `Nível ${nivelDe(u.pontos||0)}`;
+        return `<div class="rank-item">
+          <div class="rank-pos ${i<3?'top':''}">${i+1}</div>
+          <img class="rank-foto" src="${foto}">
+          <div class="rank-info"><div class="rank-nome">${u.nome||'Leitor'}</div><div class="rank-sub">${sub}</div></div>
+          <div class="rank-valor">${valor}</div></div>`;
+      }).join('')}</div>`;
+    } catch(e){
+      el.innerHTML = `<div class="em-breve"><span class="eb-ic">👥</span><h3>Ranking de pessoas em breve</h3><p>Assim que houver participação suficiente, ele aparece aqui.</p></div>`;
+    }
+  }
+}
+
+// ============================================================
+//  LEVA 3 — PREMIUM
+// ============================================================
+function ehPremiumUsuario(){
+  return !!(perfilUsuario && perfilUsuario.premium);
+}
+function podeAbrir(s){
+  // história premium só abre para assinante
+  if (s.premium && !ehPremiumUsuario()) return false;
+  return true;
+}
+function assinarPremium(){
+  exigirLogin(()=>{
+    // Estrutura preparada: aqui entraria o checkout real (ex: Stripe/Mercado Pago).
+    // Por enquanto, registra interesse e explica.
+    trackEvent('interesse_premium');
+    toast('Pagamento ainda não está ativo. Em breve! 💎');
+  }, 'Entre com o Google para assinar o Premium.');
+}
+
+// ============================================================
 //  INIT
 // ============================================================
 renderMenu();
 renderFiltros();
+renderRankingAbas();
 carregarHistorias();
 
 window.addEventListener('beforeunload', () => {
