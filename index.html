@@ -3,7 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Você é o Juiz</title>
+<title>Você é o Juiz — Assista. Decida. Julgue.</title>
+
+<!-- ===================== SEO + OPEN GRAPH ===================== -->
+<meta name="description" content="Você é o Juiz: assista histórias interativas, vote nos finais e veja a decisão da comunidade. Mistério, terror, crime, futebol e muito mais.">
+<meta name="keywords" content="histórias interativas, votação, finais alternativos, suspense, terror, mistério, você é o juiz">
+<meta name="author" content="Você é o Juiz">
+<meta name="theme-color" content="#05060a">
+<link rel="canonical" href="https://voceeojuiz.com/">
+
+<!-- Open Graph (WhatsApp, Facebook, Instagram) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Você é o Juiz">
+<meta property="og:title" content="Você é o Juiz — Assista. Decida. Julgue.">
+<meta property="og:description" content="Assista histórias interativas, vote nos finais e veja a decisão da comunidade.">
+<meta property="og:image" content="https://picsum.photos/1200/630">
+<meta property="og:url" content="https://voceeojuiz.com/">
+<meta property="og:locale" content="pt_BR">
+
+<!-- Twitter / X / TikTok -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Você é o Juiz — Assista. Decida. Julgue.">
+<meta name="twitter:description" content="Assista histórias interativas, vote nos finais e veja a decisão da comunidade.">
+<meta name="twitter:image" content="https://picsum.photos/1200/630">
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Você é o Juiz",
+  "url": "https://voceeojuiz.com/",
+  "description": "Histórias interativas onde você assiste, decide e julga o final.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://voceeojuiz.com/?busca={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-R5XH79YPX2"></script>
@@ -38,16 +76,30 @@ html{scroll-behavior:smooth}
 body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden}
 
 /* ---- HEADER ---- */
-header{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(5,6,10,0.95),transparent)}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+header{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(5,6,10,0.96),rgba(5,6,10,0.6) 70%,transparent);transition:background 0.3s}
+header.solido{background:rgba(5,6,10,0.97);border-bottom:1px solid var(--borda)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
 .logo-icon{font-size:26px}
 .logo-text{font-size:20px;font-weight:900;letter-spacing:1px;color:var(--ouro);text-transform:uppercase}
 .logo-sub{font-size:10px;color:var(--texto2);letter-spacing:3px;text-transform:uppercase;display:block;margin-top:-4px}
-nav a{color:var(--texto2);text-decoration:none;font-size:14px;margin-left:20px;transition:color 0.2s}
-nav a:hover{color:var(--ouro)}
+
+/* ---- NAV (desktop) ---- */
+nav.menu-principal{display:flex;align-items:center;gap:2px;flex-wrap:wrap;justify-content:flex-end}
+nav.menu-principal a{color:var(--texto2);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:6px;transition:color 0.2s,background 0.2s;white-space:nowrap}
+nav.menu-principal a:hover,nav.menu-principal a.ativo{color:var(--ouro);background:rgba(201,162,39,0.08)}
+nav.menu-principal a .ic{margin-right:4px;font-size:13px}
+.btn-menu-mobile{display:none;background:transparent;border:1px solid var(--borda);color:var(--ouro);width:42px;height:42px;border-radius:8px;font-size:20px;cursor:pointer}
+
+/* ---- MENU MOBILE (drawer) ---- */
+#menu-mobile{position:fixed;inset:0;z-index:200;background:rgba(5,6,10,0.98);display:none;flex-direction:column;padding:80px 24px 24px;overflow-y:auto}
+#menu-mobile.aberto{display:flex}
+#menu-mobile a{color:var(--texto);text-decoration:none;font-size:18px;padding:14px 8px;border-bottom:1px solid var(--borda);display:flex;align-items:center;gap:12px;transition:color 0.2s}
+#menu-mobile a:hover{color:var(--ouro)}
+#menu-mobile a .ic{font-size:20px;width:26px;text-align:center}
+#btn-fechar-menu{position:absolute;top:18px;right:24px;background:transparent;border:none;color:var(--texto2);font-size:28px;cursor:pointer}
 
 /* ---- HERO ---- */
-#hero{position:relative;width:100%;height:100vh;min-height:500px;display:flex;align-items:flex-end;padding:0 24px 60px;overflow:hidden}
+#hero{position:relative;width:100%;height:100vh;min-height:520px;display:flex;align-items:flex-end;padding:0 24px 60px;overflow:hidden}
 #hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 0.8s}
 #hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(5,6,10,1) 0%,rgba(5,6,10,0.7) 40%,rgba(5,6,10,0.2) 100%)}
 .hero-content{position:relative;z-index:1;max-width:640px}
@@ -56,16 +108,43 @@ nav a:hover{color:var(--ouro)}
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:0.3}}
 #hero-titulo{font-size:clamp(28px,5vw,54px);font-weight:900;line-height:1.1;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
 #hero-desc{font-size:16px;color:var(--texto2);line-height:1.6;margin-bottom:8px;max-width:480px}
-#hero-dur{font-size:13px;color:var(--ouro);margin-bottom:28px;display:flex;align-items:center;gap:8px}
+#hero-dur{font-size:13px;color:var(--ouro);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 #hero-dur::before{content:'▶';font-size:10px}
+
+/* ---- CONTADOR HISTÓRIA DO DIA ---- */
+#hero-contador{display:none;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+#hero-contador.ativo{display:flex}
+.contador-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--texto2)}
+.contador-blocos{display:flex;gap:6px}
+.contador-bloco{background:rgba(15,17,26,0.85);border:1px solid var(--borda);border-radius:8px;min-width:46px;padding:6px 4px;text-align:center}
+.contador-bloco b{display:block;font-size:20px;font-weight:900;color:var(--ouro);line-height:1}
+.contador-bloco small{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--texto2)}
+.contador-encerrado{font-size:13px;color:#ef476f;font-weight:700;background:rgba(239,71,111,0.1);border:1px solid rgba(239,71,111,0.35);padding:6px 14px;border-radius:8px}
+
 .btn-assistir{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:16px;font-weight:900;padding:14px 32px;border-radius:8px;border:none;cursor:pointer;letter-spacing:1px;transition:transform 0.2s,box-shadow 0.2s;text-transform:uppercase}
 .btn-assistir:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(201,162,39,0.4)}
 .btn-assistir svg{width:20px;height:20px}
 
 /* ---- SEÇÕES ---- */
-section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
-.sec-titulo{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ouro);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
+.sec-titulo{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--ouro);margin-bottom:20px;display:flex;align-items:center;gap:10px}
 .sec-titulo::after{content:'';flex:1;height:1px;background:var(--borda)}
+
+/* ---- BARRA DE CATEGORIAS + FILTROS ---- */
+#barra-filtros{position:sticky;top:64px;z-index:50;background:rgba(5,6,10,0.92);backdrop-filter:blur(8px);border-top:1px solid var(--borda);border-bottom:1px solid var(--borda);padding:12px 0;margin-bottom:8px}
+.filtros-wrap{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:var(--card);border:1px solid var(--borda);color:var(--texto2);font-size:13px;padding:7px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--ouro);color:var(--texto)}
+.chip.ativo{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border-color:var(--ouro);font-weight:700}
+.ordenar-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ordenar-row .ord-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--texto2)}
+.ord-btns{display:flex;gap:6px;flex-wrap:wrap}
+.ord-btn{background:transparent;border:1px solid var(--borda);color:var(--texto2);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all 0.2s}
+.ord-btn:hover,.ord-btn.ativo{border-color:var(--ouro);color:var(--ouro)}
+#busca-input{flex:1;min-width:140px;background:var(--card);border:1px solid var(--borda);border-radius:8px;padding:8px 14px;color:var(--texto);font-size:13px;outline:none}
+#busca-input:focus{border-color:var(--ouro)}
 
 /* ---- GRID DE HISTÓRIAS ---- */
 #grid-historias{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:60px}
@@ -80,6 +159,13 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 .story-card-dur{font-size:11px;color:var(--ouro);display:flex;align-items:center;gap:4px}
 .story-card-votos{font-size:11px;color:var(--texto2)}
 .story-card-novo{position:absolute;top:10px;left:10px;background:var(--ouro);color:#05060a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px;text-transform:uppercase}
+/* Selos: categoria + classificação indicativa */
+.story-card-selos{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.selo{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.5px;backdrop-filter:blur(4px)}
+.selo-cat{background:rgba(15,17,26,0.85);color:var(--ouro);border:1px solid rgba(201,162,39,0.4)}
+.selo-class{background:rgba(15,17,26,0.85);border:1px solid var(--borda);color:#fff}
+.story-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.mini-tag{font-size:10px;color:var(--texto2);background:var(--card2);border:1px solid var(--borda);padding:2px 7px;border-radius:10px}
 
 /* ---- HISTÓRIAS ANTERIORES ---- */
 #grid-anteriores{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:60px}
@@ -88,6 +174,13 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 .anterior-card-tag{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin-bottom:8px;display:block}
 .anterior-card-titulo{font-size:14px;font-weight:700;margin-bottom:6px;line-height:1.3}
 .anterior-card-desc{font-size:12px;color:var(--texto2);line-height:1.5}
+
+/* ---- BLOCOS "EM BREVE" (estrutura preparada) ---- */
+.em-breve{background:linear-gradient(135deg,var(--card),var(--card2));border:1px dashed var(--borda);border-radius:12px;padding:28px 24px;text-align:center;color:var(--texto2)}
+.em-breve .eb-ic{font-size:34px;display:block;margin-bottom:10px}
+.em-breve h3{color:var(--texto);font-size:17px;margin-bottom:6px}
+.em-breve p{font-size:13px;line-height:1.5;max-width:420px;margin:0 auto}
+.em-breve .eb-badge{display:inline-block;margin-top:12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);border:1px solid rgba(201,162,39,0.4);border-radius:20px;padding:4px 12px}
 
 /* ---- LOADING ---- */
 #loading{position:fixed;inset:0;background:var(--fundo);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.5s}
@@ -120,6 +213,22 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 #video-sem-url p{font-size:16px}
 #video-sem-url small{font-size:13px;opacity:0.6}
 
+/* ---- AVISO DE CONTEÚDO (classificação indicativa) ---- */
+#aviso-overlay{display:none;position:fixed;inset:0;z-index:550;background:rgba(5,6,10,0.97);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#aviso-overlay.ativo{display:flex}
+.aviso-box{background:var(--card);border:1px solid var(--borda);border-radius:16px;padding:32px 28px;max-width:440px;width:100%}
+.aviso-ic{font-size:40px;margin-bottom:8px}
+.aviso-box h2{font-size:20px;margin-bottom:14px}
+.aviso-class{display:inline-block;font-size:14px;font-weight:800;padding:5px 16px;border-radius:20px;margin-bottom:18px}
+.aviso-box p{font-size:14px;color:var(--texto2);line-height:1.6;margin-bottom:8px}
+.aviso-temas{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.aviso-tema{font-size:12px;background:var(--card2);border:1px solid var(--borda);color:var(--texto);padding:4px 10px;border-radius:14px}
+.aviso-legal{font-size:12px;color:var(--texto2);font-style:italic;margin:16px 0 22px}
+.aviso-botoes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.aviso-botoes button{padding:11px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none}
+.av-voltar{background:var(--card2);color:var(--texto2);border:1px solid var(--borda)!important}
+.av-continuar{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a}
+
 /* ---- DECISÃO ---- */
 #decisao-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(5,6,10,0.97);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 #decisao-overlay.ativo{display:flex}
@@ -133,16 +242,24 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 .btn-opcao.b{background:transparent;color:#fff;border-color:rgba(255,255,255,0.3)}
 .btn-opcao.a:hover{transform:scale(1.04);box-shadow:0 8px 30px rgba(201,162,39,0.5)}
 .btn-opcao.b:hover{border-color:#fff;transform:scale(1.04)}
+.btn-opcao:disabled{opacity:0.5;cursor:not-allowed}
 .decisao-aviso{font-size:11px;color:var(--texto2);margin-top:28px;opacity:0.7}
+#decisao-encerrada{display:none;font-size:13px;color:#ef476f;font-weight:700;background:rgba(239,71,111,0.1);border:1px solid rgba(239,71,111,0.35);padding:10px 18px;border-radius:8px;margin-bottom:24px}
 
 /* ---- RESULTADO ---- */
-#resultado-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(5,6,10,0.98);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#resultado-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(5,6,10,0.98);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto}
 #resultado-overlay.ativo{display:flex}
 .resultado-icone{font-size:48px;margin-bottom:16px}
 .resultado-titulo{font-size:24px;font-weight:900;color:var(--ouro);margin-bottom:6px}
 .resultado-voto-label{font-size:13px;color:var(--texto2);margin-bottom:4px}
-.resultado-voto-escolha{font-size:18px;font-weight:700;margin-bottom:32px;color:#fff}
-.resultado-barras{width:100%;max-width:480px;margin:0 auto 32px}
+.resultado-voto-escolha{font-size:18px;font-weight:700;margin-bottom:24px;color:#fff}
+/* resumo igual/diferente */
+.resultado-resumo{display:flex;gap:12px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.resumo-item{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px 18px;min-width:120px}
+.resumo-item b{display:block;font-size:24px;font-weight:900;color:var(--ouro);line-height:1}
+.resumo-item.dif b{color:#6b7ab8}
+.resumo-item small{font-size:11px;color:var(--texto2);letter-spacing:0.5px;text-transform:uppercase}
+.resultado-barras{width:100%;max-width:480px;margin:0 auto 24px}
 .barra-item{margin-bottom:16px;text-align:left}
 .barra-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
 .barra-label span:first-child{font-weight:600}
@@ -150,11 +267,18 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 .barra-bg{height:10px;background:var(--borda);border-radius:10px;overflow:hidden}
 .barra-fill{height:100%;border-radius:10px;transition:width 1s ease;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro))}
 .barra-fill.b{background:linear-gradient(90deg,#4a5280,#6b7ab8)}
-.resultado-total{font-size:13px;color:var(--texto2);margin-bottom:28px}
+.barra-vencedor{display:inline-block;margin-left:8px;font-size:10px;color:var(--ouro);border:1px solid var(--ouro);border-radius:10px;padding:1px 8px;letter-spacing:1px;text-transform:uppercase;vertical-align:middle}
+.resultado-total{font-size:13px;color:var(--texto2);margin-bottom:20px}
+/* compartilhar */
+.btn-compartilhar{display:inline-flex;align-items:center;gap:8px;background:rgba(201,162,39,0.12);border:1px solid var(--ouro);color:var(--ouro);font-size:14px;font-weight:700;padding:11px 24px;border-radius:8px;cursor:pointer;margin-bottom:26px;transition:all 0.2s}
+.btn-compartilhar:hover{background:rgba(201,162,39,0.22)}
 .btn-resultado{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;letter-spacing:1px;text-transform:uppercase}
 .btn-resultado.voltar{background:var(--card2);color:var(--texto2);border:1px solid var(--borda);margin-right:10px}
 .btn-resultado.home{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a}
 .resultado-ja-votou{font-size:13px;color:var(--ouro);margin-bottom:16px;background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.3);padding:8px 16px;border-radius:6px}
+/* convite login (placeholder Leva 2) */
+.resultado-convite{font-size:12px;color:var(--texto2);background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px 16px;max-width:420px;margin:0 auto 22px;line-height:1.5}
+.resultado-convite b{color:var(--ouro)}
 
 /* ---- EMPTY STATE ---- */
 .empty-state{text-align:center;padding:60px 24px;color:var(--texto2)}
@@ -162,16 +286,27 @@ section{max-width:1100px;margin:0 auto;padding:60px 24px 20px}
 .empty-state p{font-size:15px}
 .empty-state small{font-size:12px;opacity:0.6;display:block;margin-top:8px}
 
+/* ---- TOAST ---- */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--card);border:1px solid var(--ouro);color:var(--texto);padding:12px 22px;border-radius:10px;font-size:14px;z-index:9000;transition:transform 0.3s;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
 /* ---- FOOTER ---- */
 footer{border-top:1px solid var(--borda);padding:30px 24px;text-align:center;color:var(--texto2);font-size:13px;margin-top:40px}
 footer a{color:var(--ouro);text-decoration:none}
 
 /* ---- RESPONSIVO ---- */
+@media(max-width:820px){
+  nav.menu-principal{display:none}
+  .btn-menu-mobile{display:block}
+}
 @media(max-width:600px){
   #hero{padding:0 16px 50px}
+  #barra-filtros{top:60px}
   .decisao-opcoes{flex-direction:column;align-items:center}
   .btn-opcao{max-width:100%;width:100%}
-  nav{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
 }
 </style>
 </head>
@@ -184,29 +319,37 @@ footer a{color:var(--ouro);text-decoration:none}
 </div>
 
 <!-- HEADER -->
-<header>
-  <a class="logo" href="#">
+<header id="cabecalho">
+  <a class="logo" href="#topo" onclick="scrollTopo(event)">
     <span class="logo-icon">⚖️</span>
     <div>
       <span class="logo-text">Você é o Juiz</span>
       <span class="logo-sub">Assista. Decida. Julgue.</span>
     </div>
   </a>
-  <nav>
-    <a href="#videos">Vídeos</a>
-    <a href="#anteriores">Histórias</a>
-    <a href="mailto:bbdosebooks@gmail.com">Contato</a>
-  </nav>
+  <nav class="menu-principal" id="menu-desktop"></nav>
+  <button class="btn-menu-mobile" onclick="abrirMenuMobile()" aria-label="Abrir menu">☰</button>
 </header>
+
+<!-- MENU MOBILE -->
+<div id="menu-mobile">
+  <button id="btn-fechar-menu" onclick="fecharMenuMobile()" aria-label="Fechar menu">✕</button>
+  <div id="menu-mobile-itens"></div>
+</div>
 
 <!-- HERO -->
 <div id="hero">
+  <span id="topo"></span>
   <div id="hero-bg"></div>
   <div class="hero-content">
-    <div class="hero-badge">⚡ Em destaque</div>
+    <div class="hero-badge" id="hero-badge">⚡ Em destaque</div>
     <h1 id="hero-titulo">Carregando...</h1>
     <p id="hero-desc"></p>
     <div id="hero-dur"></div>
+    <div id="hero-contador">
+      <span class="contador-label">Votação encerra em</span>
+      <div class="contador-blocos" id="contador-blocos"></div>
+    </div>
     <button class="btn-assistir" id="btn-hero-assistir" onclick="abrirVideo(storyDestaque)">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       ASSISTIR AGORA
@@ -214,9 +357,21 @@ footer a{color:var(--ouro);text-decoration:none}
   </div>
 </div>
 
+<!-- BARRA DE CATEGORIAS + FILTROS -->
+<div id="barra-filtros">
+  <div class="filtros-wrap">
+    <div class="chips" id="chips-categorias"></div>
+    <div class="ordenar-row">
+      <span class="ord-label">Ordenar</span>
+      <div class="ord-btns" id="ord-btns"></div>
+      <input id="busca-input" type="search" placeholder="🔎 Buscar história..." oninput="onBusca(this.value)">
+    </div>
+  </div>
+</div>
+
 <!-- GRID DE VÍDEOS -->
 <section id="videos">
-  <div class="sec-titulo">Todas as histórias</div>
+  <div class="sec-titulo" id="titulo-grid">Todas as histórias</div>
   <div id="grid-historias">
     <div class="empty-state" style="grid-column:1/-1">
       <span>🎬</span>
@@ -225,9 +380,15 @@ footer a{color:var(--ouro);text-decoration:none}
   </div>
 </section>
 
+<!-- EM ALTA (estrutura preparada) -->
+<section id="em-alta">
+  <div class="sec-titulo">🔥 Em Alta</div>
+  <div id="grid-em-alta"></div>
+</section>
+
 <!-- HISTÓRIAS ANTERIORES (texto) -->
 <section id="anteriores">
-  <div class="sec-titulo">Histórias em texto</div>
+  <div class="sec-titulo">📚 Histórias em texto</div>
   <div id="grid-anteriores">
     <a class="anterior-card" href="historias/casa-17.html">
       <span class="anterior-card-tag">Mistério / Suspense</span>
@@ -252,6 +413,46 @@ footer a{color:var(--ouro);text-decoration:none}
   </div>
 </section>
 
+<!-- COMUNIDADE / ENVIE SUA HISTÓRIA / RANKING / PERFIL / PREMIUM (estrutura preparada p/ Leva 2 e 3) -->
+<section id="comunidade">
+  <div class="sec-titulo">📚 Comunidade</div>
+  <div class="em-breve">
+    <span class="eb-ic">✍️</span>
+    <h3>Envie sua própria história</h3>
+    <p>Em breve você vai poder escrever histórias, escolher os dois finais e deixar a comunidade decidir. As histórias passam por aprovação antes de ir ao ar.</p>
+    <span class="eb-badge">Em breve · requer login</span>
+  </div>
+</section>
+
+<section id="ranking">
+  <div class="sec-titulo">🏆 Ranking</div>
+  <div class="em-breve">
+    <span class="eb-ic">🏆</span>
+    <h3>Ranking e medalhas</h3>
+    <p>Histórias mais votadas, autores em alta e medalhas por participação. Crie seu perfil para entrar na disputa.</p>
+    <span class="eb-badge">Em breve</span>
+  </div>
+</section>
+
+<section id="premium">
+  <div class="sec-titulo">💎 Premium</div>
+  <div class="em-breve">
+    <span class="eb-ic">💎</span>
+    <h3>Experiência Premium</h3>
+    <p>Histórias exclusivas, finais secretos, acesso antecipado e desafios especiais. O site continua gratuito — Premium é só um extra.</p>
+    <span class="eb-badge">Em breve</span>
+  </div>
+</section>
+
+<section id="sobre">
+  <div class="sec-titulo">ℹ️ Sobre</div>
+  <div class="em-breve" style="border-style:solid">
+    <span class="eb-ic">⚖️</span>
+    <h3>Você é o Juiz</h3>
+    <p>Histórias interativas onde você assiste, decide o final e vê o veredito da comunidade. Cada escolha conta.</p>
+  </div>
+</section>
+
 <footer>
   <p>© 2025 Você é o Juiz · <a href="mailto:bbdosebooks@gmail.com">bbdosebooks@gmail.com</a> · <a href="admin.html">Admin</a></p>
 </footer>
@@ -271,12 +472,29 @@ footer a{color:var(--ouro);text-decoration:none}
   </div>
 </div>
 
+<!-- AVISO DE CONTEÚDO -->
+<div id="aviso-overlay">
+  <div class="aviso-box">
+    <div class="aviso-ic">⚠️</div>
+    <h2>Aviso de conteúdo</h2>
+    <span class="aviso-class" id="aviso-class-badge"></span>
+    <p>Esta história pode conter:</p>
+    <div class="aviso-temas" id="aviso-temas"></div>
+    <p class="aviso-legal">Esta obra é fictícia e pode conter temas sensíveis que não são apropriados para todos os públicos.</p>
+    <div class="aviso-botoes">
+      <button class="av-voltar" onclick="fecharAviso()">← Voltar</button>
+      <button class="av-continuar" onclick="continuarAposAviso()">Continuar →</button>
+    </div>
+  </div>
+</div>
+
 <!-- DECISÃO -->
 <div id="decisao-overlay">
   <div class="decisao-linha"></div>
   <div id="decisao-historia-nome"></div>
   <div class="decisao-titulo-grande">A DECISÃO<br>É SUA</div>
   <div class="decisao-sub">Escolha com cuidado. Não há como voltar atrás.</div>
+  <div id="decisao-encerrada">⏱️ A votação desta história já foi encerrada. Veja o resultado oficial.</div>
   <div class="decisao-opcoes">
     <button class="btn-opcao a" id="btn-opcao-a" onclick="votar('A')"></button>
     <button class="btn-opcao b" id="btn-opcao-b" onclick="votar('B')"></button>
@@ -291,16 +509,28 @@ footer a{color:var(--ouro);text-decoration:none}
   <div class="resultado-voto-label">Você escolheu:</div>
   <div class="resultado-voto-escolha" id="resultado-escolha-texto"></div>
   <div id="resultado-ja-votou-msg"></div>
+  <div class="resultado-resumo" id="resultado-resumo"></div>
   <div class="resultado-barras" id="resultado-barras"></div>
   <div class="resultado-total" id="resultado-total"></div>
+  <button class="btn-compartilhar" id="btn-compartilhar" onclick="compartilhar()">
+    🔗 Compartilhar este veredito
+  </button>
+  <div class="resultado-convite">
+    💡 <b>Em breve:</b> entre com o Google para salvar seu histórico de decisões, ganhar medalhas e acompanhar a comunidade.
+  </div>
   <div>
     <button class="btn-resultado voltar" onclick="fecharResultado()">← Voltar</button>
     <button class="btn-resultado home" onclick="irParaHome()">🏠 Página inicial</button>
   </div>
 </div>
 
+<!-- TOAST -->
+<div id="toast"></div>
+
 <script>
-// ---- Firebase ----
+// ============================================================
+//  FIREBASE  (inalterado)
+// ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB9RA0dFoE_PlzrcpaqQMsw0aWyBEjVc50",
   authDomain: "voce-e-o-juiz.firebaseapp.com",
@@ -312,11 +542,69 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let stories = [];
+let stories = [];           // todas as histórias (originais do banco)
+let storiesFiltradas = [];  // após categoria/busca/ordenação
 let storyDestaque = null;
 let storyAtual = null;
 const videoEl = document.getElementById('video-player');
 let inicioLeitura = Date.now();
+
+// filtros ativos
+let filtroCategoria = 'todas';
+let ordemAtual = 'destaque';
+let termoBusca = '';
+let contadorInterval = null;
+
+// ============================================================
+//  CONFIG: MENU + CATEGORIAS + CLASSIFICAÇÃO  (front-end)
+// ============================================================
+const MENU = [
+  { label:'Início',           ic:'🏠', href:'#topo' },
+  { label:'Histórias',        ic:'📖', href:'#videos' },
+  { label:'Em Alta',          ic:'🔥', href:'#em-alta' },
+  { label:'Novidades',        ic:'🆕', href:'#videos' },
+  { label:'Vídeos',           ic:'🎥', href:'#videos' },
+  { label:'Ranking',          ic:'🏆', href:'#ranking' },
+  { label:'Comunidade',       ic:'📚', href:'#comunidade' },
+  { label:'Envie sua História',ic:'✍️', href:'#comunidade' },
+  { label:'Meu Perfil',       ic:'👤', href:'#comunidade' },
+  { label:'Premium',          ic:'💎', href:'#premium' },
+  { label:'Sobre',            ic:'ℹ️', href:'#sobre' }
+];
+
+// Categorias do briefing. A "chave" é o que deve ser salvo no admin (campo "categoria").
+const CATEGORIAS = [
+  { chave:'todas',     label:'Todas',          ic:'🎬' },
+  { chave:'futebol',   label:'Futebol',        ic:'⚽' },
+  { chave:'terror',    label:'Terror',         ic:'👻' },
+  { chave:'romance',   label:'Romance',        ic:'❤️' },
+  { chave:'misterio',  label:'Mistério',       ic:'🕵️' },
+  { chave:'crime',     label:'Crime',          ic:'🚔' },
+  { chave:'ficcao',    label:'Ficção',         ic:'👽' },
+  { chave:'humor',     label:'Humor',          ic:'😂' },
+  { chave:'suspense',  label:'Suspense',       ic:'😱' },
+  { chave:'reflexao',  label:'Reflexão',       ic:'🧠' },
+  { chave:'reais',     label:'Histórias Reais',ic:'📜' },
+  { chave:'drama',     label:'Drama',          ic:'🎭' },
+  { chave:'aleatorias',label:'Aleatórias',     ic:'🎲' }
+];
+
+const ORDENS = [
+  { chave:'destaque', label:'Destaque' },
+  { chave:'votadas',  label:'Mais votadas' },
+  { chave:'novas',    label:'Mais novas' },
+  { chave:'alta',     label:'Em alta' }
+];
+
+// Classificação indicativa (cores). A "chave" é o que se salva no admin (campo "classificacao").
+const CLASSIFICACOES = {
+  'livre': { label:'Livre', cor:'#06d6a0' },
+  '10':    { label:'10+',   cor:'#9acd32' },
+  '12':    { label:'12+',   cor:'#ffd166' },
+  '14':    { label:'14+',   cor:'#f4a261' },
+  '16':    { label:'16+',   cor:'#ef476f' },
+  '18':    { label:'18+',   cor:'#b5179e' }
+};
 
 const HISTORIA_NEYMAR_PADRAO = {
   id: 'neymar-local',
@@ -327,6 +615,7 @@ const HISTORIA_NEYMAR_PADRAO = {
   video: 'videos/neymar.mp4',
   opcaoA: 'Escalar Neymar',
   opcaoB: 'Poupar Neymar',
+  categoria: 'futebol',
   ordem: 1,
   destaque: true,
   votoA: 0,
@@ -334,99 +623,282 @@ const HISTORIA_NEYMAR_PADRAO = {
   acessos: 0
 };
 
-// ---- CARREGAR HISTÓRIAS ----
+// ============================================================
+//  HELPERS de categoria / classificação / vencedor
+// ============================================================
+function catInfo(chave){
+  return CATEGORIAS.find(c => c.chave === (chave||'').toLowerCase()) || CATEGORIAS.find(c=>c.chave==='aleatorias');
+}
+function classInfo(s){
+  const ch = (s.classificacao || '').toString().toLowerCase().replace('+','');
+  return CLASSIFICACOES[ch] || null;
+}
+function temAvisos(s){
+  return Array.isArray(s.avisos) && s.avisos.length > 0;
+}
+// votação encerrada? usa campo opcional "fimVotacao" (timestamp em ms ou ISO) OU flag "encerrada"
+function votacaoEncerrada(s){
+  if (s.encerrada === true) return true;
+  if (s.fimVotacao){
+    const fim = typeof s.fimVotacao === 'number' ? s.fimVotacao : new Date(s.fimVotacao).getTime();
+    if (!isNaN(fim)) return Date.now() > fim;
+  }
+  return false;
+}
+function finalVencedor(s){
+  const a = s.votoA||0, b = s.votoB||0;
+  if (a === b) return null;
+  return a > b ? 'A' : 'B';
+}
+
+// ============================================================
+//  RENDER: MENU
+// ============================================================
+function renderMenu(){
+  const d = document.getElementById('menu-desktop');
+  const m = document.getElementById('menu-mobile-itens');
+  d.innerHTML = MENU.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
+  m.innerHTML = MENU.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
+}
+function abrirMenuMobile(){ document.getElementById('menu-mobile').classList.add('aberto'); document.body.style.overflow='hidden'; }
+function fecharMenuMobile(){ document.getElementById('menu-mobile').classList.remove('aberto'); document.body.style.overflow=''; }
+function scrollTopo(e){ e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// header sólido ao rolar
+window.addEventListener('scroll', () => {
+  document.getElementById('cabecalho').classList.toggle('solido', window.scrollY > 40);
+});
+
+// ============================================================
+//  RENDER: CHIPS DE CATEGORIA + ORDENAÇÃO
+// ============================================================
+function renderFiltros(){
+  document.getElementById('chips-categorias').innerHTML = CATEGORIAS.map(c =>
+    `<button class="chip ${c.chave===filtroCategoria?'ativo':''}" onclick="setCategoria('${c.chave}')">${c.ic} ${c.label}</button>`
+  ).join('');
+  document.getElementById('ord-btns').innerHTML = ORDENS.map(o =>
+    `<button class="ord-btn ${o.chave===ordemAtual?'ativo':''}" onclick="setOrdem('${o.chave}')">${o.label}</button>`
+  ).join('');
+}
+function setCategoria(ch){ filtroCategoria = ch; renderFiltros(); aplicarFiltros(); trackEvent('filtro_categoria',{categoria:ch}); }
+function setOrdem(ch){ ordemAtual = ch; renderFiltros(); aplicarFiltros(); trackEvent('filtro_ordem',{ordem:ch}); }
+let buscaTimer=null;
+function onBusca(v){ clearTimeout(buscaTimer); buscaTimer=setTimeout(()=>{ termoBusca=(v||'').toLowerCase().trim(); aplicarFiltros(); }, 200); }
+
+function aplicarFiltros(){
+  let lista = stories.slice();
+  if (filtroCategoria !== 'todas'){
+    lista = lista.filter(s => (s.categoria||'aleatorias').toLowerCase() === filtroCategoria);
+  }
+  if (termoBusca){
+    lista = lista.filter(s =>
+      (s.titulo||'').toLowerCase().includes(termoBusca) ||
+      (s.descricao||'').toLowerCase().includes(termoBusca) ||
+      (catInfo(s.categoria).label.toLowerCase().includes(termoBusca))
+    );
+  }
+  switch(ordemAtual){
+    case 'votadas': lista.sort((a,b)=>((b.votoA||0)+(b.votoB||0))-((a.votoA||0)+(a.votoB||0))); break;
+    case 'novas':   lista.sort((a,b)=>(b.ordem||0)-(a.ordem||0)); break;
+    case 'alta':    lista.sort((a,b)=>(b.acessos||0)-(a.acessos||0)); break;
+    default:        lista.sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+  }
+  storiesFiltradas = lista;
+  renderGrid();
+}
+
+// ============================================================
+//  CARREGAR HISTÓRIAS  (lógica original + fallback preservados)
+// ============================================================
 async function carregarHistorias() {
   try {
     const snap = await db.collection('plataforma').orderBy('ordem','asc').get();
     stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // Se o Firebase estiver vazio ou falhar, o site mostra a história do Neymar automaticamente.
     if (!stories || stories.length === 0) {
       stories = [HISTORIA_NEYMAR_PADRAO];
     }
 
     storyDestaque = stories.find(s => s.destaque) || stories[0];
     renderHero(storyDestaque);
-    renderGrid();
+    aplicarFiltros();
+    renderEmAlta();
 
   } catch(e) {
     console.error('Erro ao carregar Firebase. Usando história local:', e);
     stories = [HISTORIA_NEYMAR_PADRAO];
     storyDestaque = stories[0];
     renderHero(storyDestaque);
-    renderGrid();
+    aplicarFiltros();
+    renderEmAlta();
   }
 
   document.getElementById('loading').classList.add('hide');
 }
 
+// ============================================================
+//  HERO + CONTADOR DA HISTÓRIA DO DIA
+// ============================================================
 function renderHero(s) {
   const bg = document.getElementById('hero-bg');
   if (s.capa) bg.style.backgroundImage = `url('${s.capa}')`;
   document.getElementById('hero-titulo').innerText = s.titulo || '';
   document.getElementById('hero-desc').innerText = s.descricao || '';
   document.getElementById('hero-dur').innerText = s.duracao || '';
+  document.getElementById('hero-badge').innerText = s.historiaDoDia ? '🗓️ História do dia' : '⚡ Em destaque';
+  iniciarContador(s);
 }
 
+function iniciarContador(s){
+  const wrap = document.getElementById('hero-contador');
+  if (contadorInterval) clearInterval(contadorInterval);
+
+  // só mostra contador se a história tiver "fimVotacao" definido
+  let fim = null;
+  if (s.fimVotacao){
+    fim = typeof s.fimVotacao === 'number' ? s.fimVotacao : new Date(s.fimVotacao).getTime();
+  }
+  if (!fim || isNaN(fim)){ wrap.classList.remove('ativo'); return; }
+
+  wrap.classList.add('ativo');
+  const tick = () => {
+    const restante = fim - Date.now();
+    const blocos = document.getElementById('contador-blocos');
+    if (restante <= 0){
+      blocos.innerHTML = '<span class="contador-encerrado">Votação encerrada · final oficial definido</span>';
+      clearInterval(contadorInterval);
+      return;
+    }
+    const d = Math.floor(restante/86400000);
+    const h = Math.floor(restante%86400000/3600000);
+    const m = Math.floor(restante%3600000/60000);
+    const seg = Math.floor(restante%60000/1000);
+    const cel = (v,l)=>`<div class="contador-bloco"><b>${String(v).padStart(2,'0')}</b><small>${l}</small></div>`;
+    blocos.innerHTML = (d>0?cel(d,'dias'):'') + cel(h,'hrs') + cel(m,'min') + cel(seg,'seg');
+  };
+  tick();
+  contadorInterval = setInterval(tick, 1000);
+}
+
+// ============================================================
+//  RENDER GRID PRINCIPAL
+// ============================================================
 function renderGrid() {
   const grid = document.getElementById('grid-historias');
-  grid.innerHTML = stories.map((s,i) => {
+  document.getElementById('titulo-grid').innerText =
+    filtroCategoria === 'todas' ? 'Todas as histórias' : `${catInfo(filtroCategoria).ic} ${catInfo(filtroCategoria).label}`;
+
+  if (!storiesFiltradas.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><span>🔍</span><p>Nenhuma história encontrada${termoBusca?` para "${termoBusca}"`:''}.</p><small>Tente outra categoria ou busca.</small></div>`;
+    return;
+  }
+
+  grid.innerHTML = storiesFiltradas.map((s) => {
+    const idx = stories.indexOf(s);
     const tot = (s.votoA||0) + (s.votoB||0);
-    const pA = tot ? Math.round((s.votoA||0)/tot*100) : 0;
     const capa = s.capa
-      ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo}" loading="lazy">`
+      ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`
       : `<div class="story-card-capa-placeholder">🎬</div>`;
-    const novo = i === 0 ? '<div class="story-card-novo">Novo</div>' : '';
+    const novo = (ordemAtual==='destaque' && idx === 0 && filtroCategoria==='todas') ? '<div class="story-card-novo">Novo</div>' : '';
+    const ci = catInfo(s.categoria);
+    const cl = classInfo(s);
+    const selos = `<div class="story-card-selos">
+        <span class="selo selo-cat">${ci.ic} ${ci.label}</span>
+        ${cl?`<span class="selo selo-class" style="border-color:${cl.cor};color:${cl.cor}">${cl.label}</span>`:''}
+      </div>`;
+    const tagsConteudo = temAvisos(s)
+      ? `<div class="story-card-tags">${s.avisos.slice(0,3).map(a=>`<span class="mini-tag">⚠ ${a}</span>`).join('')}</div>` : '';
+    const encerrada = votacaoEncerrada(s) ? '<span class="mini-tag" style="border-color:#ef476f;color:#ef476f">Encerrada</span>' : '';
     return `
-      <div class="story-card" onclick="abrirVideo(stories[${i}])">
+      <div class="story-card" onclick="abrirVideo(stories[${idx}])">
         ${novo}
+        ${selos}
         ${capa}
         <div class="story-card-body">
-          <div class="story-card-titulo">${s.titulo}</div>
+          <div class="story-card-titulo">${s.titulo||''}</div>
           <div class="story-card-desc">${s.descricao||''}</div>
           <div class="story-card-meta">
             <span class="story-card-dur">${s.duracao||''}</span>
-            <span class="story-card-votos">${tot} votos</span>
+            <span class="story-card-votos">${tot} votos ${encerrada}</span>
           </div>
+          ${tagsConteudo}
         </div>
       </div>`;
   }).join('');
 }
 
-// ---- PEGAR URL DO VÍDEO ----
+// ============================================================
+//  EM ALTA (top 3 por acessos+votos)
+// ============================================================
+function renderEmAlta(){
+  const grid = document.getElementById('grid-em-alta');
+  const ranqueadas = stories.slice().sort((a,b)=>{
+    const sa=(a.acessos||0)+(a.votoA||0)+(a.votoB||0);
+    const sb=(b.acessos||0)+(b.votoA||0)+(b.votoB||0);
+    return sb-sa;
+  }).slice(0,3);
+
+  if (!ranqueadas.length || (ranqueadas.length===1 && ranqueadas[0].id==='neymar-local')){
+    grid.className='';
+    grid.innerHTML = `<div class="em-breve"><span class="eb-ic">🔥</span><h3>Ainda esquentando</h3><p>Conforme as pessoas assistem e votam, as histórias mais populares aparecem aqui.</p></div>`;
+    return;
+  }
+  grid.id='grid-em-alta';
+  grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px';
+  grid.innerHTML = ranqueadas.map((s,i)=>{
+    const idx = stories.indexOf(s);
+    const tot=(s.votoA||0)+(s.votoB||0);
+    const capa = s.capa?`<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`:`<div class="story-card-capa-placeholder">🎬</div>`;
+    return `<div class="story-card" onclick="abrirVideo(stories[${idx}])">
+      <div class="story-card-novo">#${i+1}</div>${capa}
+      <div class="story-card-body">
+        <div class="story-card-titulo">${s.titulo||''}</div>
+        <div class="story-card-meta"><span class="story-card-dur">👁 ${s.acessos||0}</span><span class="story-card-votos">${tot} votos</span></div>
+      </div></div>`;
+  }).join('');
+}
+
+// ============================================================
+//  PEGAR URL DO VÍDEO  (inalterado)
+// ============================================================
 function getVideoUrl(s) {
   if (!s) return '';
-
-  // 1) Se existir URL cadastrada no Firebase/Firestore, usa ela.
-  if (s.video && String(s.video).trim() !== '') {
-    return String(s.video).trim();
-  }
-
-  // 2) Fallback temporário para o primeiro vídeo do Neymar hospedado no GitHub.
-  // Para funcionar, envie o arquivo comprimido para: videos/neymar.mp4
+  if (s.video && String(s.video).trim() !== '') return String(s.video).trim();
   const titulo = (s.titulo || '').toLowerCase();
-  if (titulo.includes('neymar')) {
-    return 'videos/neymar.mp4';
-  }
-
-  // 3) Se não tiver vídeo, mostra a tela "Vídeo não disponível".
+  if (titulo.includes('neymar')) return 'videos/neymar.mp4';
   return '';
 }
 
-// ---- ABRIR VÍDEO ----
+// ============================================================
+//  ABRIR VÍDEO  (com aviso de conteúdo antes, se houver)
+// ============================================================
+let pendenteAposAviso = null;
+
 function abrirVideo(s) {
   if (!s) return;
   storyAtual = s;
+
+  // Se a história tem classificação 16+/18+ OU avisos, mostra aviso antes
+  const cl = classInfo(s);
+  const exigeAviso = temAvisos(s) || (cl && (cl.label==='16+'||cl.label==='18+'));
+  const jaConfirmou = sessionStorage.getItem('aviso_ok_'+s.id);
+  if (exigeAviso && !jaConfirmou){
+    mostrarAviso(s);
+    return;
+  }
+  abrirVideoReal(s);
+}
+
+function abrirVideoReal(s){
+  storyAtual = s;
   inicioLeitura = Date.now();
 
-  // Contagem de acesso no Firebase, somente se a história veio do banco.
   if (!String(s.id).includes('local')) {
     db.collection('plataforma').doc(s.id)
       .set({ acessos: firebase.firestore.FieldValue.increment(1) }, { merge: true })
       .catch(()=>{});
   }
 
-  // GA
   trackEvent('video_iniciado', { historia: s.titulo });
 
   document.getElementById('video-titulo-modal').innerText = s.titulo;
@@ -452,6 +924,34 @@ function abrirVideo(s) {
   }
 }
 
+// ---- AVISO DE CONTEÚDO ----
+function mostrarAviso(s){
+  const cl = classInfo(s);
+  const badge = document.getElementById('aviso-class-badge');
+  if (cl){
+    badge.innerText = 'Classificação: ' + cl.label;
+    badge.style.background = 'rgba(255,255,255,0.06)';
+    badge.style.color = cl.cor;
+    badge.style.border = '1px solid '+cl.cor;
+    badge.style.display = 'inline-block';
+  } else { badge.style.display='none'; }
+  document.getElementById('aviso-temas').innerHTML =
+    (s.avisos||[]).map(a=>`<span class="aviso-tema">${a}</span>`).join('') || '<span class="aviso-tema">Temas sensíveis</span>';
+  pendenteAposAviso = s;
+  document.getElementById('aviso-overlay').classList.add('ativo');
+  document.body.style.overflow='hidden';
+}
+function fecharAviso(){
+  document.getElementById('aviso-overlay').classList.remove('ativo');
+  document.body.style.overflow='';
+  pendenteAposAviso = null;
+}
+function continuarAposAviso(){
+  const s = pendenteAposAviso;
+  document.getElementById('aviso-overlay').classList.remove('ativo');
+  if (s){ sessionStorage.setItem('aviso_ok_'+s.id,'1'); abrirVideoReal(s); }
+}
+
 function fecharVideo() {
   videoEl.pause();
   videoEl.src = '';
@@ -459,31 +959,51 @@ function fecharVideo() {
   document.body.style.overflow = '';
 }
 
+// ============================================================
+//  DECISÃO  (lógica original + bloqueio se encerrada)
+// ============================================================
 function irParaDecisao() {
   const s = storyAtual;
   if (!s) return;
   fecharVideo();
 
   const jaVotou = localStorage.getItem('voto_' + s.id);
+  const encerrada = votacaoEncerrada(s);
 
   document.getElementById('decisao-historia-nome').innerText = s.titulo;
   document.getElementById('btn-opcao-a').innerText = s.opcaoA || 'Opção A';
   document.getElementById('btn-opcao-b').innerText = s.opcaoB || 'Opção B';
 
+  // bloqueio visual quando encerrada
+  const aviso = document.getElementById('decisao-encerrada');
+  document.getElementById('btn-opcao-a').disabled = encerrada;
+  document.getElementById('btn-opcao-b').disabled = encerrada;
+  aviso.style.display = encerrada ? 'block' : 'none';
+
   document.getElementById('decisao-overlay').classList.add('ativo');
   document.body.style.overflow = 'hidden';
 
   if (jaVotou) {
-    // Já votou: vai direto pro resultado
     trackEvent('tentativa_novo_voto', { historia: s.titulo, voto_anterior: jaVotou });
     setTimeout(() => mostrarResultado(jaVotou, true), 400);
+  } else if (encerrada) {
+    // encerrada e nunca votou: mostra resultado oficial
+    const venc = finalVencedor(s) || 'A';
+    setTimeout(() => mostrarResultado(venc, true, true), 400);
   }
 }
 
-// ---- VOTAR ----
+// ============================================================
+//  VOTAR  (lógica original preservada)
+// ============================================================
 function votar(opcao) {
   const s = storyAtual;
   if (!s) return;
+
+  if (votacaoEncerrada(s)){
+    mostrarResultado(finalVencedor(s)||'A', true, true);
+    return;
+  }
 
   const jaVotou = localStorage.getItem('voto_' + s.id);
   if (jaVotou) {
@@ -502,19 +1022,18 @@ function votar(opcao) {
     s[campo] = (s[campo] || 0) + 1;
   }
 
-  // Tempo de leitura
   const seg = Math.round((Date.now() - inicioLeitura) / 1000);
   trackEvent('tempo_leitura', { historia: s.titulo, segundos: seg });
-  trackEvent('voto_realizado', {
-    historia: s.titulo,
-    voto: opcao === 'A' ? s.opcaoA : s.opcaoB
-  });
+  trackEvent('voto_realizado', { historia: s.titulo, voto: opcao === 'A' ? s.opcaoA : s.opcaoB });
 
   document.getElementById('decisao-overlay').classList.remove('ativo');
   mostrarResultado(opcao, false);
 }
 
-async function mostrarResultado(opcaoVotada, jaVotou) {
+// ============================================================
+//  RESULTADO  (com resumo igual/diferente + compartilhar)
+// ============================================================
+async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   document.getElementById('decisao-overlay').classList.remove('ativo');
   const s = storyAtual;
   if (!s) return;
@@ -523,9 +1042,12 @@ async function mostrarResultado(opcaoVotada, jaVotou) {
   document.getElementById('resultado-escolha-texto').innerText = escolhaTexto || opcaoVotada;
 
   const msgJaVotou = document.getElementById('resultado-ja-votou-msg');
-  msgJaVotou.innerHTML = jaVotou
-    ? '<div class="resultado-ja-votou">✓ Você já havia votado nesta história.</div>'
-    : '';
+  if (soOficial){
+    msgJaVotou.innerHTML = '<div class="resultado-ja-votou">⏱️ Votação encerrada — este é o final oficial.</div>';
+  } else {
+    msgJaVotou.innerHTML = jaVotou
+      ? '<div class="resultado-ja-votou">✓ Você já havia votado nesta história.</div>' : '';
+  }
 
   // Busca votos atualizados
   let data = s;
@@ -533,22 +1055,29 @@ async function mostrarResultado(opcaoVotada, jaVotou) {
     try {
       const doc = await db.collection('plataforma').doc(s.id).get();
       data = doc.exists ? doc.data() : s;
-    } catch(e) {
-      data = s;
-    }
+    } catch(e) { data = s; }
   }
   const vA = data.votoA || 0, vB = data.votoB || 0;
   const tot = vA + vB;
   const pA = tot ? Math.round(vA/tot*100) : 0;
   const pB = tot ? Math.round(vB/tot*100) : 0;
 
+  // resumo igual / diferente
+  const pEscolha = opcaoVotada === 'A' ? pA : pB;
+  const pOutro = 100 - pEscolha;
+  document.getElementById('resultado-resumo').innerHTML = `
+    <div class="resumo-item"><b>${pEscolha}%</b><small>Escolheram<br>igual a você</small></div>
+    <div class="resumo-item dif"><b>${pOutro}%</b><small>Escolheram<br>o outro final</small></div>`;
+
+  const venc = finalVencedor({votoA:vA,votoB:vB});
+  const tagV = (op)=> (venc===op)?'<span class="barra-vencedor">Vencedor</span>':'';
   document.getElementById('resultado-barras').innerHTML = `
     <div class="barra-item">
-      <div class="barra-label"><span>${s.opcaoA||'Opção A'}</span><span>${pA}%</span></div>
+      <div class="barra-label"><span>${s.opcaoA||'Opção A'}${tagV('A')}</span><span>${pA}%</span></div>
       <div class="barra-bg"><div class="barra-fill" style="width:0%" data-w="${pA}%"></div></div>
     </div>
     <div class="barra-item">
-      <div class="barra-label"><span>${s.opcaoB||'Opção B'}</span><span>${pB}%</span></div>
+      <div class="barra-label"><span>${s.opcaoB||'Opção B'}${tagV('B')}</span><span>${pB}%</span></div>
       <div class="barra-bg"><div class="barra-fill b" style="width:0%" data-w="${pB}%"></div></div>
     </div>`;
 
@@ -556,29 +1085,58 @@ async function mostrarResultado(opcaoVotada, jaVotou) {
   document.getElementById('resultado-overlay').classList.add('ativo');
   document.body.style.overflow = 'hidden';
 
-  // Anima barras
   setTimeout(() => {
-    document.querySelectorAll('.barra-fill').forEach(el => {
-      el.style.width = el.dataset.w;
-    });
+    document.querySelectorAll('.barra-fill').forEach(el => { el.style.width = el.dataset.w; });
   }, 100);
+}
+
+// ---- COMPARTILHAR ----
+async function compartilhar(){
+  const s = storyAtual;
+  if (!s) return;
+  const escolha = localStorage.getItem('voto_'+s.id);
+  const escolhaTxt = escolha === 'A' ? s.opcaoA : (escolha === 'B' ? s.opcaoB : '');
+  const url = location.origin + location.pathname;
+  const texto = escolhaTxt
+    ? `No "${s.titulo}" eu decidi: ${escolhaTxt}. E você, o que faria? ⚖️`
+    : `Assista "${s.titulo}" e decida o final você mesmo! ⚖️`;
+  trackEvent('compartilhar', { historia: s.titulo });
+  try {
+    if (navigator.share){
+      await navigator.share({ title:'Você é o Juiz — '+s.titulo, text:texto, url });
+    } else {
+      await navigator.clipboard.writeText(texto + ' ' + url);
+      toast('Link copiado! Cole onde quiser compartilhar.');
+    }
+  } catch(e){ /* usuário cancelou */ }
 }
 
 function fecharResultado() {
   document.getElementById('resultado-overlay').classList.remove('ativo');
   document.body.style.overflow = '';
 }
-
 function irParaHome() {
   document.getElementById('resultado-overlay').classList.remove('ativo');
   document.body.style.overflow = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ---- INIT ----
+// ---- TOAST ----
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.innerText=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+renderMenu();
+renderFiltros();
 carregarHistorias();
 
-// Tempo de leitura ao sair
 window.addEventListener('beforeunload', () => {
   if (storyAtual) {
     const seg = Math.round((Date.now() - inicioLeitura) / 1000);
