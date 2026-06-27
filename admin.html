@@ -711,19 +711,33 @@ function enviarArquivo(file, pasta, qual, onPronto){
   statusUpload(qual,'Enviando...','enviando');
   progresso(qual, 0);
 
+  // vigia: se ficar travado em 0% por 12s, avisa a causa provável
+  let saiuDoZero = false;
+  const watchdog = setTimeout(()=>{
+    if (!saiuDoZero){
+      statusUpload(qual,'Upload travado em 0%. Provável bloqueio das regras do Storage — republique o storage.rules e confira se o Storage está ativo.','erro');
+      try { task.cancel(); } catch(e){}
+    }
+  }, 12000);
+
   task.on('state_changed',
     (snap)=>{
       const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+      if (pct > 0) saiuDoZero = true;
       progresso(qual, pct);
     },
     (err)=>{
+      clearTimeout(watchdog);
       console.error('Erro no upload:', err);
-      let msg = 'Erro no upload.';
-      if (err.code === 'storage/unauthorized') msg = 'Sem permissão. Publique as regras do Storage (ver guia).';
-      if (err.code === 'storage/canceled') msg = 'Upload cancelado.';
+      let msg = 'Erro no upload: ' + (err.code || err.message || '');
+      if (err.code === 'storage/unauthorized') msg = 'Sem permissão (storage/unauthorized). Republique o storage.rules no console.';
+      if (err.code === 'storage/canceled') msg = 'Upload cancelado (ficou travado em 0%). Confira as regras do Storage.';
+      if (err.code === 'storage/retry-limit-exceeded') msg = 'Conexão instável ou arquivo muito grande. Tente novamente.';
+      if (err.code === 'storage/unknown') msg = 'Erro desconhecido (storage/unknown). Verifique se o Storage está ativo e o bucket correto.';
       statusUpload(qual, msg, 'erro');
     },
     async ()=>{
+      clearTimeout(watchdog);
       const url = await task.snapshot.ref.getDownloadURL();
       statusUpload(qual,'Upload concluído ✓','ok');
       onPronto(url);
