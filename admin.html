@@ -76,6 +76,27 @@ input:checked+.slider{background:var(--ouro)}
 input:checked+.slider::before{transform:translateX(20px)}
 .preview-img{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-top:10px;display:none}
 
+/* ---- UPLOAD DIRETO (Storage) ---- */
+.upload-box{display:flex;flex-direction:column;gap:8px}
+.btn-upload{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.progress-wrap{display:none;align-items:center;gap:8px}
+.progress-wrap.ativo{display:flex}
+.progress-bar{flex:1;height:8px;background:var(--borda);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro));transition:width 0.2s}
+.progress-wrap span{font-size:12px;color:var(--ouro);font-weight:700;min-width:38px;text-align:right}
+.upload-status{font-size:12px;display:none;padding:6px 10px;border-radius:6px}
+.upload-status.ativo{display:block}
+.upload-status.enviando{color:var(--ouro);background:rgba(201,162,39,0.1);border:1px solid rgba(201,162,39,0.3)}
+.upload-status.ok{color:var(--verde);background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.3)}
+.upload-status.erro{color:var(--vermelho);background:rgba(239,71,111,0.1);border:1px solid rgba(239,71,111,0.3)}
+.video-nome{font-size:12px;color:var(--texto2);display:none;align-items:center;gap:6px;word-break:break-all}
+.video-nome.ativo{display:flex}
+.video-nome b{color:var(--texto)}
+.url-manual{margin-top:8px}
+.url-manual summary{font-size:12px;color:var(--texto2);cursor:pointer;user-select:none;padding:4px 0}
+.url-manual summary:hover{color:var(--ouro)}
+.url-manual input{margin-top:8px}
+
 /* ANALYTICS */
 .analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px}
 .analytics-card{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:16px}
@@ -222,19 +243,39 @@ input:checked+.slider::before{transform:translateX(20px)}
         </div>
 
         <div class="msg ok ativo" style="display:block;margin-bottom:16px">
-          MODO SIMPLES: primeiro envie o vídeo/imagem para o GitHub. Depois cole aqui o caminho.<br>
-          Exemplo de vídeo: <b>videos/neymar.mp4</b> · Exemplo de imagem: <b>imagens/neymar-capa.jpg</b>
+          📤 Agora você pode <b>enviar os arquivos direto</b> pelos botões abaixo — não precisa mais do GitHub.<br>
+          Se preferir, ainda dá para colar uma URL manualmente nos campos.
         </div>
 
         <div class="form-row">
+          <!-- IMAGEM DE CAPA -->
           <div class="field">
-            <label>Imagem de capa por URL</label>
-            <input type="text" id="f-capa-url" placeholder="imagens/neymar-capa.jpg ou https://..." onchange="previewCapaUrl(this.value)">
+            <label>Imagem de capa</label>
+            <div class="upload-box">
+              <input type="file" id="file-capa" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none" onchange="uploadCapa(this)">
+              <button type="button" class="btn btn-card btn-upload" onclick="document.getElementById('file-capa').click()">🖼️ Enviar imagem</button>
+              <div class="progress-wrap" id="prog-capa-wrap"><div class="progress-bar"><div class="progress-fill" id="prog-capa-fill"></div></div><span id="prog-capa-pct">0%</span></div>
+              <div class="upload-status" id="status-capa"></div>
+            </div>
             <img id="preview-capa" class="preview-img">
+            <details class="url-manual"><summary>ou colar URL manualmente</summary>
+              <input type="text" id="f-capa-url" placeholder="https://... (deixe vazio p/ imagem padrão)" onchange="previewCapaUrl(this.value)">
+            </details>
           </div>
+
+          <!-- VÍDEO MP4 -->
           <div class="field">
-            <label>Vídeo MP4 por URL/caminho *</label>
-            <input type="text" id="f-video-url" placeholder="videos/neymar.mp4">
+            <label>Vídeo MP4 *</label>
+            <div class="upload-box">
+              <input type="file" id="file-video" accept="video/mp4" style="display:none" onchange="uploadVideo(this)">
+              <button type="button" class="btn btn-card btn-upload" onclick="document.getElementById('file-video').click()">🎬 Enviar vídeo</button>
+              <div class="progress-wrap" id="prog-video-wrap"><div class="progress-bar"><div class="progress-fill" id="prog-video-fill"></div></div><span id="prog-video-pct">0%</span></div>
+              <div class="upload-status" id="status-video"></div>
+              <div class="video-nome" id="video-nome"></div>
+            </div>
+            <details class="url-manual"><summary>ou colar URL manualmente</summary>
+              <input type="text" id="f-video-url" placeholder="https://...">
+            </details>
           </div>
         </div>
 
@@ -468,6 +509,12 @@ function limparForm() {
   document.getElementById('f-classificacao').value = '';
   document.querySelectorAll('#f-avisos input').forEach(i=>i.checked=false);
   document.getElementById('preview-capa').style.display = 'none';
+  // limpa estado dos uploads
+  ['status-capa','status-video'].forEach(id=>{ const el=document.getElementById(id); if(el){el.className='upload-status'; el.innerText='';} });
+  ['prog-capa-wrap','prog-video-wrap'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('ativo'); });
+  const vn=document.getElementById('video-nome'); if(vn){ vn.classList.remove('ativo'); vn.innerHTML=''; }
+  const fc=document.getElementById('file-capa'); if(fc) fc.value='';
+  const fv=document.getElementById('file-video'); if(fv) fv.value='';
 }
 
 function editarStory(id) {
@@ -499,6 +546,12 @@ function editarStory(id) {
     const prev = document.getElementById('preview-capa');
     prev.src = s.capa; prev.style.display = 'block';
   }
+  // estado limpo dos uploads + indica vídeo já existente
+  ['status-capa','status-video'].forEach(idn=>{ const el=document.getElementById(idn); if(el){el.className='upload-status'; el.innerText='';} });
+  ['prog-capa-wrap','prog-video-wrap'].forEach(idn=>{ const el=document.getElementById(idn); if(el) el.classList.remove('ativo'); });
+  const vn=document.getElementById('video-nome');
+  if (s.video){ vn.innerHTML='🎬 <b>vídeo atual</b> já salvo'; vn.classList.add('ativo'); }
+  else { vn.classList.remove('ativo'); vn.innerHTML=''; }
   document.getElementById('form-story').classList.add('ativo');
   document.getElementById('form-story').scrollIntoView({ behavior: 'smooth' });
 }
@@ -567,6 +620,103 @@ function previewCapaUrl(url) {
   if (!url) return;
   const prev = document.getElementById('preview-capa');
   prev.src = url; prev.style.display = 'block';
+}
+
+// ============================================================
+//  UPLOAD DIRETO PARA O FIREBASE STORAGE
+//  Pastas: capas/  e  videos/
+//  Salva a URL gerada nos campos f-capa-url / f-video-url
+// ============================================================
+const LIMITE_IMAGEM = 5 * 1024 * 1024;    // 5 MB
+const LIMITE_VIDEO  = 100 * 1024 * 1024;  // 100 MB
+const TIPOS_IMAGEM  = ['image/jpeg','image/jpg','image/png','image/webp'];
+const TIPOS_VIDEO   = ['video/mp4'];
+
+function statusUpload(qual, texto, tipo){
+  const el = document.getElementById('status-'+qual);
+  el.innerText = texto;
+  el.className = 'upload-status ativo ' + (tipo||'');
+}
+function progresso(qual, pct){
+  const wrap = document.getElementById('prog-'+qual+'-wrap');
+  wrap.classList.add('ativo');
+  document.getElementById('prog-'+qual+'-fill').style.width = pct + '%';
+  document.getElementById('prog-'+qual+'-pct').innerText = pct + '%';
+  if (pct >= 100) setTimeout(()=>wrap.classList.remove('ativo'), 1200);
+}
+function nomeSeguro(nome){
+  // remove acentos/espaços/caracteres problemáticos
+  return nome.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+             .replace(/[^a-zA-Z0-9._-]/g,'_');
+}
+
+// ---- IMAGEM DE CAPA ----
+function uploadCapa(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!TIPOS_IMAGEM.includes(file.type)){
+    statusUpload('capa','Formato não permitido (use JPG, PNG ou WEBP).','erro');
+    input.value=''; return;
+  }
+  if (file.size > LIMITE_IMAGEM){
+    statusUpload('capa','Arquivo muito grande (máx. 5MB).','erro');
+    input.value=''; return;
+  }
+  enviarArquivo(file, 'capas', 'capa', (url)=>{
+    document.getElementById('f-capa-url').value = url;  // salva URL no campo correto
+    const prev = document.getElementById('preview-capa');
+    prev.src = url; prev.style.display = 'block';        // preview
+  });
+}
+
+// ---- VÍDEO MP4 ----
+function uploadVideo(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!TIPOS_VIDEO.includes(file.type)){
+    statusUpload('video','Formato não permitido (use MP4).','erro');
+    input.value=''; return;
+  }
+  if (file.size > LIMITE_VIDEO){
+    statusUpload('video','Arquivo muito grande (máx. 100MB).','erro');
+    input.value=''; return;
+  }
+  enviarArquivo(file, 'videos', 'video', (url)=>{
+    document.getElementById('f-video-url').value = url;  // salva URL no campo correto
+    const n = document.getElementById('video-nome');
+    n.innerHTML = '🎬 <b>'+file.name+'</b> enviado';
+    n.classList.add('ativo');                            // mostra nome do vídeo
+  });
+}
+
+// ---- núcleo do upload (reutilizado pelos dois) ----
+function enviarArquivo(file, pasta, qual, onPronto){
+  if (!adminUser){ statusUpload(qual,'Faça login como admin para enviar.','erro'); return; }
+  const caminho = pasta + '/' + Date.now() + '_' + nomeSeguro(file.name);
+  const ref = storage.ref().child(caminho);
+  const task = ref.put(file, { contentType: file.type });
+
+  statusUpload(qual,'Enviando...','enviando');
+  progresso(qual, 0);
+
+  task.on('state_changed',
+    (snap)=>{
+      const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+      progresso(qual, pct);
+    },
+    (err)=>{
+      console.error('Erro no upload:', err);
+      let msg = 'Erro no upload.';
+      if (err.code === 'storage/unauthorized') msg = 'Sem permissão. Publique as regras do Storage (ver guia).';
+      if (err.code === 'storage/canceled') msg = 'Upload cancelado.';
+      statusUpload(qual, msg, 'erro');
+    },
+    async ()=>{
+      const url = await task.snapshot.ref.getDownloadURL();
+      statusUpload(qual,'Upload concluído ✓','ok');
+      onPronto(url);
+    }
+  );
 }
 
 // ============================================================
