@@ -384,10 +384,14 @@ auth.onAuthStateChanged(async (user) => {
   if (!user){ mostrarTelaLogin(); return; }
   // verifica se o UID está na coleção "admins"
   let ehAdmin = false;
+  let erroLeitura = null;
   try {
     const doc = await db.collection('admins').doc(user.uid).get();
     ehAdmin = doc.exists;
-  } catch(e){ console.warn('Erro ao checar admin:', e); }
+  } catch(e){
+    erroLeitura = e;
+    console.warn('Erro ao checar admin:', e);
+  }
 
   if (ehAdmin){
     adminUser = user;
@@ -396,7 +400,15 @@ auth.onAuthStateChanged(async (user) => {
     // logado mas não é admin: mostra o UID para cadastrar
     document.getElementById('login-naoadmin').style.display = 'block';
     document.getElementById('meu-uid').innerText = user.uid;
-    document.getElementById('login-erro').innerText = '';
+    // diagnóstico claro do motivo (não altera o login, só informa)
+    const erroEl = document.getElementById('login-erro');
+    if (erroLeitura){
+      erroEl.innerText = (erroLeitura.code === 'permission-denied')
+        ? 'As regras do Firestore estão bloqueando a leitura de admins. Republique o firestore.rules no console.'
+        : ('Erro ao verificar admin: ' + (erroLeitura.message || erroLeitura.code || erroLeitura));
+    } else {
+      erroEl.innerText = 'Seu UID ainda não está cadastrado na coleção "admins" (ou o ID do documento não é igual ao seu UID).';
+    }
   }
 });
 
