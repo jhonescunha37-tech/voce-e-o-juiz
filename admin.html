@@ -128,6 +128,7 @@ input:checked+.slider::before{transform:translateX(20px)}
 .pend-final{background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px}
 .pend-final b{color:var(--ouro);display:block;font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
 .pend-acoes{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.edit-com{margin-top:14px;padding-top:14px;border-top:1px solid var(--borda)}
 .pend-class-edit{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--texto2);margin-top:8px}
 .pend-class-edit select{background:var(--card2);border:1px solid var(--borda);border-radius:6px;color:var(--texto);padding:5px 10px;font-size:12px}
 
@@ -819,10 +820,49 @@ function renderComunidade(){
       <div class="pend-acoes">
         ${st!=='aprovada'?`<button class="btn btn-verde btn-sm" onclick="aprovarHistoria('${s.id}')">✓ Aprovar e publicar</button>`:''}
         ${st!=='rejeitada'?`<button class="btn btn-danger btn-sm" onclick="rejeitarHistoria('${s.id}')">✕ Rejeitar</button>`:''}
+        <button class="btn btn-card btn-sm" onclick="toggleEditarCom('${s.id}')">✏️ Editar</button>
         <button class="btn btn-card btn-sm" onclick="deletarComunidade('${s.id}')">🗑 Excluir</button>
+      </div>
+      <div class="edit-com" id="edit-com-${s.id}" style="display:none">
+        <div class="field"><label>Título</label><input type="text" id="ec-titulo-${s.id}" value="${(s.titulo||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>Imagem de capa (URL)</label><input type="text" id="ec-capa-${s.id}" value="${(s.capa||'').replace(/"/g,'&quot;')}" placeholder="https://..."></div>
+        <div class="field"><label>Texto da história</label><textarea id="ec-texto-${s.id}" style="min-height:140px">${s.texto||''}</textarea></div>
+        <div class="form-row">
+          <div class="field"><label>Final A</label><input type="text" id="ec-opcaoA-${s.id}" value="${(s.opcaoA||'').replace(/"/g,'&quot;')}"></div>
+          <div class="field"><label>Final B</label><input type="text" id="ec-opcaoB-${s.id}" value="${(s.opcaoB||'').replace(/"/g,'&quot;')}"></div>
+        </div>
+        <button class="btn btn-ouro btn-sm" onclick="salvarEditarCom('${s.id}')">💾 Salvar alterações</button>
       </div>
     </div>`;
   }).join('');
+}
+
+// ---- editar conteúdo da história da comunidade ----
+function toggleEditarCom(id){
+  const el = document.getElementById('edit-com-'+id);
+  if (el) el.style.display = (el.style.display==='none') ? 'block' : 'none';
+}
+async function salvarEditarCom(id){
+  const g = (campo)=>{ const e=document.getElementById('ec-'+campo+'-'+id); return e?e.value.trim():''; };
+  const titulo = g('titulo');
+  const texto = g('texto');
+  const opcaoA = g('opcaoA');
+  const opcaoB = g('opcaoB');
+  const capa = g('capa');
+  if (!titulo || !texto || !opcaoA || !opcaoB){
+    mostrarMsg('comunidade','Preencha título, texto e os dois finais.','erro'); return;
+  }
+  const dados = {
+    titulo, texto, opcaoA, opcaoB, capa,
+    descricao: texto.slice(0,160)  // mantém a prévia curta sincronizada
+  };
+  try {
+    await db.collection('comunidade').doc(id).update(dados);
+    const c = comunidadeCache.find(x=>x.id===id);
+    if (c) Object.assign(c, dados);
+    mostrarMsg('comunidade','História atualizada com sucesso!','ok');
+    renderComunidade();
+  } catch(e){ mostrarMsg('comunidade','Erro ao salvar: '+e.message,'erro'); }
 }
 
 async function ajustarClass(id, valor){
