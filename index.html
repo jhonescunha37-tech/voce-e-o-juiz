@@ -967,6 +967,53 @@ let usuarioAtual = null;       // objeto do Firebase Auth
 let perfilUsuario = null;      // doc Firestore do perfil
 let acaoAposLogin = null;      // função a executar depois do login
 
+// ====== MODERAÇÃO DE COMENTÁRIOS ======
+// Lista-base (você edita/expande no Admin → Moderação). Em minúsculas, sem acento.
+let palavrasProibidas = ['idiota','imbecil','otario','lixo','merda','arrombado','desgracado','vagabundo'];
+
+// carrega a lista do Firestore (doc unico: config/moderacao { palavras: [...] })
+async function carregarPalavrasProibidas(){
+  try {
+    const doc = await db.collection('config').doc('moderacao').get();
+    if (doc.exists && Array.isArray(doc.data().palavras)){
+      palavrasProibidas = doc.data().palavras.map(p=>normalizarTexto(p)).filter(Boolean);
+    }
+  } catch(e){ /* mantém a lista-base se falhar */ }
+}
+
+// normaliza para furar tentativas de burla
+function normalizarTexto(t){
+  if (!t) return '';
+  let s = t.toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');   // remove acentos
+  // leetspeak: símbolos/números que imitam letras
+  s = s.replace(/[@4]/g,'a').replace(/[0]/g,'o').replace(/[1!|]/g,'i')
+       .replace(/[3]/g,'e').replace(/[5$]/g,'s').replace(/[7]/g,'t');
+  return s
+    .replace(/[^a-z0-9\s]/g,'')                         // remove símbolos restantes
+    .replace(/(.)\1{2,}/g,'$1')                         // colapsa letras repetidas
+    .replace(/\s+/g,' ')
+    .trim();
+}
+// versão "colada" (sem espaços) para pegar p a l a v r a
+function normalizarColado(t){ return normalizarTexto(t).replace(/\s/g,''); }
+
+// retorna a palavra proibida encontrada, ou null
+function comentarioTemPalavrao(texto){
+  const norm = normalizarTexto(texto);          // com espaços
+  const colado = normalizarColado(texto);       // sem espaços
+  for (const p of palavrasProibidas){
+    if (!p) continue;
+    const pal = p.replace(/\s/g,'');
+    if (!pal) continue;
+    // pega como palavra isolada OU dentro do texto colado (anti "p a l a v r a")
+    const regexPalavra = new RegExp('(^|\\s)'+pal+'(\\s|$)');
+    if (regexPalavra.test(norm) || colado.includes(pal)) return p;
+  }
+  return null;
+}
+
+
 let stories = [];           // todas as histórias (originais do banco)
 let storiesFiltradas = [];  // após categoria/busca/ordenação
 let storyDestaque = null;
@@ -2051,7 +2098,8 @@ async function carregarComentarios(){
   try {
     const snap = await db.collection('plataforma').doc(s.id).collection('comentarios')
       .orderBy('criadoEm','desc').limit(50).get();
-    const cs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const cs = snap.docs.map(d=>({id:d.id, ...d.data()}))
+      .filter(c => (c.status||'approved') === 'approved');  // só aprovados (antigos sem status contam como aprovados)
     if (!cs.length){ lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Seja o primeiro a comentar.</p>`; return; }
     lista.innerHTML = cs.map(c=>{
       const foto = c.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(c.nome||'L')+'&background=151822&color=c9a227';
@@ -2074,6 +2122,15 @@ async function postarComentario(){
   const txt = (input.value||'').trim();
   if (!txt) return;
   if (!usuarioAtual){ pedirLogin('Entre para comentar.'); return; }
+
+  // MODERAÇÃO: bloqueia antes de salvar
+  const proibida = comentarioTemPalavrao(txt);
+  if (proibida){
+    trackEvent('comentario_bloqueado',{historia:s.titulo});
+    toast('Seu comentário não foi publicado porque contém termos ofensivos. Reescreva de forma respeitosa.');
+    return; // não limpa o campo: a pessoa edita e tenta de novo
+  }
+
   input.value='';
   try {
     await db.collection('plataforma').doc(s.id).collection('comentarios').add({
@@ -2082,6 +2139,7 @@ async function postarComentario(){
       foto: usuarioAtual.photoURL || '',
       uid: usuarioAtual.uid,
       likes: 0,
+      status: 'approved',     // moderação por bloqueio: o que passa já é aprovado
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
     db.collection('usuarios').doc(usuarioAtual.uid).set({
@@ -2093,6 +2151,7 @@ async function postarComentario(){
       db.collection('plataforma').doc(s.id).set({ qtdComentarios: firebase.firestore.FieldValue.increment(1) },{merge:true}).catch(()=>{});
     }
     trackEvent('comentario',{historia:s.titulo});
+    toast('Comentário publicado com sucesso.');
     carregarComentarios();
   } catch(e){ toast('Não foi possível enviar o comentário.'); }
 }
@@ -2503,6 +2562,7 @@ async function copiarLink(){
 renderMenu();
 renderFiltros();
 renderRankingAbas();
+carregarPalavrasProibidas();
 carregarHistorias();
 
 // atualizar setas das categorias ao rolar/redimensionar
