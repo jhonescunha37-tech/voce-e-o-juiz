@@ -480,6 +480,8 @@ footer a{color:var(--ouro);text-decoration:none}
 .hp-avisos b{color:#ef476f}
 .hp-cta{width:100%;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:17px;font-weight:900;padding:16px;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:transform 0.15s;margin-bottom:14px}
 .hp-cta:hover{transform:scale(1.02)}
+.hp-link{width:100%;background:transparent;border:1px solid var(--borda);color:var(--texto2);font-size:14px;font-weight:600;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.2s}
+.hp-link:hover{border-color:var(--ouro);color:var(--ouro)}
 .hp-sec{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin:28px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:8px}
 .hp-relacionadas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .hp-rel{background:var(--card);border:1px solid var(--borda);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color 0.2s}
@@ -493,6 +495,15 @@ footer a{color:var(--ouro);text-decoration:none}
 .pv-headline .destaque{color:var(--ouro)}
 .pv-sub{font-size:15px;color:var(--texto2);margin-bottom:24px}
 .resultado-proxima{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.pd-label{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin-bottom:10px;text-align:center}
+.pd-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--ouro);border-radius:14px;padding:12px;max-width:480px;margin:0 auto 18px;cursor:pointer;transition:transform 0.15s,box-shadow 0.2s}
+.pd-card:hover{transform:scale(1.02);box-shadow:0 8px 30px rgba(201,162,39,0.25)}
+.pd-card img,.pd-card .pd-ph{width:90px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.pd-card .pd-ph{display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--card2)}
+.pd-info{flex:1;min-width:0;text-align:left}
+.pd-titulo{font-size:16px;font-weight:800;margin-bottom:4px;line-height:1.2}
+.pd-meta{font-size:12px;color:var(--texto2)}
+.pd-seta{font-size:24px;color:var(--ouro);flex-shrink:0}
 .btn-proxima{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--borda);color:var(--texto);font-size:14px;font-weight:700;padding:11px 20px;border-radius:8px;cursor:pointer;transition:all 0.2s}
 .btn-proxima:hover{border-color:var(--ouro);color:var(--ouro)}
 .btn-proxima.destaque{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none}
@@ -818,14 +829,12 @@ footer a{color:var(--ouro);text-decoration:none}
 
   <div class="resultado-convite" id="resultado-convite"></div>
 
+  <div id="proxima-destaque"></div>
   <div class="resultado-proxima">
-    <button class="btn-proxima destaque" onclick="proximaHistoria('parecida')">▶ Próxima história</button>
     <button class="btn-proxima" onclick="proximaHistoria('alta')">🔥 Em alta</button>
     <button class="btn-proxima" onclick="surpreendaMe()">🎲 Aleatória</button>
-  </div>
-  <div style="margin-top:8px">
-    <button class="btn-resultado voltar" onclick="fecharResultado()">← Voltar</button>
-    <button class="btn-resultado home" onclick="irParaHome()">🏠 Início</button>
+    <button class="btn-proxima" onclick="fecharResultado()">← Voltar</button>
+    <button class="btn-proxima" onclick="irParaHome()">🏠 Início</button>
   </div>
 
   <!-- COMENTÁRIOS -->
@@ -989,6 +998,7 @@ const CATEGORIAS = [
   { chave:'reflexao',  label:'Reflexão',       ic:'🧠' },
   { chave:'reais',     label:'Histórias Reais',ic:'📜' },
   { chave:'drama',     label:'Drama',          ic:'🎭' },
+  { chave:'polemica',  label:'Polêmica/Internet',ic:'🔥' },
   { chave:'aleatorias',label:'Aleatórias',     ic:'🎲' }
 ];
 
@@ -1161,6 +1171,25 @@ async function carregarHistorias() {
   }
 
   document.getElementById('loading').classList.add('hide');
+
+  // link direto por história: ?h=ID abre a história automaticamente
+  abrirHistoriaPorLink();
+}
+
+// lê ?h=ID (ou #h=ID) da URL e abre a história correspondente
+function abrirHistoriaPorLink(){
+  try {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('h');
+    if (!id) return;
+    const tentar = (resto)=>{
+      const s = stories.find(x => x.id === id);
+      if (s){ setTimeout(()=>abrirHistoria(s), 200); return; }
+      if (resto > 0){ setTimeout(()=>tentar(resto-1), 700); }  // espera comunidade carregar
+      else { toast('História não encontrada ou ainda não publicada.'); }
+    };
+    tentar(3);
+  } catch(e){}
 }
 
 // ============================================================
@@ -1589,11 +1618,45 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   document.getElementById('resultado-overlay').classList.add('ativo');
   document.body.style.overflow = 'hidden';
 
+  renderProximaDestaque();
   carregarComentarios();
 
   setTimeout(() => {
     document.querySelectorAll('.barra-fill').forEach(el => { el.style.width = el.dataset.w; });
   }, 100);
+}
+
+// próxima história em destaque (grande) no pós-voto
+function renderProximaDestaque(){
+  const el = document.getElementById('proxima-destaque');
+  if (!el) return;
+  // candidata: mesma categoria, não vista, ainda jogável
+  let cand = stories.filter(s => s !== storyAtual && podeAbrir(s) && !localStorage.getItem('voto_'+s.id));
+  if (!cand.length) cand = stories.filter(s => s !== storyAtual && podeAbrir(s));
+  if (!cand.length){ el.innerHTML=''; return; }
+  let prox = null;
+  if (storyAtual){
+    const mesma = cand.filter(s => (s.categoria||'')===(storyAtual.categoria||''));
+    prox = (mesma.length?mesma:cand)[0];
+  } else prox = cand[0];
+  const idx = stories.indexOf(prox);
+  const capa = prox.capa
+    ? `<img src="${prox.capa}" alt="">`
+    : `<div class="pd-ph">🎬</div>`;
+  el.innerHTML = `
+    <div class="pd-label">▶ Continue julgando</div>
+    <div class="pd-card" onclick="proximaHistoriaIr(${idx})">
+      ${capa}
+      <div class="pd-info">
+        <div class="pd-titulo">${prox.titulo||''}</div>
+        <div class="pd-meta">${catInfo(prox.categoria).ic} ${catInfo(prox.categoria).label} · 🗳 ${totVotos(prox)} votos</div>
+      </div>
+      <div class="pd-seta">→</div>
+    </div>`;
+}
+function proximaHistoriaIr(idx){
+  fecharResultado();
+  abrirHistoria(stories[idx]);
 }
 
 // ---- COMPARTILHAR ----
@@ -2338,6 +2401,7 @@ function abrirHistoria(s){
     <p class="hp-desc">${s.descricao||''}</p>
     ${s.texto ? `<div class="hp-texto">${escapeHtml(s.texto).replace(/\n/g,'<br>')}</div>` : ''}
     <button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Assistir e decidir':'Decidir agora'}</button>
+    <button class="hp-link" onclick="copiarLinkHistoria('${s.id}')">🔗 Copiar link desta história</button>
     <div class="hp-sec">Histórias relacionadas</div>
     <div class="hp-relacionadas">${relHtml||'<p style="color:var(--texto2);font-size:13px">Em breve mais histórias.</p>'}</div>
   `;
@@ -2345,14 +2409,28 @@ function abrirHistoria(s){
   document.body.style.overflow='hidden';
   document.getElementById('historia-overlay').scrollTop = 0;
 
+  // atualiza a URL para o link direto (sem recarregar), facilitando compartilhar
+  if (!String(s.id).includes('local')){
+    try { history.replaceState(null, '', '?h=' + encodeURIComponent(s.id)); } catch(e){}
+  }
+
   // conta acesso
   if (!String(s.id).includes('local')){
     db.collection('plataforma').doc(s.id).set({acessos:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(()=>{});
   }
 }
+function linkDaHistoria(id){ return 'https://vocejuiz.com.br/?h=' + encodeURIComponent(id); }
+async function copiarLinkHistoria(id){
+  const url = linkDaHistoria(id);
+  try { await navigator.clipboard.writeText(url); toast('Link da história copiado! 🔗'); }
+  catch(e){ toast('Não foi possível copiar.'); }
+  trackEvent('copiar_link_historia',{id});
+}
 function fecharHistoria(){
   document.getElementById('historia-overlay').classList.remove('ativo');
   document.body.style.overflow='';
+  // limpa o ?h= da URL ao fechar
+  try { history.replaceState(null, '', location.pathname); } catch(e){}
 }
 function assistirDaHistoria(){ fecharHistoria(); abrirVideoReal(storyAtual); }
 function decidirDaHistoria(){
