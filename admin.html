@@ -139,6 +139,9 @@ input:checked+.slider::before{transform:translateX(20px)}
 .msg.ativo{display:block}
 
 .loading-inline{text-align:center;padding:40px;color:var(--texto2);font-size:14px}
+.palavra-chip{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--borda);color:var(--texto);font-size:13px;padding:7px 12px;border-radius:18px}
+.palavra-chip button{background:none;border:none;color:var(--vermelho);cursor:pointer;font-size:13px;padding:0;line-height:1}
+.palavra-chip button:hover{color:#fff}
 </style>
 </head>
 <body>
@@ -173,6 +176,8 @@ input:checked+.slider::before{transform:translateX(20px)}
     <div class="admin-nav">
       <button class="ativo" onclick="mudarTab('historias',this)">Histórias</button>
       <button onclick="mudarTab('comunidade',this)">Comunidade <span class="badge-num" id="badge-pendentes" style="display:none">0</span></button>
+      <button onclick="mudarTab('comentarios',this)">Comentários</button>
+      <button onclick="mudarTab('moderacao',this)">Moderação</button>
       <button onclick="mudarTab('analytics',this)">Analytics</button>
       <button onclick="mudarTab('textos',this)">Histórias Texto</button>
       <button class="btn-card btn-sm" onclick="sair()">Sair</button>
@@ -342,6 +347,34 @@ input:checked+.slider::before{transform:translateX(20px)}
       <div id="analytics-textos-stories"></div>
     </div>
 
+    <!-- TAB COMENTÁRIOS -->
+    <div class="tab" id="tab-comentarios">
+      <div class="sec-titulo">Moderação de comentários</div>
+      <div id="msg-comentarios" class="msg"></div>
+      <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-card btn-sm" onclick="filtrarComents('approved')" id="fcm-approved">Publicados</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarComents('hidden')" id="fcm-hidden">Ocultos</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarComents('todos')" id="fcm-todos">Todos</button>
+        <button class="btn btn-card btn-sm" onclick="carregarComentariosAdmin()">↻ Atualizar</button>
+      </div>
+      <p style="color:var(--texto2);font-size:12px;margin-bottom:14px">Carrega os comentários de todas as histórias. Pode ocultar (some do site), restaurar ou excluir.</p>
+      <div id="lista-comentarios"><div class="loading-inline">Clique em "Atualizar" para carregar.</div></div>
+    </div>
+
+    <!-- TAB MODERAÇÃO (lista de palavras) -->
+    <div class="tab" id="tab-moderacao">
+      <div class="sec-titulo">Palavras bloqueadas</div>
+      <div id="msg-moderacao" class="msg"></div>
+      <p style="color:var(--texto2);font-size:13px;margin-bottom:16px;line-height:1.5">
+        Comentários que contenham qualquer uma destas palavras são <b>bloqueados automaticamente</b> antes de salvar. O sistema ignora maiúsculas, acentos, espaços entre letras, símbolos e repetição (ex.: <i>P@L@VRA</i>, <i>p a l a v r a</i>, <i>paaalavra</i> são todos pegos).
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <input type="text" id="nova-palavra" placeholder="Digite uma palavra para bloquear" style="flex:1;min-width:200px;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px 14px;color:var(--texto);font-size:14px;outline:none" onkeydown="if(event.key==='Enter')adicionarPalavra()">
+        <button class="btn btn-ouro" onclick="adicionarPalavra()">+ Adicionar</button>
+      </div>
+      <div id="lista-palavras"><div class="loading-inline">Carregando...</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -457,6 +490,8 @@ function mudarTab(nome, btn) {
   if (nome === 'analytics') carregarAnalytics();
   if (nome === 'textos') carregarAnalyticsTextos();
   if (nome === 'comunidade') carregarComunidadeAdmin();
+  if (nome === 'moderacao') carregarPalavrasAdmin();
+  if (nome === 'comentarios') carregarComentariosAdmin();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -957,6 +992,134 @@ async function carregarAnalyticsTextos() {
     <div class="analytics-card"><span class="num">${totalVotos}</span><span class="lab">Votos totais</span></div>
     <div class="analytics-card"><span class="num">${totalLikes}</span><span class="lab">Reações totais</span></div>`;
   document.getElementById('analytics-textos-stories').innerHTML = htmlCards.join('');
+}
+
+// ============================================================
+//  MODERAÇÃO — lista de palavras bloqueadas (config/moderacao)
+// ============================================================
+let palavrasCache = [];
+
+async function carregarPalavrasAdmin(){
+  document.getElementById('lista-palavras').innerHTML = '<div class="loading-inline">Carregando...</div>';
+  try {
+    const doc = await db.collection('config').doc('moderacao').get();
+    palavrasCache = (doc.exists && Array.isArray(doc.data().palavras)) ? doc.data().palavras : [];
+  } catch(e){ palavrasCache = []; }
+  renderPalavras();
+}
+
+function renderPalavras(){
+  const el = document.getElementById('lista-palavras');
+  if (!palavrasCache.length){
+    el.innerHTML = '<div class="loading-inline">Nenhuma palavra cadastrada ainda. Adicione acima.</div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
+    palavrasCache.map(p=>`<span class="palavra-chip">${p}<button onclick="removerPalavra('${p.replace(/'/g,"\\'")}')" title="Remover">✕</button></span>`).join('') +
+    '</div>';
+}
+
+async function salvarPalavras(){
+  await db.collection('config').doc('moderacao').set({ palavras: palavrasCache }, { merge:true });
+}
+
+async function adicionarPalavra(){
+  const inp = document.getElementById('nova-palavra');
+  let v = (inp.value||'').trim().toLowerCase();
+  if (!v){ return; }
+  // guarda em minúsculas e sem acento, como o site espera
+  v = v.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (palavrasCache.includes(v)){ mostrarMsg('moderacao','Essa palavra já está na lista.','erro'); return; }
+  palavrasCache.push(v);
+  inp.value='';
+  try { await salvarPalavras(); mostrarMsg('moderacao','Palavra adicionada.','ok'); renderPalavras(); }
+  catch(e){ mostrarMsg('moderacao','Erro ao salvar: '+e.message,'erro'); palavrasCache.pop(); }
+}
+
+async function removerPalavra(p){
+  palavrasCache = palavrasCache.filter(x=>x!==p);
+  try { await salvarPalavras(); mostrarMsg('moderacao','Palavra removida.','ok'); renderPalavras(); }
+  catch(e){ mostrarMsg('moderacao','Erro ao remover: '+e.message,'erro'); }
+}
+
+// ============================================================
+//  COMENTÁRIOS — moderar (ocultar / restaurar / excluir)
+//  Varre todas as histórias e junta os comentários.
+// ============================================================
+let comentariosCache = [];
+let filtroComent = 'approved';
+
+function filtrarComents(f){ filtroComent = f; renderComentariosAdmin(); }
+
+async function carregarComentariosAdmin(){
+  document.getElementById('lista-comentarios').innerHTML = '<div class="loading-inline">Carregando comentários de todas as histórias...</div>';
+  comentariosCache = [];
+  try {
+    const snapH = await db.collection('plataforma').get();
+    for (const docH of snapH.docs){
+      const titulo = (docH.data().titulo)||'(sem título)';
+      const snapC = await docH.ref.collection('comentarios').orderBy('criadoEm','desc').limit(50).get();
+      snapC.forEach(c=>{
+        comentariosCache.push({ id:c.id, historiaId:docH.id, historiaTitulo:titulo, ...c.data() });
+      });
+    }
+    comentariosCache.sort((a,b)=>{
+      const ta=a.criadoEm&&a.criadoEm.toMillis?a.criadoEm.toMillis():0;
+      const tb=b.criadoEm&&b.criadoEm.toMillis?b.criadoEm.toMillis():0;
+      return tb-ta;
+    });
+  } catch(e){
+    document.getElementById('lista-comentarios').innerHTML = '<div class="loading-inline">Erro ao carregar: '+e.message+'</div>';
+    return;
+  }
+  renderComentariosAdmin();
+}
+
+function renderComentariosAdmin(){
+  const el = document.getElementById('lista-comentarios');
+  ['approved','hidden','todos'].forEach(f=>{
+    const b=document.getElementById('fcm-'+f); if(b) b.classList.toggle('btn-ouro', f===filtroComent);
+  });
+  let lista = comentariosCache.slice();
+  if (filtroComent !== 'todos') lista = lista.filter(c => (c.status||'approved') === filtroComent);
+  if (!lista.length){ el.innerHTML = '<div class="loading-inline">Nenhum comentário '+(filtroComent!=='todos'?'('+filtroComent+')':'')+'.</div>'; return; }
+  el.innerHTML = lista.map(c=>{
+    const st = c.status||'approved';
+    const cor = st==='hidden' ? 'var(--vermelho)' : 'var(--verde)';
+    return `<div class="story-stats" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        <b style="font-size:13px">${c.nome||'Leitor'}</b>
+        <span style="font-size:11px;color:${cor};text-transform:uppercase;letter-spacing:1px">${st}</span>
+      </div>
+      <div style="font-size:13px;color:var(--texto);line-height:1.5;margin-bottom:6px">${(c.texto||'').replace(/</g,'&lt;')}</div>
+      <div style="font-size:11px;color:var(--texto2);margin-bottom:10px">em "${c.historiaTitulo}"</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${st!=='hidden'
+          ? `<button class="btn btn-card btn-sm" onclick="moderarComentario('${c.historiaId}','${c.id}','hidden')">🙈 Ocultar</button>`
+          : `<button class="btn btn-verde btn-sm" onclick="moderarComentario('${c.historiaId}','${c.id}','approved')">↩ Restaurar</button>`}
+        <button class="btn btn-danger btn-sm" onclick="excluirComentario('${c.historiaId}','${c.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function moderarComentario(historiaId, comId, novoStatus){
+  try {
+    await db.collection('plataforma').doc(historiaId).collection('comentarios').doc(comId).update({ status: novoStatus });
+    const c = comentariosCache.find(x=>x.id===comId && x.historiaId===historiaId);
+    if (c) c.status = novoStatus;
+    mostrarMsg('comentarios', novoStatus==='hidden'?'Comentário ocultado.':'Comentário restaurado.','ok');
+    renderComentariosAdmin();
+  } catch(e){ mostrarMsg('comentarios','Erro: '+e.message,'erro'); }
+}
+async function excluirComentario(historiaId, comId){
+  if (!confirm('Excluir este comentário definitivamente?')) return;
+  try {
+    await db.collection('plataforma').doc(historiaId).collection('comentarios').doc(comId).delete();
+    comentariosCache = comentariosCache.filter(x=>!(x.id===comId && x.historiaId===historiaId));
+    mostrarMsg('comentarios','Comentário excluído.','ok');
+    renderComentariosAdmin();
+  } catch(e){ mostrarMsg('comentarios','Erro: '+e.message,'erro'); }
 }
 
 function mostrarMsg(area, texto, tipo) {
