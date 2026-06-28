@@ -140,7 +140,16 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 /* ---- BARRA DE CATEGORIAS + FILTROS ---- */
 #barra-filtros{position:sticky;top:64px;z-index:50;background:rgba(5,6,10,0.92);backdrop-filter:blur(8px);border-top:1px solid var(--borda);border-bottom:1px solid var(--borda);padding:12px 0;margin-bottom:8px}
 .filtros-wrap{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:10px}
-.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;scroll-behavior:smooth}
+.chips-scroller{position:relative;display:flex;align-items:center}
+.chips-seta{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid var(--borda);background:rgba(15,17,26,0.95);color:var(--ouro);font-size:22px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;padding:0}
+.chips-seta:hover{border-color:var(--ouro);background:var(--card2)}
+.chips-seta.esq{left:-6px}
+.chips-seta.dir{right:-6px}
+.chips-seta.visivel{display:flex}
+/* gradiente de "tem mais" nas bordas quando há rolagem */
+.chips-scroller.tem-dir::after{content:'';position:absolute;right:28px;top:0;bottom:4px;width:36px;background:linear-gradient(to right,transparent,rgba(5,6,10,0.85));pointer-events:none;z-index:2}
+.chips-scroller.tem-esq::before{content:'';position:absolute;left:28px;top:0;bottom:4px;width:36px;background:linear-gradient(to left,transparent,rgba(5,6,10,0.85));pointer-events:none;z-index:2}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;background:var(--card);border:1px solid var(--borda);color:var(--texto2);font-size:13px;padding:7px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .chip:hover{border-color:var(--ouro);color:var(--texto)}
@@ -621,7 +630,11 @@ footer a{color:var(--ouro);text-decoration:none}
 <!-- BARRA DE CATEGORIAS + FILTROS -->
 <div id="barra-filtros">
   <div class="filtros-wrap">
-    <div class="chips" id="chips-categorias"></div>
+    <div class="chips-scroller">
+      <button class="chips-seta esq" id="chips-seta-esq" onclick="rolarChips(-1)" aria-label="Anterior">‹</button>
+      <div class="chips" id="chips-categorias"></div>
+      <button class="chips-seta dir" id="chips-seta-dir" onclick="rolarChips(1)" aria-label="Próximo">›</button>
+    </div>
     <div class="ordenar-row">
       <span class="ord-label">Ordenar</span>
       <div class="ord-btns" id="ord-btns"></div>
@@ -1108,6 +1121,28 @@ function renderFiltros(){
   document.getElementById('ord-btns').innerHTML = ORDENS.map(o =>
     `<button class="ord-btn ${o.chave===ordemAtual?'ativo':''}" onclick="setOrdem('${o.chave}')">${o.label}</button>`
   ).join('');
+  setTimeout(atualizarSetasChips, 50);
+}
+
+// rola a barra de categorias (setas no desktop)
+function rolarChips(dir){
+  const c = document.getElementById('chips-categorias');
+  if (c) c.scrollBy({ left: dir * 240, behavior:'smooth' });
+}
+// mostra/esconde as setas e os gradientes conforme a posição
+function atualizarSetasChips(){
+  const c = document.getElementById('chips-categorias');
+  const wrap = c ? c.closest('.chips-scroller') : null;
+  if (!c || !wrap) return;
+  const temOverflow = c.scrollWidth > c.clientWidth + 4;
+  const noInicio = c.scrollLeft <= 4;
+  const noFim = c.scrollLeft + c.clientWidth >= c.scrollWidth - 4;
+  const setaE = document.getElementById('chips-seta-esq');
+  const setaD = document.getElementById('chips-seta-dir');
+  setaE.classList.toggle('visivel', temOverflow && !noInicio);
+  setaD.classList.toggle('visivel', temOverflow && !noFim);
+  wrap.classList.toggle('tem-esq', temOverflow && !noInicio);
+  wrap.classList.toggle('tem-dir', temOverflow && !noFim);
 }
 function setCategoria(ch){ filtroCategoria = ch; renderFiltros(); aplicarFiltros(); trackEvent('filtro_categoria',{categoria:ch}); }
 function setOrdem(ch){ ordemAtual = ch; renderFiltros(); aplicarFiltros(); trackEvent('filtro_ordem',{ordem:ch}); }
@@ -2469,6 +2504,14 @@ renderMenu();
 renderFiltros();
 renderRankingAbas();
 carregarHistorias();
+
+// atualizar setas das categorias ao rolar/redimensionar
+(function(){
+  const c = document.getElementById('chips-categorias');
+  if (c) c.addEventListener('scroll', atualizarSetasChips, {passive:true});
+  window.addEventListener('resize', atualizarSetasChips);
+  setTimeout(atualizarSetasChips, 400);
+})();
 
 window.addEventListener('beforeunload', () => {
   if (storyAtual) {
