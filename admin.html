@@ -306,6 +306,10 @@ input:checked+.slider::before{transform:translateX(20px)}
           <span style="font-size:13px;color:var(--texto2)">Marcar como "História do dia"</span>
         </div>
         <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="f-emAlta"><span class="slider"></span></label>
+          <span style="font-size:13px;color:var(--texto2)">🔥 Destacar em "Em Alta Agora"</span>
+        </div>
+        <div class="switch-row">
           <label class="switch"><input type="checkbox" id="f-premium"><span class="slider"></span></label>
           <span style="font-size:13px;color:var(--texto2)">💎 História Premium (exclusiva de assinante)</span>
         </div>
@@ -402,10 +406,11 @@ let filtroCom = 'pendente';
 
 // Config compartilhada com o site
 const CATEGORIAS = [
-  {chave:'futebol',label:'⚽ Futebol'},{chave:'terror',label:'👻 Terror'},{chave:'romance',label:'❤️ Romance'},
-  {chave:'misterio',label:'🕵️ Mistério'},{chave:'crime',label:'🚔 Crime'},{chave:'ficcao',label:'👽 Ficção'},
+  {chave:'polemica',label:'🔥 Polêmica/Internet'},{chave:'futebol',label:'⚽ Futebol'},{chave:'terror',label:'👻 Terror'},
+  {chave:'misterio',label:'🕵️ Mistério'},{chave:'crime',label:'🚔 Crimes'},{chave:'curiosidades',label:'💡 Curiosidades'},
+  {chave:'aleatorias',label:'🎲 Aleatórias'},{chave:'romance',label:'❤️ Romance'},{chave:'ficcao',label:'👽 Ficção'},
   {chave:'humor',label:'😂 Humor'},{chave:'suspense',label:'😱 Suspense'},{chave:'reflexao',label:'🧠 Reflexão'},
-  {chave:'reais',label:'📜 Histórias Reais'},{chave:'drama',label:'🎭 Drama'},{chave:'polemica',label:'🔥 Polêmica/Internet'},{chave:'aleatorias',label:'🎲 Aleatórias'}
+  {chave:'reais',label:'📜 Histórias Reais'},{chave:'drama',label:'🎭 Drama'}
 ];
 const CLASSIFICACOES = [
   {chave:'',label:'— Sem classificação —'},{chave:'livre',label:'Livre'},{chave:'10',label:'10+'},
@@ -526,6 +531,7 @@ function renderLista() {
         </div>
         <div class="story-item-opcoes">
           <button class="btn btn-card btn-sm" onclick="editarStory('${s.id}')">✏️ Editar</button>
+          <button class="btn btn-card btn-sm" onclick="copiarLinkAdmin('${s.id}')">📋 Link</button>
           <button class="btn btn-danger btn-sm" onclick="deletarStory('${s.id}')">🗑</button>
         </div>
       </div>`;
@@ -552,6 +558,7 @@ function limparForm() {
   document.getElementById('f-ordem').value = stories.length + 1;
   document.getElementById('f-destaque').checked = false;
   document.getElementById('f-historiaDoDia').checked = false;
+  document.getElementById('f-emAlta').checked = false;
   document.getElementById('f-premium').checked = false;
   document.getElementById('f-categoria').value = 'aleatorias';
   document.getElementById('f-classificacao').value = '';
@@ -581,6 +588,7 @@ function editarStory(id) {
   document.getElementById('f-ordem').value = s.ordem || 1;
   document.getElementById('f-destaque').checked = !!s.destaque;
   document.getElementById('f-historiaDoDia').checked = !!s.historiaDoDia;
+  document.getElementById('f-emAlta').checked = !!s.emAlta;
   document.getElementById('f-premium').checked = !!s.premium;
   document.getElementById('f-categoria').value = s.categoria || 'aleatorias';
   document.getElementById('f-classificacao').value = s.classificacao || '';
@@ -632,6 +640,7 @@ async function salvarHistoria() {
     avisos,
     fimVotacao: fimVotacao,
     historiaDoDia: document.getElementById('f-historiaDoDia').checked,
+    emAlta: document.getElementById('f-emAlta').checked,
     premium: document.getElementById('f-premium').checked,
     ordem: parseInt(document.getElementById('f-ordem').value) || 1,
     destaque: document.getElementById('f-destaque').checked,
@@ -668,6 +677,14 @@ function previewCapaUrl(url) {
   if (!url) return;
   const prev = document.getElementById('preview-capa');
   prev.src = url; prev.style.display = 'block';
+}
+
+// copiar o link individual da história (mesmo formato do site: ?h=ID)
+function copiarLinkAdmin(id){
+  const url = 'https://vocejuiz.com.br/?h=' + encodeURIComponent(id);
+  navigator.clipboard.writeText(url)
+    .then(()=>mostrarMsg('historia','Link copiado: '+url,'ok'))
+    .catch(()=>mostrarMsg('historia','Link: '+url,'ok'));
 }
 
 // ============================================================
