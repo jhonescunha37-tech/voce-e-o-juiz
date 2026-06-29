@@ -677,8 +677,12 @@ footer a{color:var(--ouro);text-decoration:none}
   <div class="rail" id="rail-votadas-track"></div>
 </section>
 <section id="rail-comentadas" class="rail-sec">
-  <div class="sec-titulo">💬 Mais Comentadas</div>
+  <div class="sec-titulo">🔥 Casos Mais Debatidos</div>
   <div class="rail" id="rail-comentadas-track"></div>
+</section>
+<section id="rail-polemicos" class="rail-sec">
+  <div class="sec-titulo">⚡ Mais Polêmicos <span style="font-size:12px;color:var(--texto2);font-weight:400">— votação mais equilibrada</span></div>
+  <div class="rail" id="rail-polemicos-track"></div>
 </section>
 <section id="rail-videos" class="rail-sec">
   <div class="sec-titulo">🎥 Vídeos Novos</div>
@@ -2402,6 +2406,20 @@ function renderRails(){
   // Mais comentadas (usa campo qtdComentarios se existir, senão acessos)
   const comentadas = stories.slice().sort((a,b)=>(b.qtdComentarios||0)-(a.qtdComentarios||0)).filter(s=>(s.qtdComentarios||0)>0).slice(0,12);
   renderRail('rail-comentadas-track', comentadas.length?comentadas:[], 'As histórias mais comentadas aparecem aqui.');
+  // Mais polêmicos: votação mais equilibrada (perto de 50/50), com mínimo de votos
+  const MIN_VOTOS_POLEMICA = 10;
+  const polemicos = stories.slice()
+    .filter(s => totVotos(s) >= MIN_VOTOS_POLEMICA)
+    .map(s => {
+      const tot = totVotos(s);
+      const pA = (s.votoA||0)/tot;          // proporção do lado A (0..1)
+      const equilibrio = 1 - Math.abs(pA - 0.5)*2;  // 1 = 50/50 exato, 0 = 100/0
+      return { s, equilibrio };
+    })
+    .sort((a,b)=> b.equilibrio - a.equilibrio)
+    .slice(0,12)
+    .map(x => x.s);
+  renderRail('rail-polemicos-track', polemicos, 'Quando as votações ficarem equilibradas, os casos mais polêmicos aparecem aqui.');
   // Vídeos novos = com vídeo configurado
   const videos = stories.filter(s=>s.video || (s.titulo||'').toLowerCase().includes('neymar')).slice(0,12);
   renderRail('rail-videos-track', videos, 'Novos vídeos em breve.');
