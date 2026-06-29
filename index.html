@@ -372,6 +372,13 @@ footer a{color:var(--ouro);text-decoration:none}
 .card-acao:hover{border-color:var(--ouro);color:var(--ouro)}
 .card-acao.ativo{color:var(--ouro);border-color:var(--ouro);background:rgba(201,162,39,0.1)}
 .coment-area{max-width:680px;margin:0 auto;width:100%}
+.decisao-imparcial{margin-top:14px;font-size:13px;color:var(--texto2);text-align:center;max-width:420px;line-height:1.5;opacity:0.85}
+.coment-prompt{font-size:14px;color:var(--texto);background:var(--card);border:1px solid var(--borda);border-left:3px solid var(--ouro);border-radius:8px;padding:12px 14px;margin-bottom:12px;line-height:1.5}
+.coment-ordenar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.coment-ordenar button{background:transparent;border:1px solid var(--borda);color:var(--texto2);font-size:12px;padding:6px 12px;border-radius:14px;cursor:pointer;transition:all 0.2s}
+.coment-ordenar button.ativo,.coment-ordenar button:hover{border-color:var(--ouro);color:var(--ouro)}
+.coment-lado{font-size:11px;border:1px solid;border-radius:10px;padding:2px 8px;margin-left:4px;white-space:nowrap}
+.coment-acoes button.ativo{border-color:var(--ouro);color:var(--ouro)}
 .coment-form{display:flex;gap:10px;margin-bottom:20px}
 .coment-form img{width:38px;height:38px;border-radius:50%;flex-shrink:0}
 .coment-form textarea{flex:1;background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:10px 14px;color:var(--texto);font-size:14px;resize:vertical;min-height:44px;outline:none}
@@ -822,6 +829,7 @@ footer a{color:var(--ouro);text-decoration:none}
     <button class="btn-opcao b" id="btn-opcao-b" onclick="votar('B')"></button>
   </div>
   <div class="decisao-aviso">⚠️ Sua escolha é permanente neste dispositivo.</div>
+  <div class="decisao-imparcial">🔒 Os comentários permanecem ocultos para garantir uma decisão imparcial.</div>
 </div>
 
 <!-- RESULTADO -->
@@ -1018,6 +1026,7 @@ let stories = [];           // todas as histórias (originais do banco)
 let storiesFiltradas = [];  // após categoria/busca/ordenação
 let storyDestaque = null;
 let storyAtual = null;
+let ladoVotado = null;   // 'A' ou 'B' — usado para anexar o lado ao comentário
 const videoEl = document.getElementById('video-player');
 let inicioLeitura = Date.now();
 
@@ -1645,6 +1654,7 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   document.getElementById('decisao-overlay').classList.remove('ativo');
   const s = storyAtual;
   if (!s) return;
+  if (opcaoVotada === 'A' || opcaoVotada === 'B') ladoVotado = opcaoVotada;
 
   const escolhaTexto = opcaoVotada === 'A' ? s.opcaoA : s.opcaoB;
 
@@ -2100,12 +2110,23 @@ function renderFormComentario(){
     return;
   }
   const foto = usuarioAtual.photoURL || 'https://ui-avatars.com/api/?name=L&background=151822&color=c9a227';
-  wrap.innerHTML = `<div class="coment-form">
+  // prompt convidando a explicar o lado escolhido
+  const s = storyAtual;
+  let promptLado = 'Quer explicar por que escolheu esse lado? (opcional)';
+  if (s && ladoVotado){
+    const txtLado = ladoVotado === 'A' ? (s.opcaoA||'Opção A') : (s.opcaoB||'Opção B');
+    promptLado = `Você escolheu <b style="color:var(--ouro)">${escapeHtml(txtLado)}</b>. Quer explicar por quê? (opcional)`;
+  }
+  wrap.innerHTML = `<div class="coment-prompt">${promptLado}</div>
+  <div class="coment-form">
     <img src="${foto}" alt="você">
-    <textarea id="coment-input" placeholder="Escreva um comentário..."></textarea>
+    <textarea id="coment-input" placeholder="Escreva sua opinião com respeito..."></textarea>
     <button class="coment-enviar" onclick="postarComentario()">Enviar</button>
   </div>`;
 }
+
+let ordemComentarios = 'curtidos'; // curtidos | recentes | antigos
+function setOrdemComentarios(o){ ordemComentarios = o; carregarComentarios(); }
 
 async function carregarComentarios(){
   const s = storyAtual;
@@ -2119,18 +2140,42 @@ async function carregarComentarios(){
   lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Carregando comentários...</p>`;
   try {
     const snap = await db.collection('plataforma').doc(s.id).collection('comentarios')
-      .orderBy('criadoEm','desc').limit(50).get();
-    const cs = snap.docs.map(d=>({id:d.id, ...d.data()}))
-      .filter(c => (c.status||'approved') === 'approved');  // só aprovados (antigos sem status contam como aprovados)
-    if (!cs.length){ lista.innerHTML = `<p style="color:var(--texto2);font-size:13px;text-align:center">Seja o primeiro a comentar.</p>`; return; }
-    lista.innerHTML = cs.map(c=>{
+      .orderBy('criadoEm','desc').limit(80).get();
+    let cs = snap.docs.map(d=>({id:d.id, ...d.data()}))
+      .filter(c => (c.status||'approved') === 'approved');
+    // ordenação escolhida
+    const ms = c => (c.criadoEm && c.criadoEm.toMillis ? c.criadoEm.toMillis() : 0);
+    if (ordemComentarios === 'curtidos') cs.sort((a,b)=>((b.likes||0)-(b.dislikes||0))-((a.likes||0)-(a.dislikes||0)));
+    else if (ordemComentarios === 'antigos') cs.sort((a,b)=>ms(a)-ms(b));
+    else cs.sort((a,b)=>ms(b)-ms(a)); // recentes
+
+    const seletor = `<div class="coment-ordenar">
+      <button class="${ordemComentarios==='curtidos'?'ativo':''}" onclick="setOrdemComentarios('curtidos')">Mais curtidos</button>
+      <button class="${ordemComentarios==='recentes'?'ativo':''}" onclick="setOrdemComentarios('recentes')">Mais recentes</button>
+      <button class="${ordemComentarios==='antigos'?'ativo':''}" onclick="setOrdemComentarios('antigos')">Mais antigos</button>
+    </div>`;
+
+    if (!cs.length){ lista.innerHTML = seletor + `<p style="color:var(--texto2);font-size:13px;text-align:center">Seja o primeiro a comentar.</p>`; return; }
+    lista.innerHTML = seletor + cs.map(c=>{
       const foto = c.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(c.nome||'L')+'&background=151822&color=c9a227';
+      // selo do lado escolhido
+      let ladoSelo = '';
+      if (c.lado === 'A' || c.lado === 'B'){
+        const txt = c.lado === 'A' ? (s.opcaoA||'Opção A') : (s.opcaoB||'Opção B');
+        const cor = c.lado === 'A' ? '#06d6a0' : '#ef9c66';
+        ladoSelo = `<span class="coment-lado" style="border-color:${cor};color:${cor}">votou: ${escapeHtml(txt)}</span>`;
+      }
+      const jaCurtiu = localStorage.getItem('curtiCom_'+c.id);
+      const jaDescurtiu = localStorage.getItem('descurtiCom_'+c.id);
       return `<div class="coment-item">
         <div class="coment-item-head">
-          <img src="${foto}"><b>${c.nome||'Leitor'}</b><small>${tempoRelativo(c.criadoEm)}</small>
+          <img src="${foto}"><b>${c.nome||'Leitor'}</b>${ladoSelo}<small>${tempoRelativo(c.criadoEm)}</small>
         </div>
         <div class="coment-texto">${escapeHtml(c.texto||'')}</div>
-        <div class="coment-acoes"><button onclick="curtirComentario('${s.id}','${c.id}')">👍 ${c.likes||0}</button></div>
+        <div class="coment-acoes">
+          <button class="${jaCurtiu?'ativo':''}" onclick="curtirComentario('${s.id}','${c.id}')">👍 ${c.likes||0}</button>
+          <button class="${jaDescurtiu?'ativo':''}" onclick="descurtirComentario('${s.id}','${c.id}')">👎 ${c.dislikes||0}</button>
+        </div>
       </div>`;
     }).join('');
   } catch(e){
@@ -2160,7 +2205,9 @@ async function postarComentario(){
       nome: usuarioAtual.displayName || 'Leitor',
       foto: usuarioAtual.photoURL || '',
       uid: usuarioAtual.uid,
+      lado: (ladoVotado === 'A' || ladoVotado === 'B') ? ladoVotado : null,
       likes: 0,
+      dislikes: 0,
       status: 'approved',     // moderação por bloqueio: o que passa já é aprovado
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -2180,14 +2227,30 @@ async function postarComentario(){
 
 async function curtirComentario(storyId, comId){
   if (!usuarioAtual){ pedirLogin('Entre para curtir comentários.'); return; }
-  const k = 'curtiCom_'+comId;
-  if (localStorage.getItem(k)){ toast('Você já curtiu.'); return; }
-  localStorage.setItem(k,'1');
-  try {
-    await db.collection('plataforma').doc(storyId).collection('comentarios').doc(comId)
-      .set({ likes: firebase.firestore.FieldValue.increment(1) },{merge:true});
-    carregarComentarios();
-  } catch(e){}
+  if (localStorage.getItem('curtiCom_'+comId)){ toast('Você já curtiu.'); return; }
+  const ref = db.collection('plataforma').doc(storyId).collection('comentarios').doc(comId);
+  const updates = { likes: firebase.firestore.FieldValue.increment(1) };
+  // se já havia descurtido, remove o dislike (troca de voto)
+  if (localStorage.getItem('descurtiCom_'+comId)){
+    updates.dislikes = firebase.firestore.FieldValue.increment(-1);
+    localStorage.removeItem('descurtiCom_'+comId);
+  }
+  localStorage.setItem('curtiCom_'+comId,'1');
+  try { await ref.set(updates,{merge:true}); carregarComentarios(); } catch(e){}
+}
+
+async function descurtirComentario(storyId, comId){
+  if (!usuarioAtual){ pedirLogin('Entre para avaliar comentários.'); return; }
+  if (localStorage.getItem('descurtiCom_'+comId)){ toast('Você já descurtiu.'); return; }
+  const ref = db.collection('plataforma').doc(storyId).collection('comentarios').doc(comId);
+  const updates = { dislikes: firebase.firestore.FieldValue.increment(1) };
+  // se já havia curtido, remove o like (troca de voto)
+  if (localStorage.getItem('curtiCom_'+comId)){
+    updates.likes = firebase.firestore.FieldValue.increment(-1);
+    localStorage.removeItem('curtiCom_'+comId);
+  }
+  localStorage.setItem('descurtiCom_'+comId,'1');
+  try { await ref.set(updates,{merge:true}); carregarComentarios(); } catch(e){}
 }
 
 function tempoRelativo(ts){
@@ -2468,6 +2531,7 @@ function renderComunidadeGrid(){
 function abrirHistoria(s){
   if (!s) return;
   storyAtual = s;
+  ladoVotado = null;
   trackEvent('abrir_historia',{historia:s.titulo});
 
   // bloqueio premium logo na entrada
