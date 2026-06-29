@@ -859,6 +859,7 @@ footer a{color:var(--ouro);text-decoration:none}
 
   <div class="share-row">
     <button class="share-btn wpp" onclick="compartilharWpp()">🟢 WhatsApp</button>
+    <button class="share-btn" onclick="desafiarAmigo()">🎯 Desafiar amigo</button>
     <button class="share-btn" onclick="compartilhar()">🔗 Compartilhar</button>
     <button class="share-btn" onclick="copiarLink()">📋 Copiar link</button>
   </div>
@@ -1888,6 +1889,29 @@ function fecharResultado() {
   document.getElementById('resultado-overlay').classList.remove('ativo');
   document.body.style.overflow = '';
 }
+
+// ---- DESAFIAR AMIGO ----
+async function desafiarAmigo(){
+  const s = storyAtual;
+  if (!s) return;
+  const url = (typeof linkDaHistoria === 'function') ? linkDaHistoria(s.id)
+            : 'https://vocejuiz.com.br/?h=' + encodeURIComponent(s.id);
+  const escolha = localStorage.getItem('voto_'+s.id);
+  const escolhaTxt = escolha === 'A' ? s.opcaoA : (escolha === 'B' ? s.opcaoB : '');
+  const texto = escolhaTxt
+    ? `🎯 DESAFIO: eu julguei "${s.titulo}" e escolhi "${escolhaTxt}". Será que você decide igual a mim? Vota aí e vamos comparar! ⚖️`
+    : `🎯 DESAFIO: julga esse caso em "${s.titulo}" e vamos ver se a gente concorda! ⚖️`;
+  trackEvent('desafiar_amigo', { historia: s.titulo });
+  trackEvent('share_story', { historia: s.titulo });
+  try {
+    if (navigator.share){
+      await navigator.share({ title:'Você é o Juiz — Desafio', text:texto, url });
+    } else {
+      await navigator.clipboard.writeText(texto + ' ' + url);
+      toast('Desafio copiado! Cole no chat do seu amigo. 🎯');
+    }
+  } catch(e){ /* cancelou */ }
+}
 function irParaHome() {
   document.getElementById('resultado-overlay').classList.remove('ativo');
   document.body.style.overflow = '';
@@ -2375,6 +2399,7 @@ const RANK_ABAS = [
   { chave:'votadas',  label:'🗳 Mais votadas' },
   { chave:'curtidas', label:'❤️ Mais curtidas' },
   { chave:'polemicas',label:'⚡ Mais polêmicas' },
+  { chave:'sequencia',label:'🔥 Sequência' },
   { chave:'autores',  label:'✍️ Autores' },
   { chave:'usuarios', label:'👥 Leitores' }
 ];
@@ -2424,6 +2449,26 @@ async function renderRanking(){
         <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${catInfo(s.categoria).label}</div></div>
         <div class="rank-valor">${campo(s)}</div></div>`;
     }).join('')}</div>`;
+    return;
+  }
+
+  if (rankAbaAtual === 'sequencia'){
+    try {
+      const snap = await db.collection('usuarios').orderBy('melhorStreak','desc').limit(10).get();
+      let lista = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(u=>(u.melhorStreak||0)>0);
+      if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">🔥</span><h3>Sem sequências ainda</h3><p>Vote em dias seguidos para construir sua sequência e aparecer aqui.</p></div>`; return; }
+      el.innerHTML = `<div class="rank-lista">${lista.map((u,i)=>{
+        const foto = u.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.nome||'L')+'&background=151822&color=c9a227';
+        const atual = u.streak||0;
+        return `<div class="rank-item">
+          <div class="rank-pos ${i<3?'top':''}">${i+1}</div>
+          <img class="rank-foto" src="${foto}">
+          <div class="rank-info"><div class="rank-nome">${u.nome||'Leitor'}</div><div class="rank-sub">sequência atual: ${atual} ${atual===1?'dia':'dias'}</div></div>
+          <div class="rank-valor">🔥 ${u.melhorStreak||0}</div></div>`;
+      }).join('')}</div>`;
+    } catch(e){
+      el.innerHTML = `<div class="em-breve"><span class="eb-ic">🔥</span><h3>Ranking indisponível</h3><p>Tente novamente em instantes.</p></div>`;
+    }
     return;
   }
 
