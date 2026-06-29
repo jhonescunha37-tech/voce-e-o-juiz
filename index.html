@@ -507,6 +507,29 @@ footer a{color:var(--ouro);text-decoration:none}
 .hp-avisos b{color:#ef476f}
 .hp-cta{width:100%;background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-size:17px;font-weight:900;padding:16px;border:none;border-radius:12px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:transform 0.15s;margin-bottom:14px}
 .hp-cta:hover{transform:scale(1.02)}
+.hp-encerrada-aviso{background:rgba(239,71,111,0.1);border:1px solid rgba(239,71,111,0.35);color:#ef9c66;font-size:13px;text-align:center;padding:10px;border-radius:8px;margin-bottom:12px}
+.vd-selo{display:inline-block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);border:1px solid var(--ouro);border-radius:14px;padding:4px 14px;margin-bottom:14px}
+.vd-titulo{font-size:clamp(24px,4vw,38px);font-weight:900;line-height:1.15;margin-bottom:8px}
+.vd-status{font-size:13px;color:#ef9c66;margin-bottom:24px}
+.vd-resultado{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:20px;margin-bottom:18px}
+.vd-vencedor{font-size:17px;margin-bottom:16px;text-align:center}
+.vd-vencedor b{color:var(--ouro)}
+.vd-barra{display:flex;height:38px;border-radius:8px;overflow:hidden;margin-bottom:12px;background:var(--card2)}
+.vd-barra-a{background:linear-gradient(135deg,#06d6a0,#04a57d);display:flex;align-items:center;justify-content:center;color:#05060a;font-weight:800;font-size:14px;transition:width 0.8s}
+.vd-barra-b{background:linear-gradient(135deg,#ef9c66,#e07a3f);display:flex;align-items:center;justify-content:center;color:#05060a;font-weight:800;font-size:14px;transition:width 0.8s}
+.vd-legenda{display:flex;justify-content:space-between;font-size:12px;color:var(--texto2);flex-wrap:wrap;gap:8px}
+.vd-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.vd-dot.a{background:#06d6a0}.vd-dot.b{background:#ef9c66}
+.vd-resumo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+.vd-stat{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px 6px;text-align:center}
+.vd-stat b{display:block;font-size:18px;color:var(--ouro)}
+.vd-stat small{font-size:11px;color:var(--texto2)}
+.vd-lado-coments{margin-bottom:14px}
+.vd-lado-lbl{font-size:13px;font-weight:700;margin-bottom:8px}
+.vd-coment{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px;margin-bottom:8px;font-size:14px}
+.vd-coment small{color:var(--texto2)}
+.vd-coment div{margin-top:6px;color:var(--texto);line-height:1.5}
+@media(max-width:600px){.vd-resumo{grid-template-columns:repeat(2,1fr)}}
 .hp-link{width:100%;background:transparent;border:1px solid var(--borda);color:var(--texto2);font-size:14px;font-weight:600;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.2s}
 .hp-link:hover{border-color:var(--ouro);color:var(--ouro)}
 .hp-sec{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin:28px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:8px}
@@ -799,6 +822,12 @@ footer a{color:var(--ouro);text-decoration:none}
 <div id="historia-overlay" class="overlay-full">
   <button class="overlay-fechar" onclick="fecharHistoria()">✕</button>
   <div id="historia-conteudo" style="max-width:760px;margin:0 auto"></div>
+</div>
+
+<!-- VEREDITO DA COMUNIDADE -->
+<div id="veredito-overlay" class="overlay-full">
+  <button class="overlay-fechar" onclick="fecharVeredito()">✕</button>
+  <div id="veredito-conteudo" style="max-width:760px;margin:0 auto"></div>
 </div>
 
 <!-- VIDEO MODAL -->
@@ -2746,7 +2775,10 @@ function abrirHistoria(s){
     ${avisosHtml}
     <p class="hp-desc">${s.descricao||''}</p>
     ${s.texto ? `<div class="hp-texto">${escapeHtml(s.texto).replace(/\n/g,'<br>')}</div>` : ''}
-    <button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Assistir e decidir':'Decidir agora'}</button>
+    ${ votacaoEncerrada(s)
+      ? `<div class="hp-encerrada-aviso">🔒 Votação encerrada — resultado oficial definido.</div>
+         <button class="hp-cta" onclick="abrirVeredito('${s.id}')">📜 Ver Veredito da Comunidade</button>`
+      : `<button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Assistir e decidir':'Decidir agora'}</button>` }
     <button class="hp-link" onclick="copiarLinkHistoria('${s.id}')">🔗 Copiar link desta história</button>
     <div class="hp-sec">Histórias relacionadas</div>
     <div class="hp-relacionadas">${relHtml||'<p style="color:var(--texto2);font-size:13px">Em breve mais histórias.</p>'}</div>
@@ -2777,6 +2809,77 @@ function fecharHistoria(){
   document.body.style.overflow='';
   // limpa o ?h= da URL ao fechar
   try { history.replaceState(null, '', location.pathname); } catch(e){}
+}
+
+// ============================================================
+//  VEREDITO DA COMUNIDADE (página permanente de votação encerrada)
+// ============================================================
+async function abrirVeredito(id){
+  const s = stories.find(x=>x.id===id) || storyAtual;
+  if (!s) return;
+  const el = document.getElementById('veredito-conteudo');
+  document.getElementById('veredito-overlay').classList.add('ativo');
+  document.body.style.overflow='hidden';
+  document.getElementById('veredito-overlay').scrollTop = 0;
+  el.innerHTML = '<p style="color:var(--texto2);text-align:center;padding:40px">Carregando veredito...</p>';
+  trackEvent('ver_veredito',{historia:s.titulo});
+
+  const vA = s.votoA||0, vB = s.votoB||0, tot = vA+vB;
+  const pA = tot ? Math.round(vA/tot*100) : 0, pB = tot ? 100-pA : 0;
+  const vencedor = vA===vB ? 'Empate' : (vA>vB ? (s.opcaoA||'Opção A') : (s.opcaoB||'Opção B'));
+  const ladoVenc = vA>=vB ? 'A' : 'B';
+
+  // busca os comentários mais curtidos de cada lado
+  let topA = [], topB = [];
+  try {
+    const snap = await db.collection('plataforma').doc(s.id).collection('comentarios').get();
+    const cs = snap.docs.map(d=>({id:d.id, ...d.data()}))
+      .filter(c=>(c.status||'approved')==='approved');
+    const ordc = arr => arr.sort((a,b)=>((b.likes||0)-(b.dislikes||0))-((a.likes||0)-(a.dislikes||0))).slice(0,2);
+    topA = ordc(cs.filter(c=>c.lado==='A'));
+    topB = ordc(cs.filter(c=>c.lado==='B'));
+  } catch(e){}
+
+  const comentHtml = (arr, lbl, cor) => arr.length
+    ? `<div class="vd-lado-coments"><div class="vd-lado-lbl" style="color:${cor}">${lbl}</div>${
+        arr.map(c=>`<div class="vd-coment"><b>${c.nome||'Leitor'}</b> <small>👍 ${c.likes||0}</small><div>${escapeHtml(c.texto||'')}</div></div>`).join('')
+      }</div>`
+    : '';
+
+  el.innerHTML = `
+    <div class="vd-selo">📜 Veredito da Comunidade</div>
+    <h1 class="vd-titulo">${s.titulo||''}</h1>
+    <div class="vd-status">🔒 Votação encerrada · resultado oficial</div>
+
+    <div class="vd-resultado">
+      <div class="vd-vencedor">A comunidade decidiu: <b>${vencedor}</b></div>
+      <div class="vd-barra">
+        <div class="vd-barra-a" style="width:${pA}%">${pA>12?pA+'%':''}</div>
+        <div class="vd-barra-b" style="width:${pB}%">${pB>12?pB+'%':''}</div>
+      </div>
+      <div class="vd-legenda">
+        <span><span class="vd-dot a"></span>${s.opcaoA||'Opção A'} — ${vA} votos</span>
+        <span><span class="vd-dot b"></span>${s.opcaoB||'Opção B'} — ${vB} votos</span>
+      </div>
+    </div>
+
+    <div class="vd-resumo">
+      <div class="vd-stat"><b>${tot}</b><small>votos totais</small></div>
+      <div class="vd-stat"><b>${s.qtdComentarios||0}</b><small>comentários</small></div>
+      <div class="vd-stat"><b>${s.acessos||0}</b><small>acessos</small></div>
+      <div class="vd-stat"><b>${pA}% / ${pB}%</b><small>placar final</small></div>
+    </div>
+
+    ${(topA.length||topB.length) ? `<div class="hp-sec">💬 Comentários em destaque</div>` : ''}
+    ${comentHtml(topA, (s.opcaoA||'Lado A'), '#06d6a0')}
+    ${comentHtml(topB, (s.opcaoB||'Lado B'), '#ef9c66')}
+
+    <button class="hp-link" style="margin-top:20px" onclick="copiarLinkHistoria('${s.id}')">🔗 Copiar link deste veredito</button>
+  `;
+}
+function fecharVeredito(){
+  document.getElementById('veredito-overlay').classList.remove('ativo');
+  document.body.style.overflow='';
 }
 function assistirDaHistoria(){ fecharHistoria(); abrirVideoReal(storyAtual); }
 function decidirDaHistoria(){
