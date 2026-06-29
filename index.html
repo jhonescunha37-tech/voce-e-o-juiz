@@ -1499,6 +1499,7 @@ function abrirVideoReal(s){
   }
 
   trackEvent('video_iniciado', { historia: s.titulo });
+  trackEvent('watch_video', { historia: s.titulo });
 
   document.getElementById('video-titulo-modal').innerText = s.titulo;
   document.getElementById('video-modal').classList.add('ativo');
@@ -1515,6 +1516,7 @@ function abrirVideoReal(s){
     videoEl.play().catch(()=>{});
     videoEl.onended = () => {
       trackEvent('video_concluido', { historia: s.titulo });
+      trackEvent('finish_story', { historia: s.titulo });
       irParaDecisao();
     };
   } else {
@@ -1624,6 +1626,7 @@ function votar(opcao) {
   const seg = Math.round((Date.now() - inicioLeitura) / 1000);
   trackEvent('tempo_leitura', { historia: s.titulo, segundos: seg });
   trackEvent('voto_realizado', { historia: s.titulo, voto: opcao === 'A' ? s.opcaoA : s.opcaoB });
+  trackEvent('vote_story', { historia: s.titulo });
 
   // se logado, conta o voto no perfil (medalhas/nível): +10 pontos por voto
   if (usuarioAtual){
@@ -1788,6 +1791,7 @@ async function compartilhar(){
     ? `No "${s.titulo}" eu decidi: ${escolhaTxt}. E você, o que faria? ⚖️`
     : `Assista "${s.titulo}" e decida o final você mesmo! ⚖️`;
   trackEvent('compartilhar', { historia: s.titulo });
+  trackEvent('share_story', { historia: s.titulo });
   try {
     if (navigator.share){
       await navigator.share({ title:'Você é o Juiz — '+s.titulo, text:texto, url });
@@ -2224,6 +2228,7 @@ async function postarComentario(){
       db.collection('plataforma').doc(s.id).set({ qtdComentarios: firebase.firestore.FieldValue.increment(1) },{merge:true}).catch(()=>{});
     }
     trackEvent('comentario',{historia:s.titulo});
+    trackEvent('comment_story',{historia:s.titulo});
     toast('Comentário publicado com sucesso.');
     carregarComentarios();
   } catch(e){ toast('Não foi possível enviar o comentário.'); }
@@ -2362,6 +2367,7 @@ function podeAbrir(s){
 function assinarPremium(){
   exigirLogin(()=>{
     trackEvent('interesse_premium');
+    trackEvent('premium_click');
     toast('Pagamento ainda não está ativo. Em breve! 💎');
   }, 'Entre com o Google para assinar o Premium.');
 }
@@ -2551,6 +2557,7 @@ function abrirHistoria(s){
   storyAtual = s;
   ladoVotado = null;
   trackEvent('abrir_historia',{historia:s.titulo});
+  trackEvent('open_story',{historia:s.titulo});
 
   // bloqueio premium logo na entrada
   if (s.premium && !ehPremiumUsuario()){
