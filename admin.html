@@ -142,6 +142,12 @@ input:checked+.slider::before{transform:translateX(20px)}
 .palavra-chip{display:inline-flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--borda);color:var(--texto);font-size:13px;padding:7px 12px;border-radius:18px}
 .palavra-chip button{background:none;border:none;color:var(--vermelho);cursor:pointer;font-size:13px;padding:0;line-height:1}
 .palavra-chip button:hover{color:#fff}
+.div-bloco{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:16px;margin-bottom:16px}
+.div-bloco label{display:block;font-size:13px;color:var(--ouro);font-weight:700;margin-bottom:10px}
+.div-linha{display:flex;gap:8px}
+.div-bloco input,.div-bloco textarea{flex:1;width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px 12px;color:var(--texto);font-size:13px;font-family:inherit;resize:vertical}
+.div-arquivos{display:flex;gap:10px;flex-wrap:wrap}
+.div-arquivos a{text-decoration:none}
 </style>
 </head>
 <body>
@@ -178,6 +184,7 @@ input:checked+.slider::before{transform:translateX(20px)}
       <button onclick="mudarTab('comunidade',this)">Comunidade <span class="badge-num" id="badge-pendentes" style="display:none">0</span></button>
       <button onclick="mudarTab('comentarios',this)">Comentários</button>
       <button onclick="mudarTab('moderacao',this)">Moderação</button>
+      <button onclick="mudarTab('divulgacao',this)">🚀 Divulgação</button>
       <button onclick="mudarTab('analytics',this)">Analytics</button>
       <button onclick="mudarTab('textos',this)">Histórias Texto</button>
       <button class="btn-card btn-sm" onclick="sair()">Sair</button>
@@ -383,6 +390,15 @@ input:checked+.slider::before{transform:translateX(20px)}
       <div id="lista-palavras"><div class="loading-inline">Carregando...</div></div>
     </div>
 
+    <!-- TAB DIVULGAÇÃO -->
+    <div class="tab" id="tab-divulgacao">
+      <div class="sec-titulo">🚀 Divulgação</div>
+      <div id="msg-divulgacao" class="msg"></div>
+      <p style="color:var(--texto2);font-size:13px;margin-bottom:16px;line-height:1.5">Escolha uma história para gerar o link, a legenda pronta pro TikTok e acessar os arquivos.</p>
+      <select id="div-historia" onchange="renderDivulgacao()" style="width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px 14px;color:var(--texto);font-size:14px;margin-bottom:20px"></select>
+      <div id="div-conteudo"></div>
+    </div>
+
   </div>
 </div>
 
@@ -501,6 +517,7 @@ function mudarTab(nome, btn) {
   if (nome === 'comunidade') carregarComunidadeAdmin();
   if (nome === 'moderacao') carregarPalavrasAdmin();
   if (nome === 'comentarios') carregarComentariosAdmin();
+  if (nome === 'divulgacao') carregarDivulgacao();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -1144,6 +1161,64 @@ async function excluirComentario(historiaId, comId){
     mostrarMsg('comentarios','Comentário excluído.','ok');
     renderComentariosAdmin();
   } catch(e){ mostrarMsg('comentarios','Erro: '+e.message,'erro'); }
+}
+
+// ============================================================
+//  DIVULGAÇÃO — link, legenda TikTok, arquivos por história
+// ============================================================
+function carregarDivulgacao(){
+  const sel = document.getElementById('div-historia');
+  if (!stories || !stories.length){
+    sel.innerHTML = '<option>Nenhuma história cadastrada</option>';
+    document.getElementById('div-conteudo').innerHTML = '';
+    return;
+  }
+  sel.innerHTML = stories.map(s=>`<option value="${s.id}">${(s.titulo||'(sem título)').replace(/"/g,'&quot;')}</option>`).join('');
+  renderDivulgacao();
+}
+
+function gerarLegendaTikTok(s){
+  const opA = s.opcaoA || 'Opção A';
+  const opB = s.opcaoB || 'Opção B';
+  const cat = (s.categoria||'').toUpperCase();
+  return `⚖️ VOCÊ É O JUIZ\n\n${s.titulo||''}\n\nE você? O que faria:\n👉 ${opA}\nou\n👉 ${opB}?\n\n🗳️ Vote e veja se a maioria concorda com você (link na bio 🔗)\n\n#vocejuiz #vocedecide #historias #${cat.toLowerCase()||'polemica'} #tiktokbrasil #reflexao #julgamento`;
+}
+
+function renderDivulgacao(){
+  const id = document.getElementById('div-historia').value;
+  const s = stories.find(x=>x.id===id);
+  const box = document.getElementById('div-conteudo');
+  if (!s){ box.innerHTML=''; return; }
+  const link = 'https://vocejuiz.com.br/?h=' + encodeURIComponent(s.id);
+  const legenda = gerarLegendaTikTok(s);
+  box.innerHTML = `
+    <div class="div-bloco">
+      <label>🔗 Link da história</label>
+      <div class="div-linha"><input type="text" id="div-link" readonly value="${link}"><button class="btn btn-ouro btn-sm" onclick="copiarTexto('${link.replace(/'/g,"\\'")}','Link copiado!')">📋 Copiar</button></div>
+    </div>
+    <div class="div-bloco">
+      <label>📱 Legenda pronta pro TikTok / Reels</label>
+      <textarea id="div-legenda" readonly style="min-height:200px">${legenda}</textarea>
+      <button class="btn btn-ouro btn-sm" style="margin-top:8px" onclick="copiarLegenda()">📋 Copiar legenda</button>
+    </div>
+    <div class="div-bloco">
+      <label>📷 Arquivos da história</label>
+      <div class="div-arquivos">
+        ${s.capa ? `<a class="btn btn-card btn-sm" href="${s.capa}" target="_blank" rel="noopener">📷 Abrir imagem de capa</a>` : '<span style="color:var(--texto2);font-size:13px">Sem imagem de capa</span>'}
+        ${s.video ? `<a class="btn btn-card btn-sm" href="${s.video}" target="_blank" rel="noopener">🎬 Abrir vídeo</a>` : '<span style="color:var(--texto2);font-size:13px">Sem vídeo (ou link automático)</span>'}
+      </div>
+      <p style="color:var(--texto2);font-size:12px;margin-top:8px">Para salvar, abra e use "salvar como". Os arquivos são os mesmos que você cadastrou na história.</p>
+    </div>`;
+}
+
+function copiarTexto(txt, okMsg){
+  navigator.clipboard.writeText(txt)
+    .then(()=>mostrarMsg('divulgacao', okMsg||'Copiado!','ok'))
+    .catch(()=>mostrarMsg('divulgacao','Não foi possível copiar.','erro'));
+}
+function copiarLegenda(){
+  const el = document.getElementById('div-legenda');
+  if (el) copiarTexto(el.value, 'Legenda copiada! Cole na descrição do TikTok.');
 }
 
 function mostrarMsg(area, texto, tipo) {
