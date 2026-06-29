@@ -184,6 +184,7 @@ input:checked+.slider::before{transform:translateX(20px)}
       <button onclick="mudarTab('comunidade',this)">Comunidade <span class="badge-num" id="badge-pendentes" style="display:none">0</span></button>
       <button onclick="mudarTab('comentarios',this)">Comentários</button>
       <button onclick="mudarTab('moderacao',this)">Moderação</button>
+      <button onclick="mudarTab('estatisticas',this)">📊 Estatísticas</button>
       <button onclick="mudarTab('divulgacao',this)">🚀 Divulgação</button>
       <button onclick="mudarTab('analytics',this)">Analytics</button>
       <button onclick="mudarTab('textos',this)">Histórias Texto</button>
@@ -355,6 +356,15 @@ input:checked+.slider::before{transform:translateX(20px)}
       <div id="analytics-stories"></div>
     </div>
 
+    <!-- TAB ESTATÍSTICAS (dashboard) -->
+    <div class="tab" id="tab-estatisticas">
+      <div class="sec-titulo">📊 Estatísticas</div>
+      <p style="color:var(--texto2);font-size:13px;margin-bottom:16px;line-height:1.5">Números reais do seu banco de dados (Firestore). Para <b>visitantes, origem do tráfego e dispositivos</b>, use o Google Analytics — botão no fim da página.</p>
+      <div class="analytics-grid" id="est-totais"><div class="loading-inline">Carregando...</div></div>
+      <div id="est-rankings"></div>
+      <div id="est-ga"></div>
+    </div>
+
     <!-- TAB TEXTOS -->
     <div class="tab" id="tab-textos">
       <div class="sec-titulo">Histórias em texto</div>
@@ -518,6 +528,7 @@ function mudarTab(nome, btn) {
   if (nome === 'moderacao') carregarPalavrasAdmin();
   if (nome === 'comentarios') carregarComentariosAdmin();
   if (nome === 'divulgacao') carregarDivulgacao();
+  if (nome === 'estatisticas') carregarEstatisticas();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -1219,6 +1230,84 @@ function copiarTexto(txt, okMsg){
 function copiarLegenda(){
   const el = document.getElementById('div-legenda');
   if (el) copiarTexto(el.value, 'Legenda copiada! Cole na descrição do TikTok.');
+}
+
+// ============================================================
+//  ESTATÍSTICAS — dashboard com dados reais do Firestore
+// ============================================================
+async function carregarEstatisticas(){
+  const totaisEl = document.getElementById('est-totais');
+  const rankEl = document.getElementById('est-rankings');
+  const gaEl = document.getElementById('est-ga');
+  totaisEl.innerHTML = '<div class="loading-inline">Carregando...</div>';
+  rankEl.innerHTML = ''; gaEl.innerHTML = '';
+
+  let dados = [];
+  try {
+    const snap = await db.collection('plataforma').get();
+    dados = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  } catch(e){
+    totaisEl.innerHTML = '<div class="loading-inline">Erro ao carregar: '+e.message+'</div>'; return;
+  }
+
+  const nHist = dados.length;
+  const totVotos = dados.reduce((a,s)=>a+(s.votoA||0)+(s.votoB||0),0);
+  const totAcessos = dados.reduce((a,s)=>a+(s.acessos||0),0);
+  const totComentarios = dados.reduce((a,s)=>a+(s.qtdComentarios||0),0);
+  const totLikes = dados.reduce((a,s)=>a+(s.likes||0),0);
+  // taxa de votação = votos / acessos (quantos que abriram chegaram a votar)
+  const taxaVoto = totAcessos>0 ? Math.round((totVotos/totAcessos)*100) : 0;
+
+  // contadores extras
+  let nComunidade = 0, nUsuarios = 0;
+  try { const c = await db.collection('comunidade').where('status','==','aprovada').get(); nComunidade = c.size; } catch(e){}
+  try { const u = await db.collection('usuarios').get(); nUsuarios = u.size; } catch(e){}
+
+  totaisEl.innerHTML = `
+    <div class="analytics-card"><span class="num">${nHist}</span><span class="lab">Histórias</span></div>
+    <div class="analytics-card"><span class="num">${totVotos}</span><span class="lab">Votos totais</span></div>
+    <div class="analytics-card"><span class="num">${totComentarios}</span><span class="lab">Comentários</span></div>
+    <div class="analytics-card"><span class="num">${totAcessos}</span><span class="lab">Acessos a histórias</span></div>
+    <div class="analytics-card"><span class="num">${taxaVoto}%</span><span class="lab">Taxa de votação</span></div>
+    <div class="analytics-card"><span class="num">${nUsuarios}</span><span class="lab">Juízes cadastrados</span></div>
+    <div class="analytics-card"><span class="num">${nComunidade}</span><span class="lab">Histórias da comunidade</span></div>
+    <div class="analytics-card"><span class="num">${totLikes}</span><span class="lab">Curtidas</span></div>`;
+
+  // rankings
+  const top = (arr, fn) => arr.slice().sort((a,b)=>fn(b)-fn(a)).filter(s=>fn(s)>0)[0];
+  const maisAcessada = top(dados, s=>(s.acessos||0));
+  const maisVotada = top(dados, s=>((s.votoA||0)+(s.votoB||0)));
+  const maisComentada = top(dados, s=>(s.qtdComentarios||0));
+  // mais polêmica: votação mais equilibrada (mín. 10 votos)
+  const polem = dados.filter(s=>((s.votoA||0)+(s.votoB||0))>=10)
+    .map(s=>{ const t=(s.votoA||0)+(s.votoB||0); const eq=1-Math.abs((s.votoA||0)/t-0.5)*2; return {s,eq,t}; })
+    .sort((a,b)=>b.eq-a.eq)[0];
+
+  const linhaRank = (lab, s, extra) => s
+    ? `<div class="stat-row"><span>${lab}</span><span class="stat-val" style="text-align:right">${s.titulo||'(sem título)'}${extra?` · ${extra}`:''}</span></div>`
+    : `<div class="stat-row"><span>${lab}</span><span class="stat-val" style="color:var(--texto2)">sem dados ainda</span></div>`;
+
+  let polemTxt = '';
+  if (polem){ const pA=Math.round((polem.s.votoA||0)/polem.t*100); polemTxt = `${pA}% / ${100-pA}%`; }
+
+  rankEl.innerHTML = `
+    <div class="story-stats" style="margin-top:18px">
+      <h3>🏆 Destaques</h3>
+      ${linhaRank('👁 Mais acessada', maisAcessada, maisAcessada?`${maisAcessada.acessos||0} acessos`:'')}
+      ${linhaRank('🗳 Mais votada', maisVotada, maisVotada?`${(maisVotada.votoA||0)+(maisVotada.votoB||0)} votos`:'')}
+      ${linhaRank('💬 Mais comentada', maisComentada, maisComentada?`${maisComentada.qtdComentarios||0} comentários`:'')}
+      ${linhaRank('⚡ Mais polêmica', polem?polem.s:null, polemTxt)}
+    </div>`;
+
+  // atalho honesto pro Google Analytics
+  gaEl.innerHTML = `
+    <div class="story-stats" style="margin-top:18px">
+      <h3>🌐 Visitantes, origem e dispositivos</h3>
+      <p style="color:var(--texto2);font-size:13px;line-height:1.6;margin-bottom:14px">
+        Esses números (quantas pessoas visitaram, de onde vieram — TikTok, Google, Instagram — e se usaram celular ou computador) <b>não ficam no seu banco</b>. Quem registra isso é o Google Analytics, que já está instalado no site. Clique abaixo para ver.
+      </p>
+      <a class="btn btn-ouro btn-sm" href="https://analytics.google.com/" target="_blank" rel="noopener">Abrir Google Analytics →</a>
+    </div>`;
 }
 
 function mostrarMsg(area, texto, tipo) {
