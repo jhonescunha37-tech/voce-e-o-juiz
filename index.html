@@ -369,6 +369,17 @@ footer a{color:var(--ouro);text-decoration:none}
 .nivel-prog-fill{height:100%;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro));border-radius:6px;transition:width 0.6s}
 .nivel-prog small{font-size:12px;color:var(--texto2)}
 .streak-banner{background:linear-gradient(135deg,rgba(239,71,111,0.12),rgba(201,162,39,0.12));border:1px solid rgba(201,162,39,0.4);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--texto);margin-bottom:16px;line-height:1.4}
+.concord-box{background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--texto);margin:14px 0}
+.concord-box b{color:var(--ouro);font-size:16px}
+.concord-box small{color:var(--texto2)}
+.hist-lista{display:flex;flex-direction:column;gap:8px}
+.hist-item{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:10px 12px}
+.hist-info{min-width:0}
+.hist-info b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-info small{font-size:11px;color:var(--texto2)}
+.hist-tag{font-size:11px;border:1px solid var(--borda);border-radius:10px;padding:3px 9px;white-space:nowrap;flex-shrink:0;color:var(--texto2)}
+.hist-tag.ok{border-color:#06d6a0;color:#06d6a0}
+.hist-tag.no{border-color:#ef9c66;color:#ef9c66}
 .perfil-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-bottom:24px}
 .pstat{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:14px;text-align:center}
 .pstat b{display:block;font-size:24px;color:var(--ouro)}
@@ -1157,6 +1168,7 @@ function proximoNivel(pontos){
 // ---- datas para streak (formato YYYY-MM-DD local) ----
 function dataHojeStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dataOntemStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function formatarDataBR(iso){ if(!iso) return '—'; const p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : iso; }
 
 // ---- CONQUISTAS ----
 const CONQUISTAS = [
@@ -1725,12 +1737,21 @@ function votar(opcao) {
     else if (ultimo === ontem){ novoStreak = (perfilUsuario.streak||0)+1; } // dia seguido: +1
     else { novoStreak = 1; }                                              // quebrou ou primeiro
 
+    // ---- HISTÓRICO do voto (para "Meu Histórico" + % concordância) ----
+    // descobre o lado majoritário NESTE momento (já contando este voto)
+    const vAatual = (s.votoA||0) + (opcao==='A'?1:0);
+    const vBatual = (s.votoB||0) + (opcao==='B'?1:0);
+    const ladoMaioria = vAatual===vBatual ? null : (vAatual>vBatual ? 'A' : 'B');
+    const comMaioria = ladoMaioria ? (opcao===ladoMaioria) : null;
+    const entradaHist = { id:s.id, t:(s.titulo||''), lado:opcao, data:hoje, maioria: comMaioria };
+
     db.collection('usuarios').doc(usuarioAtual.uid).set({
       votosDados: firebase.firestore.FieldValue.increment(1),
       pontos: firebase.firestore.FieldValue.increment(10),
       ultimoVotoData: hoje,
       streak: novoStreak,
-      melhorStreak: Math.max(novoStreak, (perfilUsuario&&perfilUsuario.melhorStreak)||0)
+      melhorStreak: Math.max(novoStreak, (perfilUsuario&&perfilUsuario.melhorStreak)||0),
+      historico: firebase.firestore.FieldValue.arrayUnion(entradaHist)
     },{merge:true}).catch(()=>{});
 
     if (perfilUsuario){
@@ -1740,6 +1761,7 @@ function votar(opcao) {
       perfilUsuario.streak = novoStreak;
       perfilUsuario.ultimoVotoData = hoje;
       perfilUsuario.melhorStreak = Math.max(novoStreak,(perfilUsuario.melhorStreak||0));
+      perfilUsuario.historico = (perfilUsuario.historico||[]).concat([entradaHist]);
       // celebra streak quando aumenta (e não é o primeiro voto do dia repetido)
       if (novoStreak > streakAntes && novoStreak >= 2){
         setTimeout(()=>toast('🔥 '+novoStreak+' dias seguidos! Continue voltando.'), 900);
@@ -2083,6 +2105,31 @@ function abrirPerfil(){
     return `<div class="medalha ${ok?'':'bloqueada'}" title="${c.desc}"><span class="me-ic">${c.ic}</span>${c.nome}</div>`;
   }).join('');
 
+  // ---- Meu Histórico ----
+  const hist = (p.historico||[]).slice();
+  // % de concordância com a maioria (só votos onde houve maioria definida)
+  const comDef = hist.filter(h=>h.maioria===true||h.maioria===false);
+  const concordou = comDef.filter(h=>h.maioria===true).length;
+  const pctConcord = comDef.length ? Math.round((concordou/comDef.length)*100) : null;
+  // primeiro e último voto (datas)
+  const datas = hist.map(h=>h.data).filter(Boolean).sort();
+  const primeiroVoto = datas.length ? formatarDataBR(datas[0]) : '—';
+  const ultimoVoto = datas.length ? formatarDataBR(datas[datas.length-1]) : '—';
+  // lista (mais recentes primeiro), no máx 15
+  const histLista = hist.slice().reverse().slice(0,15);
+  const histHtml = histLista.length
+    ? histLista.map(h=>{
+        const ladoTxt = h.maioria===true ? '<span class="hist-tag ok">com a maioria</span>'
+                     : h.maioria===false ? '<span class="hist-tag no">contra a maioria</span>'
+                     : '<span class="hist-tag">empate</span>';
+        return `<div class="hist-item"><div class="hist-info"><b>${h.t||'(história)'}</b><small>${formatarDataBR(h.data)}</small></div>${ladoTxt}</div>`;
+      }).join('')
+    : '<p style="font-size:13px;color:var(--texto2)">Você ainda não julgou nenhuma história. Vote para construir seu histórico!</p>';
+
+  const concordHtml = pctConcord!==null
+    ? `<div class="concord-box">🤝 Você concorda com a maioria em <b>${pctConcord}%</b> das suas decisões <small>(${comDef.length} ${comDef.length===1?'voto':'votos'})</small></div>`
+    : '';
+
   document.getElementById('perfil-conteudo').innerHTML = `
     <div class="perfil-topo">
       <img src="${foto}" alt="foto">
@@ -2099,6 +2146,13 @@ function abrirPerfil(){
       <div class="pstat"><b>${favs}</b><small>Favoritos</small></div>
       <div class="pstat"><b>${p.melhorStreak||streak||0}</b><small>Melhor sequência</small></div>
     </div>
+    ${concordHtml}
+    <div class="perfil-stats" style="grid-template-columns:1fr 1fr">
+      <div class="pstat"><b style="font-size:14px">${primeiroVoto}</b><small>Primeiro voto</small></div>
+      <div class="pstat"><b style="font-size:14px">${ultimoVoto}</b><small>Último voto</small></div>
+    </div>
+    <div class="perfil-sec-titulo">📜 Meu Histórico</div>
+    <div class="hist-lista">${histHtml}</div>
     <div class="perfil-sec-titulo">🏅 Conquistas</div>
     <div class="medalhas-grid">${conqHtml}</div>
     <div class="perfil-sec-titulo">⭐ Meus favoritos</div>
