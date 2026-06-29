@@ -310,6 +310,10 @@ input:checked+.slider::before{transform:translateX(20px)}
           <span style="font-size:13px;color:var(--texto2)">🔥 Destacar em "Em Alta Agora"</span>
         </div>
         <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="f-encerrada"><span class="slider"></span></label>
+          <span style="font-size:13px;color:var(--texto2)">🔒 Encerrar votação (não aceita novos votos; mostra resultado oficial)</span>
+        </div>
+        <div class="switch-row">
           <label class="switch"><input type="checkbox" id="f-premium"><span class="slider"></span></label>
           <span style="font-size:13px;color:var(--texto2)">💎 História Premium (exclusiva de assinante)</span>
         </div>
@@ -559,6 +563,7 @@ function limparForm() {
   document.getElementById('f-destaque').checked = false;
   document.getElementById('f-historiaDoDia').checked = false;
   document.getElementById('f-emAlta').checked = false;
+  document.getElementById('f-encerrada').checked = false;
   document.getElementById('f-premium').checked = false;
   document.getElementById('f-categoria').value = 'aleatorias';
   document.getElementById('f-classificacao').value = '';
@@ -589,6 +594,7 @@ function editarStory(id) {
   document.getElementById('f-destaque').checked = !!s.destaque;
   document.getElementById('f-historiaDoDia').checked = !!s.historiaDoDia;
   document.getElementById('f-emAlta').checked = !!s.emAlta;
+  document.getElementById('f-encerrada').checked = !!s.encerrada;
   document.getElementById('f-premium').checked = !!s.premium;
   document.getElementById('f-categoria').value = s.categoria || 'aleatorias';
   document.getElementById('f-classificacao').value = s.classificacao || '';
@@ -641,6 +647,7 @@ async function salvarHistoria() {
     fimVotacao: fimVotacao,
     historiaDoDia: document.getElementById('f-historiaDoDia').checked,
     emAlta: document.getElementById('f-emAlta').checked,
+    encerrada: document.getElementById('f-encerrada').checked,
     premium: document.getElementById('f-premium').checked,
     ordem: parseInt(document.getElementById('f-ordem').value) || 1,
     destaque: document.getElementById('f-destaque').checked,
