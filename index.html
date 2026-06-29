@@ -1046,20 +1046,21 @@ const MENU = [
 
 // Categorias do briefing. A "chave" é o que deve ser salvo no admin (campo "categoria").
 const CATEGORIAS = [
-  { chave:'todas',     label:'Todas',          ic:'🎬' },
-  { chave:'futebol',   label:'Futebol',        ic:'⚽' },
-  { chave:'terror',    label:'Terror',         ic:'👻' },
-  { chave:'romance',   label:'Romance',        ic:'❤️' },
-  { chave:'misterio',  label:'Mistério',       ic:'🕵️' },
-  { chave:'crime',     label:'Crime',          ic:'🚔' },
-  { chave:'ficcao',    label:'Ficção',         ic:'👽' },
-  { chave:'humor',     label:'Humor',          ic:'😂' },
-  { chave:'suspense',  label:'Suspense',       ic:'😱' },
-  { chave:'reflexao',  label:'Reflexão',       ic:'🧠' },
-  { chave:'reais',     label:'Histórias Reais',ic:'📜' },
-  { chave:'drama',     label:'Drama',          ic:'🎭' },
-  { chave:'polemica',  label:'Polêmica/Internet',ic:'🔥' },
-  { chave:'aleatorias',label:'Aleatórias',     ic:'🎲' }
+  { chave:'todas',      label:'Todas',           ic:'🎬' },
+  { chave:'polemica',   label:'Polêmica/Internet',ic:'🔥' },
+  { chave:'futebol',    label:'Futebol',         ic:'⚽' },
+  { chave:'terror',     label:'Terror',          ic:'👻' },
+  { chave:'misterio',   label:'Mistério',        ic:'🕵️' },
+  { chave:'crime',      label:'Crimes',          ic:'🚔' },
+  { chave:'curiosidades',label:'Curiosidades',   ic:'💡' },
+  { chave:'aleatorias', label:'Aleatórias',      ic:'🎲' },
+  { chave:'romance',    label:'Romance',         ic:'❤️' },
+  { chave:'ficcao',     label:'Ficção',          ic:'👽' },
+  { chave:'humor',      label:'Humor',           ic:'😂' },
+  { chave:'suspense',   label:'Suspense',        ic:'😱' },
+  { chave:'reflexao',   label:'Reflexão',        ic:'🧠' },
+  { chave:'reais',      label:'Histórias Reais', ic:'📜' },
+  { chave:'drama',      label:'Drama',           ic:'🎭' }
 ];
 
 const ORDENS = [
@@ -1230,7 +1231,11 @@ async function carregarHistorias() {
       stories = [HISTORIA_NEYMAR_PADRAO];
     }
 
-    storyDestaque = stories.find(s => s.destaque) || stories[0];
+    // Hero: História do Dia > destaque manual > história mais recente (maior ordem)
+    storyDestaque = stories.find(s => s.historiaDoDia)
+                 || stories.find(s => s.destaque)
+                 || stories.slice().sort((a,b)=>(b.ordem||0)-(a.ordem||0))[0]
+                 || stories[0];
     renderHero(storyDestaque);
     aplicarFiltros();
     renderEmAlta();
@@ -1341,15 +1346,29 @@ function renderGrid() {
     return;
   }
 
+  // selos dinâmicos: descobrir a mais votada e a mais comentada (globais)
+  const maisVotadaId = stories.slice().sort((a,b)=>((b.votoA||0)+(b.votoB||0))-((a.votoA||0)+(a.votoB||0)))[0];
+  const maisComentadaId = stories.slice().sort((a,b)=>((b.qtdComentarios||0))-((a.qtdComentarios||0)))[0];
+  const idMaisVotada = (maisVotadaId && ((maisVotadaId.votoA||0)+(maisVotadaId.votoB||0))>0) ? maisVotadaId.id : null;
+  const idMaisComentada = (maisComentadaId && (maisComentadaId.qtdComentarios||0)>0) ? maisComentadaId.id : null;
+  // "Nova": criada nas últimas 48h (se houver createdAt) OU a de maior ordem
+  const maiorOrdem = stories.slice().sort((a,b)=>(b.ordem||0)-(a.ordem||0))[0];
+
   grid.innerHTML = storiesFiltradas.map((s) => {
     const idx = stories.indexOf(s);
     const tot = (s.votoA||0) + (s.votoB||0);
     const capa = s.capa
       ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`
       : `<div class="story-card-capa-placeholder">🎬</div>`;
-    const novo = (ordemAtual==='destaque' && idx === 0 && filtroCategoria==='todas') ? '<div class="story-card-novo">Novo</div>' : '';
     const ci = catInfo(s.categoria);
     const cl = classInfo(s);
+    // canto superior esquerdo: selos de status (um por vez, prioridade)
+    let seloStatus = '';
+    if (s.historiaDoDia) seloStatus = '<div class="story-card-novo">👑 História do Dia</div>';
+    else if (s.emAlta) seloStatus = '<div class="story-card-novo">🔥 Em Alta</div>';
+    else if (s.id === idMaisVotada) seloStatus = '<div class="story-card-novo">⚡ Mais votada</div>';
+    else if (s.id === idMaisComentada) seloStatus = '<div class="story-card-novo">💬 Mais comentada</div>';
+    else if (maiorOrdem && s.id === maiorOrdem.id) seloStatus = '<div class="story-card-novo">🆕 Nova</div>';
     const selos = `<div class="story-card-selos">
         <span class="selo selo-cat">${ci.ic} ${ci.label}</span>
         ${s.premium?'<span class="selo selo-premium">💎 Premium</span>':''}
@@ -1360,7 +1379,7 @@ function renderGrid() {
     const encerrada = votacaoEncerrada(s) ? '<span class="mini-tag" style="border-color:#ef476f;color:#ef476f">Encerrada</span>' : '';
     return `
       <div class="story-card" onclick="abrirHistoria(stories[${idx}])">
-        ${novo}
+        ${seloStatus}
         ${selos}
         ${capa}
         <div class="story-card-body">
@@ -1385,11 +1404,14 @@ function renderGrid() {
 // ============================================================
 function renderEmAlta(){
   const grid = document.getElementById('grid-em-alta');
-  const ranqueadas = stories.slice().sort((a,b)=>{
+  // 1º: histórias marcadas manualmente no admin (⭐ Destacar em Em Alta)
+  const manuais = stories.filter(s => s.emAlta).slice(0,5);
+  // fallback automático (acessos+votos) se não houver marcação manual
+  const ranqueadas = manuais.length ? manuais : stories.slice().sort((a,b)=>{
     const sa=(a.acessos||0)+(a.votoA||0)+(a.votoB||0);
     const sb=(b.acessos||0)+(b.votoA||0)+(b.votoB||0);
     return sb-sa;
-  }).slice(0,3);
+  }).slice(0,5);
 
   if (!ranqueadas.length || (ranqueadas.length===1 && ranqueadas[0].id==='neymar-local')){
     grid.className='';
@@ -1403,7 +1425,7 @@ function renderEmAlta(){
     const tot=(s.votoA||0)+(s.votoB||0);
     const capa = s.capa?`<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`:`<div class="story-card-capa-placeholder">🎬</div>`;
     return `<div class="story-card" onclick="abrirHistoria(stories[${idx}])">
-      <div class="story-card-novo">#${i+1}</div>${capa}
+      <div class="story-card-novo">🔥 #${i+1}</div>${capa}
       <div class="story-card-body">
         <div class="story-card-titulo">${s.titulo||''}</div>
         <div class="story-card-meta"><span class="story-card-dur">👁 ${s.acessos||0}</span><span class="story-card-votos">${tot} votos</span></div>
