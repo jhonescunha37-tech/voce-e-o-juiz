@@ -306,6 +306,12 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--card);border:1px solid var(--ouro);color:var(--texto);padding:12px 22px;border-radius:10px;font-size:14px;z-index:9000;transition:transform 0.3s;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
 .pontos-floater{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;font-weight:900;font-size:26px;padding:14px 28px;border-radius:40px;z-index:9500;pointer-events:none;opacity:0;transition:transform 1.5s cubic-bezier(.2,.8,.2,1),opacity 1.5s;box-shadow:0 10px 40px rgba(201,162,39,0.5)}
 .pontos-floater.subir{opacity:1;transform:translate(-50%,-180px) scale(1.1)}
+.conquista-popup{position:fixed;top:20px;left:50%;transform:translate(-50%,-140px);background:linear-gradient(135deg,#1a1d29,#0c0e16);border:1px solid var(--ouro);border-radius:14px;padding:14px 18px;z-index:9600;display:flex;align-items:center;gap:14px;box-shadow:0 12px 50px rgba(201,162,39,0.35);max-width:340px;width:calc(100% - 32px);opacity:0;transition:transform 0.4s cubic-bezier(.2,.9,.2,1),opacity 0.4s}
+.conquista-popup.ativo{transform:translate(-50%,0);opacity:1}
+.conquista-popup .cq-ic{font-size:34px;flex-shrink:0}
+.conquista-popup .cq-lab{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ouro)}
+.conquista-popup .cq-nome{font-size:16px;font-weight:800;margin:2px 0}
+.conquista-popup .cq-desc{font-size:12px;color:var(--texto2);line-height:1.4}
 #toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ---- FOOTER ---- */
@@ -358,6 +364,11 @@ footer a{color:var(--ouro);text-decoration:none}
 .perfil-topo img{width:72px;height:72px;border-radius:50%;border:2px solid var(--ouro)}
 .perfil-topo h2{margin:0}
 .perfil-nivel{display:inline-block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ouro);border:1px solid var(--ouro);border-radius:14px;padding:2px 10px;margin-top:4px}
+.nivel-prog{margin:16px 0 8px}
+.nivel-prog-bar{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.nivel-prog-fill{height:100%;background:linear-gradient(90deg,var(--ouro),var(--ouro-claro));border-radius:6px;transition:width 0.6s}
+.nivel-prog small{font-size:12px;color:var(--texto2)}
+.streak-banner{background:linear-gradient(135deg,rgba(239,71,111,0.12),rgba(201,162,39,0.12));border:1px solid rgba(201,162,39,0.4);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--texto);margin-bottom:16px;line-height:1.4}
 .perfil-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-bottom:24px}
 .pstat{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:14px;text-align:center}
 .pstat b{display:block;font-size:24px;color:var(--ouro)}
@@ -1097,16 +1108,61 @@ const AVISOS_LISTA = ['Violência','Sangue','Terror','Terror psicológico','Cont
 
 // Níveis por pontos (votos dados + comentários + histórias)
 const NIVEIS = [
-  { nome:'Bronze',   min:0 },
-  { nome:'Prata',    min:10 },
-  { nome:'Ouro',     min:50 },
-  { nome:'Diamante', min:150 },
-  { nome:'Lenda',    min:500 }
+  { nome:'Juiz Iniciante',    min:0 },
+  { nome:'Juiz Experiente',   min:50 },
+  { nome:'Juiz Especialista', min:200 },
+  { nome:'Supremo Juiz',      min:500 },
+  { nome:'Lenda da Justiça',  min:1000 }
 ];
 function nivelDe(pontos){
   let atual = NIVEIS[0];
   for (const n of NIVEIS){ if (pontos >= n.min) atual = n; }
   return atual.nome;
+}
+function proximoNivel(pontos){
+  for (const n of NIVEIS){ if (pontos < n.min) return n; }
+  return null; // já no máximo
+}
+
+// ---- datas para streak (formato YYYY-MM-DD local) ----
+function dataHojeStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dataOntemStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+// ---- CONQUISTAS ----
+const CONQUISTAS = [
+  { id:'primeiro_voto',  ic:'🗳️', nome:'Primeiro Voto',        desc:'Você tomou sua primeira decisão.', ok:p=>(p.votosDados||0)>=1 },
+  { id:'votos_10',       ic:'⚖️', nome:'10 Votos',              desc:'Já são 10 julgamentos!',           ok:p=>(p.votosDados||0)>=10 },
+  { id:'votos_100',      ic:'🏛️', nome:'100 Votos',             desc:'Um juiz dedicado: 100 decisões.',  ok:p=>(p.votosDados||0)>=100 },
+  { id:'primeiro_coment',ic:'💬', nome:'Primeiro Comentário',   desc:'Você deu sua opinião.',            ok:p=>(p.comentarios||0)>=1 },
+  { id:'streak_3',       ic:'🔥', nome:'3 Dias Seguidos',       desc:'Sequência de 3 dias!',             ok:p=>(p.melhorStreak||p.streak||0)>=3 },
+  { id:'streak_7',       ic:'🔥', nome:'7 Dias Seguidos',       desc:'Uma semana inteira julgando!',     ok:p=>(p.melhorStreak||p.streak||0)>=7 }
+];
+
+// verifica e celebra conquistas novas (guarda as já dadas no perfil)
+function verificarConquistas(){
+  if (!usuarioAtual || !perfilUsuario) return;
+  const dadas = perfilUsuario.conquistas || [];
+  const novas = [];
+  for (const c of CONQUISTAS){
+    if (!dadas.includes(c.id) && c.ok(perfilUsuario)) novas.push(c);
+  }
+  if (!novas.length) return;
+  const novosIds = dadas.concat(novas.map(c=>c.id));
+  perfilUsuario.conquistas = novosIds;
+  db.collection('usuarios').doc(usuarioAtual.uid).set({ conquistas: novosIds },{merge:true}).catch(()=>{});
+  // mostra um popup por conquista, em sequência
+  novas.forEach((c,i)=> setTimeout(()=>popupConquista(c), 400 + i*1700));
+}
+
+function popupConquista(c){
+  const el = document.createElement('div');
+  el.className = 'conquista-popup';
+  el.innerHTML = `<div class="cq-ic">${c.ic}</div>
+    <div class="cq-txt"><div class="cq-lab">Conquista desbloqueada!</div>
+    <div class="cq-nome">${c.nome}</div><div class="cq-desc">${c.desc}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.classList.add('ativo'), 30);
+  setTimeout(()=>{ el.classList.remove('ativo'); setTimeout(()=>el.remove(),400); }, 3800);
 }
 
 const HISTORIA_NEYMAR_PADRAO = {
@@ -1630,12 +1686,38 @@ function votar(opcao) {
 
   // se logado, conta o voto no perfil (medalhas/nível): +10 pontos por voto
   if (usuarioAtual){
+    // ---- STREAK (dias seguidos) ----
+    const hoje = dataHojeStr();
+    const ontem = dataOntemStr();
+    let novoStreak = 1;
+    const ultimo = perfilUsuario && perfilUsuario.ultimoVotoData;
+    if (ultimo === hoje){ novoStreak = (perfilUsuario.streak||1); }      // já votou hoje: mantém
+    else if (ultimo === ontem){ novoStreak = (perfilUsuario.streak||0)+1; } // dia seguido: +1
+    else { novoStreak = 1; }                                              // quebrou ou primeiro
+
     db.collection('usuarios').doc(usuarioAtual.uid).set({
       votosDados: firebase.firestore.FieldValue.increment(1),
-      pontos: firebase.firestore.FieldValue.increment(10)
+      pontos: firebase.firestore.FieldValue.increment(10),
+      ultimoVotoData: hoje,
+      streak: novoStreak,
+      melhorStreak: Math.max(novoStreak, (perfilUsuario&&perfilUsuario.melhorStreak)||0)
     },{merge:true}).catch(()=>{});
-    if (perfilUsuario){ perfilUsuario.votosDados=(perfilUsuario.votosDados||0)+1; perfilUsuario.pontos=(perfilUsuario.pontos||0)+10; }
+
+    if (perfilUsuario){
+      perfilUsuario.votosDados=(perfilUsuario.votosDados||0)+1;
+      perfilUsuario.pontos=(perfilUsuario.pontos||0)+10;
+      const streakAntes = perfilUsuario.streak||0;
+      perfilUsuario.streak = novoStreak;
+      perfilUsuario.ultimoVotoData = hoje;
+      perfilUsuario.melhorStreak = Math.max(novoStreak,(perfilUsuario.melhorStreak||0));
+      // celebra streak quando aumenta (e não é o primeiro voto do dia repetido)
+      if (novoStreak > streakAntes && novoStreak >= 2){
+        setTimeout(()=>toast('🔥 '+novoStreak+' dias seguidos! Continue voltando.'), 900);
+      }
+    }
     pontosFloater('+10 pontos');
+    // verifica conquistas após o voto
+    setTimeout(()=>verificarConquistas(), 600);
   } else {
     pontosFloater('Entre e ganhe +10');
   }
@@ -1926,34 +2008,46 @@ function abrirPerfil(){
   const pontos = p.pontos || 0;
   const foto = usuarioAtual.photoURL || 'https://ui-avatars.com/api/?name=L&background=151822&color=c9a227';
   const favs = (p.favoritos||[]).length;
+  const streak = p.streak || 0;
+  const titulo = nivelDe(pontos);
+  const prox = proximoNivel(pontos);
+  const progresso = prox ? Math.round((pontos / prox.min) * 100) : 100;
 
-  const medalhas = [
-    { ic:'🗳️', nome:'Primeira votação', ok:(p.votosDados||0) >= 1 },
-    { ic:'✍️', nome:'Primeira história', ok:(p.historiasEnviadas||0) >= 1 },
-    { ic:'💬', nome:'Comentador',        ok:(p.comentarios||0) >= 1 },
-    { ic:'🔥', nome:'100 pontos',         ok:pontos >= 100 },
-    { ic:'⭐', nome:'Leitor fiel',        ok:(p.votosDados||0) >= 20 },
-    { ic:'👑', nome:'Lenda',              ok:pontos >= 500 }
-  ];
+  // banner de streak
+  const streakHtml = streak >= 1
+    ? `<div class="streak-banner">🔥 <b>${streak} ${streak===1?'dia':'dias'} seguidos</b> ${streak>=2?'— continue voltando para não perder!':'— volte amanhã para começar uma sequência!'}</div>`
+    : '';
+
+  // barra de progresso de título
+  const progHtml = prox
+    ? `<div class="nivel-prog"><div class="nivel-prog-bar"><div class="nivel-prog-fill" style="width:${Math.min(100,progresso)}%"></div></div>
+       <small>${pontos} / ${prox.min} pts para <b>${prox.nome}</b></small></div>`
+    : `<div class="nivel-prog"><small>🏆 Você alcançou o título máximo: <b>${titulo}</b></small></div>`;
+
+  // conquistas (todas, com bloqueadas)
+  const conqHtml = CONQUISTAS.map(c=>{
+    const ok = (p.conquistas||[]).includes(c.id) || c.ok(p);
+    return `<div class="medalha ${ok?'':'bloqueada'}" title="${c.desc}"><span class="me-ic">${c.ic}</span>${c.nome}</div>`;
+  }).join('');
 
   document.getElementById('perfil-conteudo').innerHTML = `
     <div class="perfil-topo">
       <img src="${foto}" alt="foto">
       <div>
         <h2>${usuarioAtual.displayName||'Leitor'}</h2>
-        <span class="perfil-nivel">Nível ${nivelDe(pontos)} · ${pontos} pts</span>
+        <span class="perfil-nivel">${titulo} · ${pontos} pts</span>
       </div>
     </div>
+    ${progHtml}
+    ${streakHtml}
     <div class="perfil-stats">
       <div class="pstat"><b>${p.votosDados||0}</b><small>Votos</small></div>
-      <div class="pstat"><b>${p.historiasEnviadas||0}</b><small>Histórias</small></div>
       <div class="pstat"><b>${p.comentarios||0}</b><small>Comentários</small></div>
       <div class="pstat"><b>${favs}</b><small>Favoritos</small></div>
+      <div class="pstat"><b>${p.melhorStreak||streak||0}</b><small>Melhor sequência</small></div>
     </div>
-    <div class="perfil-sec-titulo">🏅 Medalhas</div>
-    <div class="medalhas-grid">
-      ${medalhas.map(m=>`<div class="medalha ${m.ok?'':'bloqueada'}"><span class="me-ic">${m.ic}</span>${m.nome}</div>`).join('')}
-    </div>
+    <div class="perfil-sec-titulo">🏅 Conquistas</div>
+    <div class="medalhas-grid">${conqHtml}</div>
     <div class="perfil-sec-titulo">⭐ Meus favoritos</div>
     <div id="perfil-favoritos" style="font-size:13px;color:var(--texto2)">Carregando...</div>
   `;
@@ -2223,6 +2317,8 @@ async function postarComentario(){
       comentarios: firebase.firestore.FieldValue.increment(1),
       pontos: firebase.firestore.FieldValue.increment(1)
     },{merge:true}).catch(()=>{});
+    if (perfilUsuario){ perfilUsuario.comentarios=(perfilUsuario.comentarios||0)+1; perfilUsuario.pontos=(perfilUsuario.pontos||0)+1; }
+    setTimeout(()=>verificarConquistas(), 400);
     // contador de comentários na história (para "Mais comentadas")
     if (!String(s.id).includes('local')){
       db.collection('plataforma').doc(s.id).set({ qtdComentarios: firebase.firestore.FieldValue.increment(1) },{merge:true}).catch(()=>{});
