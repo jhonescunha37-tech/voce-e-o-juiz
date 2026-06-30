@@ -369,6 +369,8 @@ footer a{color:var(--ouro);text-decoration:none}
 .campo{margin-bottom:16px}
 .campo label{display:block;font-size:12px;color:var(--texto2);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase}
 .campo input,.campo select,.campo textarea{width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:11px 14px;color:var(--texto);font-size:14px;outline:none;transition:border-color 0.2s}
+.campo-erro{border:2px solid #ef476f !important;box-shadow:0 0 0 3px rgba(239,71,111,0.18) !important;animation:erroShake 0.35s}
+@keyframes erroShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--ouro)}
 .campo textarea{resize:vertical;min-height:120px}
 .campo-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -853,6 +855,7 @@ footer a{color:var(--ouro);text-decoration:none}
 
 <footer>
   <div class="footer-links">
+    <a href="javascript:void(0)" onclick="ativarAvisos()">🔔 Receber avisos de novas votações</a>
     <a href="javascript:void(0)" onclick="abrirContato()">📬 Contato</a>
     <a href="javascript:void(0)" onclick="abrirTermos()">📜 Termos de Uso</a>
     <a href="mailto:vocejuiz26@gmail.com">vocejuiz26@gmail.com</a>
@@ -1075,6 +1078,10 @@ footer a{color:var(--ouro);text-decoration:none}
       <div class="campo">
         <label>Avisos de conteúdo (marque os que se aplicam)</label>
         <div class="avisos-check" id="eh-avisos"></div>
+      </div>
+      <div class="switch-linha" style="align-items:flex-start">
+        <label class="switch"><input type="checkbox" id="eh-termos"><span class="slider"></span></label>
+        <span style="font-size:13px;color:var(--texto2)">Li e aceito os <a href="javascript:void(0)" onclick="abrirTermos()" style="color:var(--ouro)">Termos de Uso</a> e confirmo que o conteúdo é de minha autoria e não viola as regras.</span>
       </div>
       <button class="btn-grande" id="eh-btn" onclick="enviarHistoria()">Enviar para análise</button>
     </div>
@@ -2365,15 +2372,28 @@ function abrirEnviarHistoria(){
 }
 function fecharEnviarHistoria(){ document.getElementById('enviar-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
 
+function erroCampoEnv(campoId, mensagem){
+  document.querySelectorAll('.campo-erro').forEach(e=>e.classList.remove('campo-erro'));
+  const el = document.getElementById(campoId);
+  if (el){ el.classList.add('campo-erro'); el.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>{try{el.focus();}catch(e){}},300); }
+  toast(mensagem);
+}
 async function enviarHistoria(){
   const titulo = document.getElementById('eh-titulo').value.trim();
   const texto = document.getElementById('eh-texto').value.trim();
   const finalA = document.getElementById('eh-finalA').value.trim();
   const finalB = document.getElementById('eh-finalB').value.trim();
-  if (!titulo || !texto || !finalA || !finalB){
-    toast('Preencha título, texto e os dois finais.');
-    return;
-  }
+  const categoria = document.getElementById('eh-categoria').value;
+  const aceitouTermos = document.getElementById('eh-termos').checked;
+
+  if (!titulo)  return erroCampoEnv('eh-titulo', 'Preencha o título da história.');
+  if (!texto)   return erroCampoEnv('eh-texto', 'Escreva o texto da história.');
+  if (!finalA)  return erroCampoEnv('eh-finalA', 'Adicione o primeiro final/opção.');
+  if (!finalB)  return erroCampoEnv('eh-finalB', 'Adicione o segundo final/opção.');
+  if (!categoria) return erroCampoEnv('eh-categoria', 'Escolha uma categoria.');
+  if (!aceitouTermos) return erroCampoEnv('eh-termos', 'Você precisa aceitar os Termos de Uso para enviar.');
+  document.querySelectorAll('.campo-erro').forEach(e=>e.classList.remove('campo-erro'));
+
   const avisos = Array.from(document.querySelectorAll('#eh-avisos input:checked')).map(i=>i.value);
   const anonimo = document.getElementById('eh-anonimo').checked;
   const btn = document.getElementById('eh-btn');
@@ -2385,7 +2405,7 @@ async function enviarHistoria(){
     texto,
     opcaoA: finalA,
     opcaoB: finalB,
-    categoria: document.getElementById('eh-categoria').value,
+    categoria: categoria,
     classificacao: document.getElementById('eh-classificacao').value,
     avisos,
     capa: document.getElementById('eh-capa').value.trim() || '',
@@ -2409,6 +2429,7 @@ async function enviarHistoria(){
     toast('História enviada! Ela aparece após a aprovação. ✅');
     // limpa form
     ['eh-titulo','eh-texto','eh-finalA','eh-finalB','eh-capa'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('eh-termos').checked = false;
   } catch(e){
     console.error(e);
     toast('Erro ao enviar. Tente novamente.');
@@ -3108,6 +3129,37 @@ function abrirTermos(){
 function fecharTermos(){
   document.getElementById('termos-overlay').classList.remove('ativo');
   document.body.style.overflow='';
+}
+
+// ---- RECEBER AVISOS DE NOVAS VOTAÇÕES ----
+async function ativarAvisos(){
+  // 1) registra o interesse no Firestore (sempre)
+  const registro = {
+    uid: usuarioAtual ? usuarioAtual.uid : null,
+    email: usuarioAtual ? (usuarioAtual.email||null) : null,
+    origem: 'nova_votacao',
+    dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  // se não estiver logado, pergunta o e-mail (opcional)
+  if (!registro.email){
+    const em = prompt('Deixe seu e-mail para avisarmos sobre novas votações (opcional):');
+    if (em && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em.trim())) registro.email = em.trim();
+  }
+  try {
+    await db.collection('interessesNotificacao').add(registro);
+  } catch(e){ /* segue mesmo se falhar */ }
+
+  // 2) tenta permissão de notificação do navegador (se houver suporte)
+  if ('Notification' in window){
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted'){
+        toast('🔔 Pronto! Quando houver uma nova votação importante, avisaremos você.');
+        return;
+      }
+    } catch(e){}
+  }
+  toast('🔔 Interesse registrado! Quando houver uma nova votação importante, avisaremos você.');
 }
 function assistirDaHistoria(){ fecharHistoria(); abrirVideoReal(storyAtual); }
 function decidirDaHistoria(){
