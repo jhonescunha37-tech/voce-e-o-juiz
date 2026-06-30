@@ -207,6 +207,17 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 
 /* ---- VIDEO MODAL ---- */
 #video-modal{display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column;overflow:auto;padding:56px 12px 24px}
+#voto-abaixo-video{max-width:760px;margin:18px auto 0;width:100%;background:var(--card);border:1px solid var(--ouro);border-radius:14px;padding:18px 16px;text-align:center}
+#voto-abaixo-video.pulsar{animation:vavPulse 0.6s ease 3}
+@keyframes vavPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,0)}50%{box-shadow:0 0 0 6px rgba(201,162,39,0.3)}}
+.vav-titulo{font-size:16px;color:var(--texto);margin-bottom:14px}
+.vav-titulo b{color:var(--ouro)}
+.vav-botoes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.vav-btn{flex:1;min-width:140px;max-width:300px;padding:15px 18px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--borda);background:var(--card2);color:var(--texto);transition:all 0.18s}
+.vav-btn.a:hover{border-color:#06d6a0;color:#06d6a0;transform:translateY(-2px)}
+.vav-btn.b:hover{border-color:#ef9c66;color:#ef9c66;transform:translateY(-2px)}
+.vav-btn.ver{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none;max-width:340px}
+.vav-disclaimer{font-size:11px;color:var(--texto2);margin-top:12px;opacity:0.7;line-height:1.4}
 #video-modal.ativo{display:flex}
 #video-modal header{position:absolute;top:0;left:0;right:0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);z-index:10}
 #video-titulo-modal{font-size:16px;font-weight:700;color:#fff}
@@ -917,6 +928,12 @@ footer a{color:var(--ouro);text-decoration:none}
     <p>Vídeo não disponível</p>
     <small>URL do vídeo não configurada</small>
     <button class="btn-assistir" style="margin-top:20px" onclick="irParaDecisao()">Ir para a decisão →</button>
+  </div>
+  <!-- VOTAÇÃO ABAIXO DO VÍDEO (ativa imediatamente) -->
+  <div id="voto-abaixo-video">
+    <div class="vav-titulo" id="vav-titulo">Já tem sua opinião? Vote agora.</div>
+    <div class="vav-botoes" id="vav-botoes"></div>
+    <div class="vav-disclaimer">As opiniões e votos dos usuários não representam a opinião do Você é o Juiz.</div>
   </div>
 </div>
 
@@ -1668,6 +1685,7 @@ function abrirVideoReal(s){
   document.getElementById('video-titulo-modal').innerText = s.titulo;
   document.getElementById('video-modal').classList.add('ativo');
   document.body.style.overflow = 'hidden';
+  montarVotoAbaixoVideo(s);
 
   const semUrl = document.getElementById('video-sem-url');
   const videoUrl = getVideoUrl(s);
@@ -1681,12 +1699,54 @@ function abrirVideoReal(s){
     videoEl.onended = () => {
       trackEvent('video_concluido', { historia: s.titulo });
       trackEvent('finish_story', { historia: s.titulo });
-      irParaDecisao();
+      // votação já está abaixo do vídeo; destaca a área em vez de trocar de tela
+      const vav = document.getElementById('voto-abaixo-video');
+      if (vav && !localStorage.getItem('voto_'+s.id)){
+        vav.scrollIntoView({behavior:'smooth', block:'center'});
+        vav.classList.add('pulsar');
+        setTimeout(()=>vav.classList.remove('pulsar'), 2000);
+      }
     };
   } else {
     videoEl.style.display = 'none';
     semUrl.style.display = 'flex';
   }
+}
+
+// ---- VOTAÇÃO ABAIXO DO VÍDEO ----
+function montarVotoAbaixoVideo(s){
+  const wrap = document.getElementById('voto-abaixo-video');
+  const titulo = document.getElementById('vav-titulo');
+  const botoes = document.getElementById('vav-botoes');
+  if (!wrap) return;
+  const jaVotou = localStorage.getItem('voto_'+s.id);
+  const encerrada = votacaoEncerrada(s);
+
+  if (encerrada){
+    titulo.innerHTML = '🔒 Esta votação já foi encerrada.';
+    botoes.innerHTML = `<button class="vav-btn ver" onclick="verResultadoDoVideo()">Ver resultado final →</button>`;
+  } else if (jaVotou){
+    titulo.innerHTML = '✓ Seu voto foi registrado. Agora veja se a comunidade concorda com você.';
+    botoes.innerHTML = `<button class="vav-btn ver" onclick="verResultadoDoVideo()">Ver resultado →</button>`;
+  } else {
+    titulo.innerHTML = 'Já tem sua opinião? <b>Vote agora.</b>';
+    botoes.innerHTML = `
+      <button class="vav-btn a" onclick="votarDoVideo('A')">${escapeHtml(s.opcaoA||'Opção A')}</button>
+      <button class="vav-btn b" onclick="votarDoVideo('B')">${escapeHtml(s.opcaoB||'Opção B')}</button>`;
+  }
+}
+function votarDoVideo(opcao){
+  const s = storyAtual;
+  fecharVideo();
+  toast('Seu voto foi registrado. Agora veja se a comunidade concorda com você.');
+  // usa exatamente o mesmo caminho de voto já existente
+  votar(opcao);
+}
+function verResultadoDoVideo(){
+  const s = storyAtual;
+  fecharVideo();
+  const v = localStorage.getItem('voto_'+s.id) || finalVencedor(s) || 'A';
+  mostrarResultado(v, true, votacaoEncerrada(s));
 }
 
 // ---- AVISO DE CONTEÚDO ----
