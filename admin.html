@@ -22,6 +22,8 @@ body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,san
 .field label{font-size:12px;color:var(--texto2);display:block;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
 .field input,.field select,.field textarea{width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px 14px;color:var(--texto);font-size:14px;outline:none;transition:border-color 0.2s}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ouro)}
+.campo-erro{border:2px solid var(--vermelho) !important;box-shadow:0 0 0 3px rgba(239,71,111,0.18) !important;animation:erroShake 0.35s}
+@keyframes erroShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .field textarea{resize:vertical;min-height:80px}
 .btn{padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s}
 .btn-ouro{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a}
@@ -647,18 +649,36 @@ function editarStory(id) {
 }
 function d0offset(){ return new Date().getTimezoneOffset()*60000; }
 
+// destaca um campo com erro, rola até ele e mostra mensagem
+function erroCampo(campoId, mensagem){
+  document.querySelectorAll('.campo-erro').forEach(e=>e.classList.remove('campo-erro'));
+  const el = document.getElementById(campoId);
+  if (el){
+    el.classList.add('campo-erro');
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(()=>{ try{ el.focus(); }catch(e){} }, 300);
+  }
+  mostrarMsg('historia', mensagem, 'erro');
+}
+
 async function salvarHistoria() {
   const titulo = document.getElementById('f-titulo').value.trim();
   const descricao = document.getElementById('f-descricao').value.trim();
   const opcaoA = document.getElementById('f-opcaoA').value.trim();
   const opcaoB = document.getElementById('f-opcaoB').value.trim();
+  const categoria = document.getElementById('f-categoria').value;
   const capaFinal = document.getElementById('f-capa-url').value.trim() || 'https://picsum.photos/1200/675';
   const videoFinal = document.getElementById('f-video-url').value.trim();
 
-  if (!titulo || !descricao || !opcaoA || !opcaoB || !videoFinal) {
-    mostrarMsg('historia', 'Preencha: Título, Descrição, Opção A, Opção B e URL/caminho do vídeo.', 'erro');
-    return;
-  }
+  // validação campo a campo (destaca, rola e avisa)
+  if (!titulo)    return erroCampo('f-titulo',     'Preencha o título da história.');
+  if (!descricao) return erroCampo('f-descricao',  'Digite uma descrição.');
+  if (!opcaoA)    return erroCampo('f-opcaoA',     'Adicione a primeira opção de voto (Opção A).');
+  if (!opcaoB)    return erroCampo('f-opcaoB',     'Adicione a segunda opção de voto (Opção B).');
+  if (!categoria) return erroCampo('f-categoria',  'Escolha uma categoria.');
+  if (!videoFinal)return erroCampo('f-video-url',  'Informe o vídeo ou a URL do vídeo.');
+  // passou: limpa qualquer destaque
+  document.querySelectorAll('.campo-erro').forEach(e=>e.classList.remove('campo-erro'));
 
   const avisos = Array.from(document.querySelectorAll('#f-avisos input:checked')).map(i=>i.value);
   const fimRaw = document.getElementById('f-fimVotacao').value;
@@ -669,7 +689,7 @@ async function salvarHistoria() {
     duracao: document.getElementById('f-duracao').value.trim(),
     capa: capaFinal,
     video: videoFinal,
-    categoria: document.getElementById('f-categoria').value || 'aleatorias',
+    categoria: categoria || 'aleatorias',
     classificacao: document.getElementById('f-classificacao').value || '',
     avisos,
     fimVotacao: fimVotacao,
