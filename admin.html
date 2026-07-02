@@ -184,6 +184,7 @@ input:checked+.slider::before{transform:translateX(20px)}
     <div class="admin-nav">
       <button class="ativo" onclick="mudarTab('historias',this)">Histórias</button>
       <button onclick="mudarTab('comunidade',this)">Comunidade <span class="badge-num" id="badge-pendentes" style="display:none">0</span></button>
+      <button onclick="mudarTab('contato',this)">📬 Contato <span class="badge-num" id="badge-contato" style="display:none">0</span></button>
       <button onclick="mudarTab('comentarios',this)">Comentários</button>
       <button onclick="mudarTab('moderacao',this)">Moderação</button>
       <button onclick="mudarTab('estatisticas',this)">📊 Estatísticas</button>
@@ -374,6 +375,18 @@ input:checked+.slider::before{transform:translateX(20px)}
       <div id="analytics-textos-stories"></div>
     </div>
 
+    <!-- TAB CONTATO (mensagens recebidas) -->
+    <div class="tab" id="tab-contato">
+      <div class="sec-titulo">📬 Mensagens de Contato</div>
+      <div id="msg-contato" class="msg"></div>
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-card btn-sm" onclick="filtrarContato('novo')" id="fct-novo">Novas</button>
+        <button class="btn btn-card btn-sm" onclick="filtrarContato('todos')" id="fct-todos">Todas</button>
+        <button class="btn btn-card btn-sm" onclick="carregarContatos()">↻ Atualizar</button>
+      </div>
+      <div id="lista-contato"><div class="loading-inline">Carregando...</div></div>
+    </div>
+
     <!-- TAB COMENTÁRIOS -->
     <div class="tab" id="tab-comentarios">
       <div class="sec-titulo">Moderação de comentários</div>
@@ -439,7 +452,7 @@ let filtroCom = 'pendente';
 // Config compartilhada com o site
 const CATEGORIAS = [
   {chave:'polemica',label:'🔥 Polêmica/Internet'},{chave:'futebol',label:'⚽ Futebol'},{chave:'terror',label:'👻 Terror'},
-  {chave:'misterio',label:'🕵️ Mistério'},{chave:'crime',label:'🚔 Crimes'},{chave:'curiosidades',label:'💡 Curiosidades'},
+  {chave:'misterio',label:'🕵️ Mistério'},{chave:'crime',label:'🚔 Crimes'},{chave:'curiosidades',label:'💡 Curiosidades'},{chave:'musica',label:'🎵 Música'},
   {chave:'aleatorias',label:'🎲 Aleatórias'},{chave:'romance',label:'❤️ Romance'},{chave:'ficcao',label:'👽 Ficção'},
   {chave:'humor',label:'😂 Humor'},{chave:'suspense',label:'😱 Suspense'},{chave:'reflexao',label:'🧠 Reflexão'},
   {chave:'reais',label:'📜 Histórias Reais'},{chave:'drama',label:'🎭 Drama'}
@@ -531,6 +544,7 @@ function mudarTab(nome, btn) {
   if (nome === 'comentarios') carregarComentariosAdmin();
   if (nome === 'divulgacao') carregarDivulgacao();
   if (nome === 'estatisticas') carregarEstatisticas();
+  if (nome === 'contato') carregarContatos();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -856,12 +870,20 @@ function enviarArquivo(file, pasta, qual, onPronto){
 // ============================================================
 //  COMUNIDADE — aprovar / rejeitar / publicar
 // ============================================================
+function fmtBadge(n){ return n > 99 ? '99+' : String(n); }
 async function atualizarBadgePendentes(){
+  // histórias pendentes na Comunidade
   try {
     const snap = await db.collection('comunidade').where('status','==','pendente').get();
-    const n = snap.size;
     const badge = document.getElementById('badge-pendentes');
-    if (n>0){ badge.innerText = n; badge.style.display='inline-block'; }
+    if (snap.size>0){ badge.innerText = fmtBadge(snap.size); badge.style.display='inline-block'; }
+    else badge.style.display='none';
+  } catch(e){}
+  // mensagens novas em Contato
+  try {
+    const snap = await db.collection('contatos').where('status','==','novo').get();
+    const badge = document.getElementById('badge-contato');
+    if (snap.size>0){ badge.innerText = fmtBadge(snap.size); badge.style.display='inline-block'; }
     else badge.style.display='none';
   } catch(e){}
 }
@@ -1328,6 +1350,71 @@ async function carregarEstatisticas(){
       </p>
       <a class="btn btn-ouro btn-sm" href="https://analytics.google.com/" target="_blank" rel="noopener">Abrir Google Analytics →</a>
     </div>`;
+}
+
+// ============================================================
+//  CONTATO — mensagens recebidas do formulário "Fale Conosco"
+// ============================================================
+let contatosCache = [];
+let filtroContato = 'novo';
+function filtrarContato(f){ filtroContato = f; renderContatos(); }
+
+async function carregarContatos(){
+  document.getElementById('lista-contato').innerHTML = '<div class="loading-inline">Carregando...</div>';
+  try {
+    const snap = await db.collection('contatos').orderBy('dataEnvio','desc').limit(100).get();
+    contatosCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  } catch(e){
+    document.getElementById('lista-contato').innerHTML = '<div class="loading-inline">Erro ao carregar: '+e.message+'</div>';
+    return;
+  }
+  renderContatos();
+  // marca as "novas" como "lida" ao abrir a aba (limpa o balão)
+  marcarContatosLidos();
+}
+
+async function marcarContatosLidos(){
+  const novas = contatosCache.filter(c=>(c.status||'novo')==='novo');
+  for (const c of novas){
+    db.collection('contatos').doc(c.id).update({ status:'lido' }).catch(()=>{});
+    c.status = 'lido';
+  }
+  // esconde o balão
+  const badge = document.getElementById('badge-contato');
+  if (badge) badge.style.display='none';
+}
+
+function renderContatos(){
+  const el = document.getElementById('lista-contato');
+  ['novo','todos'].forEach(f=>{ const b=document.getElementById('fct-'+f); if(b) b.classList.toggle('btn-ouro', f===filtroContato); });
+  let lista = contatosCache.slice();
+  if (filtroContato === 'novo') lista = lista.filter(c=>(c.status||'novo')==='novo');
+  if (!lista.length){ el.innerHTML = '<div class="loading-inline">Nenhuma mensagem.</div>'; return; }
+  el.innerHTML = lista.map(c=>{
+    const data = c.dataEnvio && c.dataEnvio.toDate ? c.dataEnvio.toDate().toLocaleString('pt-BR') : '';
+    return `<div class="story-stats" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        <b style="font-size:14px">${(c.nome||'').replace(/</g,'&lt;')}</b>
+        <span style="font-size:11px;color:var(--texto2)">${data}</span>
+      </div>
+      <div style="font-size:12px;color:var(--ouro);margin-bottom:4px">${(c.assunto||'(sem assunto)').replace(/</g,'&lt;')}</div>
+      <div style="font-size:13px;color:var(--texto);line-height:1.5;margin-bottom:8px">${(c.mensagem||'').replace(/</g,'&lt;')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <a class="btn btn-ouro btn-sm" href="mailto:${c.email}?subject=Re: ${encodeURIComponent(c.assunto||'')}">✉️ Responder (${(c.email||'').replace(/</g,'&lt;')})</a>
+        <button class="btn btn-danger btn-sm" onclick="excluirContato('${c.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function excluirContato(id){
+  if (!confirm('Excluir esta mensagem?')) return;
+  try {
+    await db.collection('contatos').doc(id).delete();
+    contatosCache = contatosCache.filter(c=>c.id!==id);
+    renderContatos();
+    mostrarMsg('contato','Mensagem excluída.','ok');
+  } catch(e){ mostrarMsg('contato','Erro: '+e.message,'erro'); }
 }
 
 function mostrarMsg(area, texto, tipo) {
