@@ -150,6 +150,12 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 /* gradiente de "tem mais" nas bordas quando há rolagem */
 .chips-scroller.tem-dir::after{content:'';position:absolute;right:28px;top:0;bottom:4px;width:36px;background:linear-gradient(to right,transparent,rgba(5,6,10,0.85));pointer-events:none;z-index:2}
 .chips-scroller.tem-esq::before{content:'';position:absolute;left:28px;top:0;bottom:4px;width:36px;background:linear-gradient(to left,transparent,rgba(5,6,10,0.85));pointer-events:none;z-index:2}
+.chips-vertodas{flex-shrink:0;margin-left:8px;background:var(--card2);border:1px solid var(--ouro);color:var(--ouro);font-size:13px;font-weight:700;padding:8px 14px;border-radius:18px;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.chips-vertodas:hover{background:var(--ouro);color:#05060a}
+/* modo expandido: mostra todas as categorias de uma vez */
+.chips-scroller.expandido .chips{flex-wrap:wrap;overflow:visible}
+.chips-scroller.expandido .chips-seta{display:none !important}
+.chips-scroller.expandido::before,.chips-scroller.expandido::after{display:none !important}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;background:var(--card);border:1px solid var(--borda);color:var(--texto2);font-size:13px;padding:7px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .chip:hover{border-color:var(--ouro);color:var(--texto)}
@@ -714,6 +720,7 @@ footer a{color:var(--ouro);text-decoration:none}
       <button class="chips-seta esq" id="chips-seta-esq" onclick="rolarChips(-1)" aria-label="Anterior">‹</button>
       <div class="chips" id="chips-categorias"></div>
       <button class="chips-seta dir" id="chips-seta-dir" onclick="rolarChips(1)" aria-label="Próximo">›</button>
+      <button class="chips-vertodas" id="chips-vertodas" onclick="toggleVerTodas()">Ver todas ▾</button>
     </div>
     <div class="ordenar-row">
       <span class="ord-label">Ordenar</span>
@@ -1203,12 +1210,13 @@ const MENU = [
 const CATEGORIAS = [
   { chave:'todas',      label:'Todas',           ic:'🎬' },
   { chave:'polemica',   label:'Polêmica/Internet',ic:'🔥' },
+  { chave:'musica',     label:'Música',          ic:'🎵' },
+  { chave:'politica',   label:'Política',        ic:'🏛️' },
   { chave:'futebol',    label:'Futebol',         ic:'⚽' },
   { chave:'terror',     label:'Terror',          ic:'👻' },
   { chave:'misterio',   label:'Mistério',        ic:'🕵️' },
   { chave:'crime',      label:'Crimes',          ic:'🚔' },
   { chave:'curiosidades',label:'Curiosidades',   ic:'💡' },
-  { chave:'musica',    label:'Música',          ic:'🎵' },
   { chave:'aleatorias', label:'Aleatórias',      ic:'🎲' },
   { chave:'romance',    label:'Romance',         ic:'❤️' },
   { chave:'ficcao',     label:'Ficção',          ic:'👽' },
@@ -1379,11 +1387,21 @@ function rolarChips(dir){
   const c = document.getElementById('chips-categorias');
   if (c) c.scrollBy({ left: dir * 240, behavior:'smooth' });
 }
+// expande/recolhe a barra de categorias (botão "Ver todas")
+function toggleVerTodas(){
+  const wrap = document.querySelector('.chips-scroller');
+  const btn = document.getElementById('chips-vertodas');
+  if (!wrap || !btn) return;
+  const aberto = wrap.classList.toggle('expandido');
+  btn.innerHTML = aberto ? 'Ver menos ▴' : 'Ver todas ▾';
+  if (!aberto) setTimeout(atualizarSetasChips, 50);
+}
 // mostra/esconde as setas e os gradientes conforme a posição
 function atualizarSetasChips(){
   const c = document.getElementById('chips-categorias');
   const wrap = c ? c.closest('.chips-scroller') : null;
   if (!c || !wrap) return;
+  if (wrap.classList.contains('expandido')) return; // no modo "ver todas" não há setas
   const temOverflow = c.scrollWidth > c.clientWidth + 4;
   const noInicio = c.scrollLeft <= 4;
   const noFim = c.scrollLeft + c.clientWidth >= c.scrollWidth - 4;
