@@ -1246,6 +1246,10 @@ const CLASSIFICACOES = {
 
 const AVISOS_LISTA = ['Violência','Sangue','Terror','Terror psicológico','Conteúdo sexual','Nudez','Drogas','Álcool','Linguagem ofensiva','Temas sensíveis','Suicídio','Abuso','Outros'];
 
+// ==== LIGA/DESLIGA o Premium/assinaturas no site ====
+// Deixe false enquanto o site está crescendo. Mude para true quando quiser reativar.
+const PREMIUM_ATIVO = false;
+
 // Níveis por pontos (votos dados + comentários + histórias)
 const NIVEIS = [
   { nome:'Juiz Iniciante',    min:0 },
@@ -1357,8 +1361,9 @@ function finalVencedor(s){
 function renderMenu(){
   const d = document.getElementById('menu-desktop');
   const m = document.getElementById('menu-mobile-itens');
-  d.innerHTML = MENU.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
-  m.innerHTML = MENU.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
+  const itens = MENU.filter(i => PREMIUM_ATIVO || i.href !== '#premium');
+  d.innerHTML = itens.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
+  m.innerHTML = itens.map(i => `<a href="${i.href}" onclick="fecharMenuMobile()"><span class="ic">${i.ic}</span>${i.label}</a>`).join('');
 }
 function abrirMenuMobile(){ document.getElementById('menu-mobile').classList.add('aberto'); document.body.style.overflow='hidden'; }
 function fecharMenuMobile(){ document.getElementById('menu-mobile').classList.remove('aberto'); document.body.style.overflow=''; }
@@ -1674,7 +1679,7 @@ function abrirVideo(s) {
   storyAtual = s;
 
   // bloqueio premium
-  if (s.premium && !ehPremiumUsuario()){
+  if (PREMIUM_ATIVO && s.premium && !ehPremiumUsuario()){
     if (!usuarioAtual){
       pedirLogin('Esta é uma história Premium. Entre e assine para desbloquear.');
     } else {
@@ -3214,6 +3219,12 @@ async function copiarLink(){
 //  INIT
 // ============================================================
 renderMenu();
+
+// esconde Premium/assinaturas se estiver desativado
+if (!PREMIUM_ATIVO){
+  const secP = document.getElementById('premium');
+  if (secP) secP.style.display = 'none';
+}
 renderFiltros();
 renderRankingAbas();
 carregarPalavrasProibidas();
