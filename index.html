@@ -212,8 +212,8 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 #loading p{color:var(--texto2);font-size:14px;letter-spacing:2px}
 
 /* ---- VIDEO MODAL ---- */
-#video-modal{display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column;overflow:auto;padding:56px 12px 24px}
-#voto-abaixo-video{max-width:760px;margin:18px auto 0;width:100%;background:var(--card);border:1px solid var(--ouro);border-radius:14px;padding:18px 16px;text-align:center}
+#video-modal{display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column;overflow:auto;padding:56px 12px 24px;align-items:center}
+#voto-abaixo-video{max-width:760px;margin:0 auto 14px;width:100%;background:var(--card);border:1px solid var(--ouro);border-radius:14px;padding:16px;text-align:center}
 #voto-abaixo-video.pulsar{animation:vavPulse 0.6s ease 3}
 @keyframes vavPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,0)}50%{box-shadow:0 0 0 6px rgba(201,162,39,0.3)}}
 .vav-titulo{font-size:16px;color:var(--texto);margin-bottom:14px}
@@ -232,12 +232,12 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 #video-player{
   width:100%;
   max-width:430px;
-  max-height:78vh;
+  max-height:60vh;
   height:auto;
   aspect-ratio:9/16;
   object-fit:contain;
   background:#000;
-  margin:auto;
+  margin:0 auto;
   border-radius:14px;
   box-shadow:0 0 40px rgba(0,0,0,.7);
 }
@@ -575,6 +575,17 @@ footer a{color:var(--ouro);text-decoration:none}
 .vd-coment small{color:var(--texto2)}
 .vd-coment div{margin-top:6px;color:var(--texto);line-height:1.5}
 @media(max-width:600px){.vd-resumo{grid-template-columns:repeat(2,1fr)}}
+/* ===== MOBILE: votação primeiro, botões grandes, sem espaço vazio ===== */
+@media(max-width:600px){
+  #video-modal{padding:14px 8px 20px;justify-content:flex-start}
+  #voto-abaixo-video{width:94%;margin:0 auto 12px;padding:14px 10px}
+  .vav-titulo{font-size:15px;margin-bottom:12px}
+  .vav-botoes{flex-direction:column;gap:10px;align-items:center}
+  .vav-btn{width:100%;min-width:0;max-width:none;padding:18px;font-size:17px}
+  #video-player{max-height:46vh;aspect-ratio:auto}
+  #video-modal header{position:static;background:none;padding:0 8px 10px;width:100%}
+  #video-titulo-modal{font-size:16px;font-weight:800;line-height:1.2}
+}
 .hp-link{width:100%;background:transparent;border:1px solid var(--borda);color:var(--texto2);font-size:14px;font-weight:600;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.2s}
 .hp-link:hover{border-color:var(--ouro);color:var(--ouro)}
 .hp-sec{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin:28px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:8px}
@@ -932,18 +943,19 @@ footer a{color:var(--ouro);text-decoration:none}
     <span id="video-titulo-modal"></span>
     <button id="btn-fechar-video" onclick="fecharVideo()">✕</button>
   </header>
+  <!-- VOTAÇÃO PRIMEIRO (aparece logo abaixo do título, sem rolar) -->
+  <div id="voto-abaixo-video">
+    <div class="vav-titulo" id="vav-titulo">Já tem sua opinião? Vote agora.</div>
+    <div class="vav-botoes" id="vav-botoes"></div>
+    <div class="vav-disclaimer">As opiniões e votos dos usuários não representam a opinião do Você é o Juiz.</div>
+  </div>
+  <!-- VÍDEO/IMAGEM DEPOIS -->
   <video id="video-player" controls playsinline></video>
   <div id="video-sem-url">
     <span>🎬</span>
     <p>Vídeo não disponível</p>
     <small>URL do vídeo não configurada</small>
     <button class="btn-assistir" style="margin-top:20px" onclick="irParaDecisao()">Ir para a decisão →</button>
-  </div>
-  <!-- VOTAÇÃO ABAIXO DO VÍDEO (ativa imediatamente) -->
-  <div id="voto-abaixo-video">
-    <div class="vav-titulo" id="vav-titulo">Já tem sua opinião? Vote agora.</div>
-    <div class="vav-botoes" id="vav-botoes"></div>
-    <div class="vav-disclaimer">As opiniões e votos dos usuários não representam a opinião do Você é o Juiz.</div>
   </div>
 </div>
 
