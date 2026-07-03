@@ -223,6 +223,8 @@ section{max-width:1100px;margin:0 auto;padding:54px 24px 20px}
 .vav-btn.a:hover{border-color:#06d6a0;color:#06d6a0;transform:translateY(-2px)}
 .vav-btn.b:hover{border-color:#ef9c66;color:#ef9c66;transform:translateY(-2px)}
 .vav-btn.ver{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none;max-width:340px}
+.vav-btn.desativado{opacity:0.4;cursor:not-allowed;filter:grayscale(0.6)}
+.vav-btn:disabled{opacity:0.4;cursor:not-allowed;filter:grayscale(0.6)}
 .vav-disclaimer{font-size:11px;color:var(--texto2);margin-top:12px;opacity:0.7;line-height:1.4}
 #video-modal.ativo{display:flex}
 #video-modal header{position:absolute;top:0;left:0;right:0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);z-index:10}
@@ -1769,8 +1771,13 @@ function montarVotoAbaixoVideo(s){
     titulo.innerHTML = '🔒 Esta votação já foi encerrada.';
     botoes.innerHTML = `<button class="vav-btn ver" onclick="verResultadoDoVideo()">Ver resultado final →</button>`;
   } else if (jaVotou){
-    titulo.innerHTML = '✓ Seu voto foi registrado. Agora veja se a comunidade concorda com você.';
-    botoes.innerHTML = `<button class="vav-btn ver" onclick="verResultadoDoVideo()">Ver resultado →</button>`;
+    const opTxt = jaVotou === 'A' ? (s.opcaoA||'Opção A') : (s.opcaoB||'Opção B');
+    titulo.innerHTML = `✅ Você já votou em: <b>${escapeHtml(opTxt)}</b><br><span style="font-size:13px;color:var(--texto2);font-weight:400">Seu voto já foi salvo. Você ainda pode comentar abaixo.</span>`;
+    // mostra os botões desativados/apagados + botão de ver resultado
+    botoes.innerHTML = `
+      <button class="vav-btn desativado" disabled>${escapeHtml(s.opcaoA||'Opção A')}</button>
+      <button class="vav-btn desativado" disabled>${escapeHtml(s.opcaoB||'Opção B')}</button>
+      <button class="vav-btn ver" onclick="verResultadoDoVideo()">Ver resultado e comentar →</button>`;
   } else {
     titulo.innerHTML = 'Já tem sua opinião? <b>Vote agora.</b>';
     botoes.innerHTML = `
@@ -1780,9 +1787,21 @@ function montarVotoAbaixoVideo(s){
 }
 function votarDoVideo(opcao){
   const s = storyAtual;
+  if (!s) return;
   fecharVideo();
+  // VERIFICA antes: se já votou (ou encerrada), não registra de novo nem mostra msg enganosa
+  const jaVotou = localStorage.getItem('voto_'+s.id);
+  if (votacaoEncerrada(s)){
+    votar(opcao); // votar() já trata: mostra resultado oficial, sem pontos
+    return;
+  }
+  if (jaVotou){
+    toast('✅ Você já votou nesta enquete. Seu voto já foi salvo.');
+    votar(opcao); // votar() detecta e mostra o resultado do voto ORIGINAL, sem pontos
+    return;
+  }
+  // primeiro voto de verdade
   toast('Seu voto foi registrado. Agora veja se a comunidade concorda com você.');
-  // usa exatamente o mesmo caminho de voto já existente
   votar(opcao);
 }
 function verResultadoDoVideo(){
@@ -1842,10 +1861,11 @@ function irParaDecisao() {
   document.getElementById('btn-opcao-a').innerText = s.opcaoA || 'Opção A';
   document.getElementById('btn-opcao-b').innerText = s.opcaoB || 'Opção B';
 
-  // bloqueio visual quando encerrada
+  // bloqueio visual quando encerrada OU já votou
   const aviso = document.getElementById('decisao-encerrada');
-  document.getElementById('btn-opcao-a').disabled = encerrada;
-  document.getElementById('btn-opcao-b').disabled = encerrada;
+  const bloquear = encerrada || !!jaVotou;
+  document.getElementById('btn-opcao-a').disabled = bloquear;
+  document.getElementById('btn-opcao-b').disabled = bloquear;
   aviso.style.display = encerrada ? 'block' : 'none';
 
   document.getElementById('decisao-overlay').classList.add('ativo');
