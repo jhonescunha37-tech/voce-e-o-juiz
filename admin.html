@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Você é o Juiz</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--ouro:#c9a227;--ouro-claro:#e8c86a;--fundo:#05060a;--card:#0f111a;--card2:#151822;--borda:#1e2133;--texto:#f0f0f0;--texto2:#9aa0b8;--verde:#06d6a0;--vermelho:#ef476f}
-body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh}
+body{background:var(--fundo);color:var(--texto);font-family:'Inter','Segoe UI',Arial,sans-serif;min-height:100vh}
 
 /* LOGIN */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
@@ -150,6 +150,21 @@ input:checked+.slider::before{transform:translateX(20px)}
 .div-bloco input,.div-bloco textarea{flex:1;width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px 12px;color:var(--texto);font-size:13px;font-family:inherit;resize:vertical}
 .div-arquivos{display:flex;gap:10px;flex-wrap:wrap}
 .div-arquivos a{text-decoration:none}
+/* ===== acabamento visual do painel ===== */
+body{
+  background:
+    radial-gradient(900px 400px at 50% -140px, rgba(201,162,39,0.07), transparent 60%),
+    var(--fundo);
+}
+.sec-titulo{font-family:'Sora','Inter',sans-serif;position:relative;padding-left:14px}
+.sec-titulo::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:70%;background:linear-gradient(180deg,var(--ouro),var(--ouro-claro));border-radius:4px}
+.admin-nav button{transition:all 0.2s}
+.admin-nav button:hover{transform:translateY(-1px)}
+.story-stats,.analytics-card,.div-bloco{transition:border-color 0.2s}
+.story-stats:hover,.analytics-card:hover{border-color:rgba(201,162,39,0.4)}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--fundo)}
+::-webkit-scrollbar-thumb{background:var(--borda);border-radius:6px}
 </style>
 </head>
 <body>
