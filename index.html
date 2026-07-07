@@ -1707,7 +1707,7 @@ function renderGrid() {
   const maiorOrdem = stories.slice().sort((a,b)=>(b.ordem||0)-(a.ordem||0))[0];
 
   grid.innerHTML = storiesFiltradas.map((s) => {
-    const idx = stories.indexOf(s);
+    const idSeguro = String(s.id).replace(/'/g,"\\'");
     const tot = (s.votoA||0) + (s.votoB||0);
     const capa = s.capa
       ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`
@@ -1730,7 +1730,7 @@ function renderGrid() {
       ? `<div class="story-card-tags">${s.avisos.slice(0,3).map(a=>`<span class="mini-tag">⚠ ${a}</span>`).join('')}</div>` : '';
     const encerrada = votacaoEncerrada(s) ? '<span class="mini-tag" style="border-color:#ef476f;color:#ef476f">🔒 Votação encerrada · resultado final</span>' : '';
     return `
-      <div class="story-card" onclick="abrirHistoria(stories[${idx}])">
+      <div class="story-card" onclick="abrirHistoriaPorId('${idSeguro}')">
         ${seloStatus}
         ${selos}
         ${capa}
@@ -1743,8 +1743,8 @@ function renderGrid() {
           </div>
           ${tagsConteudo}
           <div class="card-acoes">
-            <button class="card-acao ${jaCurtiu(s)?'ativo':''}" onclick="curtirHistoria(${idx},event)">❤️ ${s.likes||0}</button>
-            <button class="card-acao ${jaFavoritou(s)?'ativo':''}" onclick="favoritarHistoria(${idx},event)">${jaFavoritou(s)?'⭐ Salvo':'☆ Salvar'}</button>
+            <button class="card-acao ${jaCurtiu(s)?'ativo':''}" onclick="curtirHistoria('${idSeguro}',event)">❤️ ${s.likes||0}</button>
+            <button class="card-acao ${jaFavoritou(s)?'ativo':''}" onclick="favoritarHistoria('${idSeguro}',event)">${jaFavoritou(s)?'⭐ Salvo':'☆ Salvar'}</button>
           </div>
         </div>
       </div>`;
@@ -1773,10 +1773,10 @@ function renderEmAlta(){
   grid.id='grid-em-alta';
   grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px';
   grid.innerHTML = ranqueadas.map((s,i)=>{
-    const idx = stories.indexOf(s);
+    const idSeguro = String(s.id).replace(/'/g,"\\'");
     const tot=(s.votoA||0)+(s.votoB||0);
     const capa = s.capa?`<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`:`<div class="story-card-capa-placeholder">🎬</div>`;
-    return `<div class="story-card" onclick="abrirHistoria(stories[${idx}])">
+    return `<div class="story-card" onclick="abrirHistoriaPorId('${idSeguro}')">
       <div class="story-card-novo">🔥 #${i+1}</div>${capa}
       <div class="story-card-body">
         <div class="story-card-titulo">${s.titulo||''}</div>
@@ -2203,13 +2203,13 @@ function renderProximaDestaque(){
     const mesma = cand.filter(s => (s.categoria||'')===(storyAtual.categoria||''));
     prox = (mesma.length?mesma:cand)[0];
   } else prox = cand[0];
-  const idx = stories.indexOf(prox);
+  const idSeguro = String(prox.id).replace(/'/g,"\\'");
   const capa = prox.capa
     ? `<img src="${prox.capa}" alt="">`
     : `<div class="pd-ph">🎬</div>`;
   el.innerHTML = `
     <div class="pd-label">▶ Continue julgando</div>
-    <div class="pd-card" onclick="proximaHistoriaIr(${idx})">
+    <div class="pd-card" onclick="proximaHistoriaIr('${idSeguro}')">
       ${capa}
       <div class="pd-info">
         <div class="pd-titulo">${prox.titulo||''}</div>
@@ -2218,9 +2218,9 @@ function renderProximaDestaque(){
       <div class="pd-seta">→</div>
     </div>`;
 }
-function proximaHistoriaIr(idx){
+function proximaHistoriaIr(id){
   fecharResultado();
-  abrirHistoria(stories[idx]);
+  abrirHistoriaPorId(id);
 }
 
 // ---- COMPARTILHAR ----
@@ -2477,7 +2477,7 @@ function renderFavoritosPerfil(){
   if (!el) return;
   const lista = stories.filter(s => favs.includes(s.id));
   el.innerHTML = lista.length
-    ? lista.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--borda);cursor:pointer" onclick="fecharPerfil();abrirHistoria(stories[${stories.indexOf(s)}])">⭐ ${s.titulo}</div>`).join('')
+    ? lista.map(s=>`<div style="padding:8px 0;border-bottom:1px solid var(--borda);cursor:pointer" onclick="fecharPerfil();abrirHistoriaPorId('${String(s.id).replace(/'/g,"\\'")}')">⭐ ${s.titulo}</div>`).join('')
     : 'Você ainda não favoritou nenhuma história.';
 }
 function fecharPerfil(){ document.getElementById('perfil-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
@@ -2488,9 +2488,10 @@ function fecharPerfil(){ document.getElementById('perfil-overlay').classList.rem
 function jaFavoritou(s){ return perfilUsuario && (perfilUsuario.favoritos||[]).includes(s.id); }
 function jaCurtiu(s){ return localStorage.getItem('curti_'+s.id) === '1'; }
 
-function curtirHistoria(idx, ev){
+function curtirHistoria(id, ev){
   if (ev) ev.stopPropagation();
-  const s = stories[idx];
+  const s = porId(id);
+  if (!s) return;
   exigirLogin(async ()=>{
     if (jaCurtiu(s)){ toast('Você já curtiu esta história.'); return; }
     localStorage.setItem('curti_'+s.id,'1');
@@ -2504,9 +2505,10 @@ function curtirHistoria(idx, ev){
   }, 'Entre com o Google para curtir histórias.');
 }
 
-function favoritarHistoria(idx, ev){
+function favoritarHistoria(id, ev){
   if (ev) ev.stopPropagation();
-  const s = stories[idx];
+  const s = porId(id);
+  if (!s) return;
   exigirLogin(async ()=>{
     const ref = db.collection('usuarios').doc(usuarioAtual.uid);
     const favs = perfilUsuario.favoritos || [];
@@ -2829,11 +2831,11 @@ async function renderRanking(){
       .sort((a,b)=>polemica(b)-polemica(a)).slice(0,10);
     if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">⚡</span><h3>Sem polêmicas ainda</h3><p>Quando houver histórias com votação equilibrada, elas aparecem aqui.</p></div>`; return; }
     el.innerHTML = `<div class="rank-lista">${lista.map((s,i)=>{
-      const idx = stories.indexOf(s);
+      const idSeguro = String(s.id).replace(/'/g,"\\'");
       const t = (s.votoA||0)+(s.votoB||0);
       const pa = Math.round((s.votoA||0)/t*100);
       const cap = s.capa?`<img class="rank-foto" src="${s.capa}">`:`<div class="rank-foto" style="display:flex;align-items:center;justify-content:center">🎬</div>`;
-      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoria(stories[${idx}])">
+      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoriaPorId('${idSeguro}')">
         <div class="rank-pos ${i<3?'top':''}">${i+1}</div>${cap}
         <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${pa}% × ${100-pa}% · ${t} votos</div></div>
         <div class="rank-valor">⚡</div></div>`;
@@ -2848,9 +2850,9 @@ async function renderRanking(){
     const lista = stories.slice().sort((a,b)=>campo(b)-campo(a)).slice(0,10).filter(s=>campo(s)>0);
     if (!lista.length){ el.innerHTML = `<div class="em-breve"><span class="eb-ic">🏆</span><h3>Sem dados ainda</h3><p>Quando as histórias receberem votos e curtidas, o ranking aparece aqui.</p></div>`; return; }
     el.innerHTML = `<div class="rank-lista">${lista.map((s,i)=>{
-      const idx = stories.indexOf(s);
+      const idSeguro = String(s.id).replace(/'/g,"\\'");
       const cap = s.capa?`<img class="rank-foto" src="${s.capa}">`:`<div class="rank-foto" style="display:flex;align-items:center;justify-content:center">🎬</div>`;
-      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoria(stories[${idx}])">
+      return `<div class="rank-item" style="cursor:pointer" onclick="abrirHistoriaPorId('${idSeguro}')">
         <div class="rank-pos ${i<3?'top':''}">${i+1}</div>${cap}
         <div class="rank-info"><div class="rank-nome">${s.titulo||''}</div><div class="rank-sub">${catInfo(s.categoria).label}</div></div>
         <div class="rank-valor">${campo(s)}</div></div>`;
@@ -2927,13 +2929,13 @@ function assinarPremium(){
 function totVotos(s){ return (s.votoA||0)+(s.votoB||0); }
 
 function cardMini(s){
-  const idx = stories.indexOf(s);
+  const idSeguro = String(s.id).replace(/'/g,"\\'");
   const capa = s.capa
     ? `<img class="story-card-capa" src="${s.capa}" alt="${s.titulo||''}" loading="lazy">`
     : `<div class="story-card-capa-placeholder">🎬</div>`;
   const ci = catInfo(s.categoria);
   const prem = s.premium ? '<span class="selo selo-premium" style="position:absolute;top:8px;right:8px">💎</span>' : '';
-  return `<div class="story-card" onclick="abrirHistoria(stories[${idx}])">
+  return `<div class="story-card" onclick="abrirHistoriaPorId('${idSeguro}')">
     ${prem}${capa}
     <div class="story-card-body">
       <div class="story-card-titulo">${s.titulo||''}</div>
@@ -3082,11 +3084,11 @@ function renderComunidadeGrid(){
     });
   }
   grid.innerHTML = lista.map(s=>{
-    const idx = stories.indexOf(s);
+    const idSeguro = String(s.id).replace(/'/g,"\\'");
     const tot=totVotos(s);
     const capa = s.capa?`<img class="cc-capa" src="${s.capa}" loading="lazy">`:`<div class="cc-capa" style="display:flex;align-items:center;justify-content:center;font-size:34px">📖</div>`;
     const cl = classInfo(s);
-    return `<div class="com-card" onclick="abrirHistoria(stories[${idx}])">
+    return `<div class="com-card" onclick="abrirHistoriaPorId('${idSeguro}')">
       ${capa}
       <div class="cc-body">
         <div class="cc-titulo">${s.titulo}</div>
@@ -3099,6 +3101,14 @@ function renderComunidadeGrid(){
 // ============================================================
 //  PÁGINA DA HISTÓRIA (overlay imersivo)
 // ============================================================
+// ---- Abertura de história por ID (robusta: nunca depende de posição na lista) ----
+function porId(id){ return stories.find(s => s.id === id); }
+function abrirHistoriaPorId(id){
+  const s = porId(id);
+  if (s) abrirHistoria(s);
+  else toast('Não foi possível abrir esta história. Atualize a página.');
+}
+
 function abrirHistoria(s){
   if (!s) return;
   storyAtual = s;
@@ -3129,9 +3139,9 @@ function abrirHistoria(s){
   const rel = stories.filter(x => x!==s && (x.categoria||'')===(s.categoria||'') && podeAbrir(x)).slice(0,4);
   const relFallback = rel.length ? rel : stories.filter(x=>x!==s && podeAbrir(x)).slice(0,4);
   const relHtml = relFallback.map(x=>{
-    const i = stories.indexOf(x);
+    const idSeguro = String(x.id).replace(/'/g,"\\'");
     const c = x.capa?`<img src="${x.capa}" loading="lazy">`:`<div class="hp-rel-ph">🎬</div>`;
-    return `<div class="hp-rel" onclick="abrirHistoria(stories[${i}])">${c}<div class="hp-rel-tit">${x.titulo||''}</div></div>`;
+    return `<div class="hp-rel" onclick="abrirHistoriaPorId('${idSeguro}')">${c}<div class="hp-rel-tit">${x.titulo||''}</div></div>`;
   }).join('');
 
   document.getElementById('historia-conteudo').innerHTML = `
@@ -3192,8 +3202,8 @@ function fecharHistoria(){
 //  VEREDITO DA COMUNIDADE (página permanente de votação encerrada)
 // ============================================================
 async function abrirVeredito(id){
-  const s = stories.find(x=>x.id===id) || storyAtual;
-  if (!s) return;
+  const s = stories.find(x=>x.id===id);
+  if (!s){ toast('Não foi possível abrir o veredito desta história. Atualize a página.'); return; }
   const el = document.getElementById('veredito-conteudo');
   document.getElementById('veredito-overlay').classList.add('ativo');
   document.body.style.overflow='hidden';
