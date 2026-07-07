@@ -10,6 +10,9 @@
 <meta name="keywords" content="histórias interativas, votação, finais alternativos, suspense, terror, mistério, você é o juiz">
 <meta name="author" content="Você é o Juiz">
 <meta name="theme-color" content="#05060a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="canonical" href="https://vocejuiz.com.br/">
 
 <!-- Open Graph (WhatsApp, Facebook, Instagram) -->
@@ -74,7 +77,7 @@
   --texto2:#9aa0b8;
 }
 html{scroll-behavior:smooth}
-body{background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+body{background:var(--fundo);color:var(--texto);font-family:'Inter','Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden}
 
 /* ---- HEADER ---- */
 header{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(5,6,10,0.96),rgba(5,6,10,0.6) 70%,transparent);transition:background 0.3s}
@@ -649,6 +652,116 @@ footer a{color:var(--ouro);text-decoration:none}
 }
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
+}
+/* ============================================================
+   CAMADA DE ACABAMENTO VISUAL — só estilo, zero lógica
+   ============================================================ */
+
+/* fundo com profundidade: brilho dourado sutil no topo */
+body{
+  background:
+    radial-gradient(1100px 500px at 50% -160px, rgba(201,162,39,0.09), transparent 60%),
+    radial-gradient(800px 400px at 85% 15%, rgba(83,74,183,0.05), transparent 55%),
+    var(--fundo);
+}
+
+/* tipografia de títulos: Sora */
+#hero-titulo,.sec-titulo,.logo-text,.hp-titulo,.vd-titulo,
+.decisao-titulo-grande,.resultado-manchete,.story-card-titulo,.pd-titulo{
+  font-family:'Sora','Inter',sans-serif;
+  letter-spacing:-0.02em;
+}
+
+/* títulos de seção com barra dourada — identidade */
+.sec-titulo{
+  position:relative;
+  padding-left:16px;
+  font-size:20px;
+  font-weight:700;
+}
+.sec-titulo::before{
+  content:'';
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:4px;height:70%;
+  background:linear-gradient(180deg,var(--ouro),var(--ouro-claro));
+  border-radius:4px;
+}
+
+/* cards de história: vivos ao passar o mouse */
+.story-card{
+  transition:transform 0.25s cubic-bezier(.2,.8,.2,1),box-shadow 0.25s,border-color 0.25s;
+  overflow:hidden;
+}
+.story-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(201,162,39,0.55);
+  box-shadow:0 14px 40px rgba(0,0,0,0.55),0 0 0 1px rgba(201,162,39,0.25);
+}
+.story-card-capa{transition:transform 0.4s cubic-bezier(.2,.8,.2,1)}
+.story-card:hover .story-card-capa{transform:scale(1.06)}
+.story-card-titulo{transition:color 0.2s}
+.story-card:hover .story-card-titulo{color:var(--ouro-claro)}
+
+/* leve gradiente na base da capa: título respira sobre a imagem */
+.story-card-body{position:relative}
+
+/* hero mais cinematográfico */
+#hero{position:relative}
+#hero::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:120px;
+  background:linear-gradient(to top,var(--fundo),transparent);
+  pointer-events:none;
+}
+.hero-badge{
+  backdrop-filter:blur(6px);
+  box-shadow:0 4px 18px rgba(201,162,39,0.25);
+}
+
+/* botões principais com presença */
+.btn-assistir,.hp-cta{
+  box-shadow:0 6px 24px rgba(201,162,39,0.35);
+  transition:transform 0.18s,box-shadow 0.18s;
+}
+.btn-assistir:hover,.hp-cta:hover{
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 10px 32px rgba(201,162,39,0.5);
+}
+
+/* chips de categoria mais táteis */
+.chip{transition:all 0.2s}
+.chip:hover{transform:translateY(-1px);border-color:var(--ouro)}
+.chip.ativo{box-shadow:0 4px 16px rgba(201,162,39,0.35)}
+
+/* header com vidro fosco ao rolar */
+#cabecalho{
+  backdrop-filter:blur(12px);
+  background:rgba(5,6,10,0.82);
+  border-bottom:1px solid rgba(201,162,39,0.12);
+}
+
+/* rails: cards levemente maiores no hover sem cortar */
+.rail{padding-top:6px;padding-bottom:10px}
+
+/* barra de stats com respiro */
+.hero-prova b{font-family:'Sora',sans-serif}
+
+/* scrollbar discreta (desktop) */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--fundo)}
+::-webkit-scrollbar-thumb{background:var(--borda);border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:rgba(201,162,39,0.4)}
+
+/* entrada suave das seções */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+section{animation:fadeUp 0.5s ease both}
+
+/* seletor de vencedor no resultado ganha brilho */
+.barra-fill{transition:width 1s cubic-bezier(.2,.8,.2,1)}
+
+/* mobile: hover não existe; garante que nada "gruda" */
+@media(hover:none){
+  .story-card:hover{transform:none;box-shadow:none}
+  .story-card:hover .story-card-capa{transform:none}
 }
 </style>
 </head>
