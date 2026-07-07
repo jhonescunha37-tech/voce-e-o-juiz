@@ -2127,24 +2127,30 @@ async function mostrarResultado(opcaoVotada, jaVotou, soOficial) {
   const pEscolha = opcaoVotada === 'A' ? pA : pB;
   const pOutro = 100 - pEscolha;
 
-  // HEADLINE IMPACTANTE
+  // HEADLINE IMPACTANTE — compara VOTOS REAIS (empate nunca vira "maioria")
+  const vEscolha = opcaoVotada === 'A' ? vA : vB;
+  const vOutro   = opcaoVotada === 'A' ? vB : vA;
   let headline, sub;
   document.getElementById('pv-sub').innerHTML = `Você decidiu: <span style="color:var(--ouro);font-weight:700">${escolhaTexto||''}</span>`;
   if (tot <= 1){
     headline = `Você abriu o veredito! ⚖️`;
     sub = `Seja o primeiro a decidir "${s.titulo}". <span style="color:var(--ouro)">${escolhaTexto||''}</span>`;
-  } else if (pEscolha >= 80){
-    headline = `Você faz parte dos <span class="destaque">${pEscolha}%</span> que pensaram igual.`;
-    sub = `Decisão quase unânime. Você decidiu: ${escolhaTexto||''}`;
-  } else if (pEscolha <= 20){
-    headline = `Você é dos raros <span class="destaque">${pEscolha}%</span> que escolheram esse final.`;
-    sub = `Opinião corajosa! A maioria foi pelo outro lado.`;
-  } else if (pEscolha < 50){
-    headline = `<span class="destaque">${pOutro}%</span> pensaram diferente de você.`;
-    sub = `Você está na minoria desta vez. Decidiu: ${escolhaTexto||''}`;
-  } else {
+  } else if (vEscolha === vOutro){
+    // EMPATE: sem "maioria" nem "minoria"
+    headline = `A comunidade ficou dividida — <span class="destaque">50%</span> para cada lado.`;
+    sub = `Empate total até agora. Você decidiu: ${escolhaTexto||''}`;
+  } else if (vEscolha > vOutro){
+    // MAIORIA
     headline = `Você pensou igual à maioria — <span class="destaque">${pEscolha}%</span>.`;
-    sub = `Boa sintonia com a comunidade. Decidiu: ${escolhaTexto||''}`;
+    sub = pEscolha >= 80
+      ? `Decisão quase unânime. Você decidiu: ${escolhaTexto||''}`
+      : `Boa sintonia com a comunidade. Decidiu: ${escolhaTexto||''}`;
+  } else {
+    // MINORIA
+    headline = `Você ficou com a minoria — <span class="destaque">${pEscolha}%</span>.`;
+    sub = pEscolha <= 20
+      ? `Opinião corajosa! A maioria foi pelo outro lado.`
+      : `Você está na minoria desta vez. Decidiu: ${escolhaTexto||''}`;
   }
   document.getElementById('pv-headline').innerHTML = headline;
   document.getElementById('pv-sub').innerHTML = sub;
@@ -3149,7 +3155,7 @@ function abrirHistoria(s){
     ${ votacaoEncerrada(s)
       ? `<div class="hp-encerrada-aviso">🔒 Votação encerrada — resultado oficial definido.</div>
          <button class="hp-cta" onclick="abrirVeredito('${s.id}')">📜 Ver Veredito da Comunidade</button>`
-      : `<button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Assistir e decidir':'Decidir agora'}</button>` }
+      : `<button class="hp-cta" onclick="decidirDaHistoria()">⚖️ ${temVideo?'Vote agora':'Decidir agora'}</button>` }
     <button class="hp-link" onclick="copiarLinkHistoria('${s.id}')">🔗 Copiar link desta história</button>
     <div class="hp-sec">Histórias relacionadas</div>
     <div class="hp-relacionadas">${relHtml||'<p style="color:var(--texto2);font-size:13px">Em breve mais histórias.</p>'}</div>
