@@ -202,7 +202,8 @@ body{
       <button onclick="mudarTab('contato',this)">📬 Contato <span class="badge-num" id="badge-contato" style="display:none">0</span></button>
       <button onclick="mudarTab('juizes',this)">👥 Juízes <span class="badge-num" id="badge-juizes" style="display:none">0</span></button>
       <button onclick="mudarTab('comentarios',this)">Comentários</button>
-      <button onclick="mudarTab('moderacao',this)">Moderação</button>
+      <button onclick="mudarTab('moderacao',this)">🔤 Palavras</button>
+      <button onclick="mudarTab('modanc',this)">🛡️ Moderação <span class="badge-num" id="badge-modanc" style="display:none">0</span></button>
       <button onclick="mudarTab('estatisticas',this)">📊 Estatísticas</button>
       <button onclick="mudarTab('divulgacao',this)">🚀 Divulgação</button>
       <button onclick="mudarTab('analytics',this)">Analytics</button>
@@ -426,6 +427,22 @@ body{
     </div>
 
     <!-- TAB MODERAÇÃO (lista de palavras) -->
+    <!-- TAB MODERAÇÃO — ACONTECEU NA SUA CIDADE -->
+    <div class="tab" id="tab-modanc">
+      <div class="sec-titulo">🛡️ Moderação — Aconteceu na sua cidade</div>
+      <div id="msg-modanc" class="msg"></div>
+      <div style="margin:0 0 14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-card btn-sm" id="ma-f-analise" onclick="setFilaModAnc('analise')">📥 Publicações em análise</button>
+        <button class="btn btn-card btn-sm" id="ma-f-denunciadas" onclick="setFilaModAnc('denunciadas')">🚩 Publicações denunciadas</button>
+        <button class="btn btn-card btn-sm" id="ma-f-canalise" onclick="setFilaModAnc('canalise')">💬 Comentários em análise</button>
+        <button class="btn btn-card btn-sm" id="ma-f-cdenunciados" onclick="setFilaModAnc('cdenunciados')">💬🚩 Comentários denunciados</button>
+        <button class="btn btn-card btn-sm" id="ma-f-removidos" onclick="setFilaModAnc('removidos')">🗑 Removidos</button>
+        <button class="btn btn-card btn-sm" id="ma-f-log" onclick="setFilaModAnc('log')">📜 Histórico</button>
+        <button class="btn btn-card btn-sm" id="ma-f-config" onclick="setFilaModAnc('config')">⚙️ Configurações</button>
+      </div>
+      <div id="lista-modanc"><div class="loading-inline">Escolha uma fila acima.</div></div>
+    </div>
+
     <div class="tab" id="tab-moderacao">
       <div class="sec-titulo">Palavras bloqueadas</div>
       <div id="msg-moderacao" class="msg"></div>
@@ -571,6 +588,7 @@ function mudarTab(nome, btn) {
   if (nome === 'estatisticas') carregarEstatisticas();
   if (nome === 'contato') carregarContatos();
   if (nome === 'juizes') carregarJuizes();
+  if (nome === 'modanc') carregarModAnc();
 }
 
 // ---- CARREGAR HISTÓRIAS ----
@@ -910,6 +928,17 @@ async function atualizarBadgePendentes(){
     const snap = await db.collection('contatos').where('status','==','novo').get();
     const badge = document.getElementById('badge-contato');
     if (snap.size>0){ badge.innerText = fmtBadge(snap.size); badge.style.display='inline-block'; }
+    else badge.style.display='none';
+  } catch(e){}
+  // moderação Aconteceu: publicações + comentários em análise
+  try {
+    const [p, c] = await Promise.all([
+      db.collection('acontecimentos').where('status','==','analise').get(),
+      db.collection('comentariosAcontecimentos').where('status','==','analise').get()
+    ]);
+    const n = p.size + c.size;
+    const badge = document.getElementById('badge-modanc');
+    if (n>0){ badge.innerText = fmtBadge(n); badge.style.display='inline-block'; }
     else badge.style.display='none';
   } catch(e){}
   // novos juízes desde a última vez que você abriu a aba (marca local no navegador)
@@ -1500,6 +1529,263 @@ async function carregarJuizes(){
   localStorage.setItem('juizesVistos', String(users.length));
   const badge = document.getElementById('badge-juizes');
   if (badge) badge.style.display='none';
+}
+
+// ============================================================
+//  MODERAÇÃO — ACONTECEU NA SUA CIDADE (Leva 3)
+// ============================================================
+let filaModAnc = 'analise';
+function escM(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function tempoM(ts){
+  if (!ts || !ts.toDate) return '';
+  const d=(Date.now()-ts.toDate().getTime())/1000;
+  if (d<3600) return Math.max(1,Math.floor(d/60))+' min';
+  if (d<86400) return Math.floor(d/3600)+' h';
+  return Math.floor(d/86400)+' d';
+}
+// registro interno de moderação (item 15)
+function registrarLogModAnc(acao, alvoTipo, alvoId, resumo, motivo){
+  const u = firebase.auth().currentUser;
+  db.collection('moderacaoLogs').add({
+    acao, alvoTipo, alvoId,
+    resumo: (resumo||'').slice(0,120),
+    motivo: motivo||'',
+    adminUid: u?u.uid:'', adminNome: u?(u.displayName||u.email||''):'',
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+}
+function carregarModAnc(){ setFilaModAnc(filaModAnc); }
+function setFilaModAnc(f){
+  filaModAnc = f;
+  ['analise','denunciadas','canalise','cdenunciados','removidos','log','config'].forEach(x=>{
+    const b=document.getElementById('ma-f-'+x); if(b) b.classList.toggle('btn-ouro', x===f);
+  });
+  const el = document.getElementById('lista-modanc');
+  el.innerHTML = '<div class="loading-inline">Carregando...</div>';
+  if (f==='analise') return filaPubsAnc('analise', el, 'Nenhuma publicação em análise. 👌');
+  if (f==='denunciadas') return filaDenunciadasAnc(el);
+  if (f==='canalise') return filaComentariosAnc('analise', el);
+  if (f==='cdenunciados') return filaComDenunciadosAnc(el);
+  if (f==='removidos') return filaPubsAnc('removido', el, 'Nada removido.');
+  if (f==='log') return filaLogAnc(el);
+  if (f==='config') return filaConfigAnc(el);
+}
+// ---- cartão de publicação com ações contextuais ----
+function cardPubModAnc(a, contexto){
+  const autor = a.autorTipo==='apelido'&&a.apelido ? 'apelido: '+escM(a.apelido) : 'anônimo';
+  const den = a.denuncias||0;
+  const acoes = [];
+  if (a.status!=='publicado') acoes.push(`<button class="btn btn-ouro btn-sm" onclick="acaoPubAnc('${a.id}','aprovar')">✅ Aprovar</button>`);
+  if (a.status!=='oculto')    acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','ocultar')">🙈 Ocultar</button>`);
+  if (a.status!=='removido')  acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','remover')">🗑 Remover</button>`);
+  else acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','excluir')">❌ Excluir de vez</button>`);
+  acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','edittitulo')">✏️ Título</button>`);
+  acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','editdesc')">✏️ Descrição</button>`);
+  if (!a.revisado) acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','revisado')">☑️ Revisado</button>`);
+  acoes.push(`<button class="btn btn-card btn-sm" onclick="bloquearAutorAnc('${escM(a.autorId)}','${a.id}')">🚫 Bloquear autor</button>`);
+  return `<div class="story-stats" style="margin-bottom:12px" id="ma-card-${a.id}">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <b style="font-size:14px">${escM(a.titulo)}</b>
+      <span style="font-size:11px;color:var(--texto2)">${tempoM(a.criadoEm)} · status: <b style="color:var(--ouro)">${escM(a.status)}</b>${a.revisado?' · ☑️ revisado':''}</span>
+    </div>
+    <div style="font-size:12px;color:var(--ouro);margin:4px 0">📍 ${escM([a.bairro,a.cidade,a.estado].filter(Boolean).join(', '))} · ${escM(a.categoria||'')} · ${autor}</div>
+    <div style="font-size:13px;color:var(--texto);line-height:1.5;margin:6px 0">${escM(a.descricao)}</div>
+    <div style="font-size:11px;color:var(--texto2)">autorId: <code>${escM(a.autorId||'')}</code></div>
+    ${den>0?`<div style="font-size:12px;color:#ef9c9c;margin-top:6px">🚩 ${den} denúncia${den>1?'s':''} · <a href="javascript:void(0)" onclick="verDenunciasAnc('${a.id}','den-${a.id}')" style="color:var(--ouro)">ver motivos</a><div id="den-${a.id}"></div></div>`:''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">${acoes.join('')}</div>
+  </div>`;
+}
+async function filaPubsAnc(status, el, vazio){
+  try {
+    const snap = await db.collection('acontecimentos').where('status','==',status).limit(80).get();
+    let lista = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    lista.sort((a,b)=>((b.criadoEm&&b.criadoEm.toMillis)?b.criadoEm.toMillis():0)-((a.criadoEm&&a.criadoEm.toMillis)?a.criadoEm.toMillis():0));
+    el.innerHTML = lista.length ? lista.map(a=>cardPubModAnc(a,status)).join('') : `<div class="loading-inline">${vazio}</div>`;
+  } catch(e){ el.innerHTML = '<div class="loading-inline">Erro: '+escM(e.message)+'</div>'; }
+}
+async function filaDenunciadasAnc(el){
+  try {
+    const snap = await db.collection('acontecimentos').where('denuncias','>',0).limit(80).get();
+    let lista = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(a=>a.status!=='removido');
+    lista.sort((a,b)=>(b.denuncias||0)-(a.denuncias||0));
+    el.innerHTML = lista.length ? lista.map(a=>cardPubModAnc(a,'denunciadas')).join('') : '<div class="loading-inline">Nenhuma publicação denunciada. 👌</div>';
+  } catch(e){ el.innerHTML = '<div class="loading-inline">Erro: '+escM(e.message)+'</div>'; }
+}
+async function acaoPubAnc(id, acao){
+  const doc = await db.collection('acontecimentos').doc(id).get().catch(()=>null);
+  if (!doc || !doc.exists) return;
+  const a = {id, ...doc.data()};
+  try {
+    if (acao==='aprovar'){
+      await db.collection('acontecimentos').doc(id).update({status:'publicado', denuncias:0, revisado:true, atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('aprovar','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Publicação aprovada e visível no site. Denúncias zeradas.','ok');
+    } else if (acao==='ocultar'){
+      await db.collection('acontecimentos').doc(id).update({status:'oculto', atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('ocultar','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Publicação ocultada.','ok');
+    } else if (acao==='remover'){
+      await db.collection('acontecimentos').doc(id).update({status:'removido', atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('remover','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Publicação removida (fica na fila Removidos).','ok');
+    } else if (acao==='excluir'){
+      if (!confirm('Excluir DEFINITIVAMENTE? Não dá pra desfazer.')) return;
+      await db.collection('acontecimentos').doc(id).delete();
+      registrarLogModAnc('excluir_definitivo','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Excluída definitivamente.','ok');
+    } else if (acao==='edittitulo'){
+      const novo = prompt('Novo título:', a.titulo||''); if (novo===null) return;
+      await db.collection('acontecimentos').doc(id).update({titulo:novo.trim().slice(0,140), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('editar_titulo','acontecimento',id,novo.trim());
+      mostrarMsg('modanc','Título editado.','ok');
+    } else if (acao==='editdesc'){
+      const novo = prompt('Nova descrição:', a.descricao||''); if (novo===null) return;
+      await db.collection('acontecimentos').doc(id).update({descricao:novo.trim().slice(0,3000), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('editar_descricao','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Descrição editada.','ok');
+    } else if (acao==='revisado'){
+      await db.collection('acontecimentos').doc(id).update({revisado:true, atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      registrarLogModAnc('marcar_revisado','acontecimento',id,a.titulo);
+      mostrarMsg('modanc','Marcada como revisada.','ok');
+    }
+    setFilaModAnc(filaModAnc);
+    atualizarBadgePendentes();
+  } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
+}
+async function verDenunciasAnc(alvoId, elId){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = '<div class="loading-inline">Carregando motivos...</div>';
+  try {
+    const snap = await db.collection('denunciasAcontecimentos').where('alvoId','==',alvoId).limit(50).get();
+    const ds = snap.docs.map(d=>d.data());
+    el.innerHTML = ds.length ? ds.map(d=>`<div style="font-size:12px;color:var(--texto2);padding:4px 0;border-bottom:1px solid var(--borda)">• <b style="color:#ef9c9c">${escM(d.motivo)}</b>${d.explicacao?': '+escM(d.explicacao):''} <span style="opacity:0.6">(${tempoM(d.criadoEm)})</span></div>`).join('') : '<div style="font-size:12px;color:var(--texto2)">Sem registros.</div>';
+  } catch(e){ el.innerHTML = '<div style="font-size:12px;color:var(--texto2)">Erro ao carregar.</div>'; }
+}
+// ---- comentários ----
+function cardComModAnc(c, denInfo){
+  return `<div class="story-stats" style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <b style="font-size:13px">${escM(c.nome||'Anônimo')}</b>
+      <span style="font-size:11px;color:var(--texto2)">${tempoM(c.criadoEm)} · status: <b style="color:var(--ouro)">${escM(c.status)}</b></span>
+    </div>
+    <div style="font-size:13px;line-height:1.5;margin:6px 0">${escM(c.texto)}</div>
+    <div style="font-size:11px;color:var(--texto2)">uid: <code>${escM(c.uid||'')}</code> · acontecimento: <code>${escM(c.acontecimentoId||'')}</code></div>
+    ${denInfo||''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+      ${c.status!=='aprovado'?`<button class="btn btn-ouro btn-sm" onclick="acaoComAnc('${c.id}','aprovar')">✅ Aprovar</button>`:''}
+      <button class="btn btn-card btn-sm" onclick="acaoComAnc('${c.id}','editar')">✏️ Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="acaoComAnc('${c.id}','remover')">🗑 Remover</button>
+      <button class="btn btn-card btn-sm" onclick="bloquearAutorAnc('${escM(c.uid)}','${c.id}')">🚫 Bloquear autor</button>
+    </div>
+  </div>`;
+}
+async function filaComentariosAnc(status, el){
+  try {
+    const snap = await db.collection('comentariosAcontecimentos').where('status','==',status).limit(80).get();
+    let cs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    cs.sort((a,b)=>((b.criadoEm&&b.criadoEm.toMillis)?b.criadoEm.toMillis():0)-((a.criadoEm&&a.criadoEm.toMillis)?a.criadoEm.toMillis():0));
+    el.innerHTML = cs.length ? cs.map(c=>cardComModAnc(c)).join('') : '<div class="loading-inline">Nenhum comentário em análise. 👌</div>';
+  } catch(e){ el.innerHTML = '<div class="loading-inline">Erro: '+escM(e.message)+'</div>'; }
+}
+async function filaComDenunciadosAnc(el){
+  try {
+    const snap = await db.collection('denunciasAcontecimentos').where('tipoAlvo','==','comentario').limit(100).get();
+    const porAlvo = {};
+    snap.docs.forEach(d=>{ const x=d.data(); (porAlvo[x.alvoId]=porAlvo[x.alvoId]||[]).push(x); });
+    const ids = Object.keys(porAlvo);
+    if (!ids.length){ el.innerHTML = '<div class="loading-inline">Nenhum comentário denunciado. 👌</div>'; return; }
+    const cards = [];
+    for (const id of ids.slice(0,40)){
+      const doc = await db.collection('comentariosAcontecimentos').doc(id).get().catch(()=>null);
+      if (!doc || !doc.exists) continue;
+      const dens = porAlvo[id];
+      const denInfo = `<div style="font-size:12px;color:#ef9c9c;margin-top:6px">🚩 ${dens.length} denúncia${dens.length>1?'s':''}: ${dens.map(d=>escM(d.motivo)).join(' · ')}</div>`;
+      cards.push(cardComModAnc({id, ...doc.data()}, denInfo));
+    }
+    el.innerHTML = cards.length ? cards.join('') : '<div class="loading-inline">Comentários denunciados já foram tratados.</div>';
+  } catch(e){ el.innerHTML = '<div class="loading-inline">Erro: '+escM(e.message)+'</div>'; }
+}
+async function acaoComAnc(id, acao){
+  const doc = await db.collection('comentariosAcontecimentos').doc(id).get().catch(()=>null);
+  if (!doc || !doc.exists) return;
+  const c = doc.data();
+  try {
+    if (acao==='aprovar'){
+      await db.collection('comentariosAcontecimentos').doc(id).update({status:'aprovado'});
+      registrarLogModAnc('aprovar','comentario',id,(c.texto||'').slice(0,60));
+      mostrarMsg('modanc','Comentário aprovado.','ok');
+    } else if (acao==='remover'){
+      await db.collection('comentariosAcontecimentos').doc(id).delete();
+      registrarLogModAnc('remover','comentario',id,(c.texto||'').slice(0,60));
+      mostrarMsg('modanc','Comentário removido.','ok');
+    } else if (acao==='editar'){
+      const novo = prompt('Editar comentário:', c.texto||''); if (novo===null) return;
+      await db.collection('comentariosAcontecimentos').doc(id).update({texto:novo.trim().slice(0,800)});
+      registrarLogModAnc('editar_comentario','comentario',id,novo.trim().slice(0,60));
+      mostrarMsg('modanc','Comentário editado.','ok');
+    }
+    setFilaModAnc(filaModAnc);
+    atualizarBadgePendentes();
+  } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
+}
+// ---- bloquear / desbloquear (guardado em config/bloqueios) ----
+async function bloquearAutorAnc(uid, alvoId){
+  if (!uid){ mostrarMsg('modanc','Sem uid do autor.','erro'); return; }
+  if (!confirm('Bloquear este usuário de publicar e comentar em Aconteceu na sua cidade?')) return;
+  try {
+    await db.collection('config').doc('bloqueios').set({ uids: firebase.firestore.FieldValue.arrayUnion(uid) }, {merge:true});
+    registrarLogModAnc('bloquear_usuario','usuario',uid,'via conteúdo '+alvoId);
+    mostrarMsg('modanc','Usuário bloqueado. Ele não consegue mais publicar/comentar na seção.','ok');
+  } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
+}
+async function desbloquearAnc(uid){
+  try {
+    await db.collection('config').doc('bloqueios').set({ uids: firebase.firestore.FieldValue.arrayRemove(uid) }, {merge:true});
+    registrarLogModAnc('desbloquear_usuario','usuario',uid,'');
+    mostrarMsg('modanc','Usuário desbloqueado.','ok');
+    setFilaModAnc('config');
+  } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
+}
+// ---- histórico ----
+async function filaLogAnc(el){
+  try {
+    const snap = await db.collection('moderacaoLogs').orderBy('criadoEm','desc').limit(60).get();
+    const logs = snap.docs.map(d=>d.data());
+    el.innerHTML = logs.length ? logs.map(l=>`
+      <div class="story-stats" style="margin-bottom:8px;font-size:12px">
+        <b style="color:var(--ouro)">${escM(l.acao)}</b> · ${escM(l.alvoTipo)} <code style="font-size:10px">${escM(l.alvoId)}</code>
+        <div style="color:var(--texto2);margin-top:4px">${escM(l.resumo||'')}${l.motivo?' · motivo: '+escM(l.motivo):''}</div>
+        <div style="color:var(--texto2);opacity:0.7;margin-top:2px">por ${escM(l.adminNome||l.adminUid||'')} · ${tempoM(l.criadoEm)}</div>
+      </div>`).join('') : '<div class="loading-inline">Nenhuma ação registrada ainda.</div>';
+  } catch(e){ el.innerHTML = '<div class="loading-inline">Erro: '+escM(e.message)+'</div>'; }
+}
+// ---- configurações ----
+async function filaConfigAnc(el){
+  let limite = 3, uids = [];
+  try { const d = await db.collection('config').doc('moderacao').get(); if (d.exists && d.data().limiteDenuncias) limite = d.data().limiteDenuncias; } catch(e){}
+  try { const b = await db.collection('config').doc('bloqueios').get(); if (b.exists) uids = b.data().uids||[]; } catch(e){}
+  el.innerHTML = `
+    <div class="story-stats" style="margin-bottom:14px">
+      <h3 style="font-size:14px;margin-bottom:8px">🚨 Limite de denúncias para ocultar automaticamente</h3>
+      <p style="font-size:12px;color:var(--texto2);margin-bottom:10px">Quando uma publicação recebe este número de denúncias, ela some do site e cai na fila Denunciadas.</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="ma-limite" value="${limite}" min="1" max="99" style="width:90px;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:10px;color:var(--texto)">
+        <button class="btn btn-ouro btn-sm" onclick="salvarLimiteAnc()">Salvar</button>
+      </div>
+    </div>
+    <div class="story-stats">
+      <h3 style="font-size:14px;margin-bottom:8px">🚫 Usuários bloqueados (${uids.length})</h3>
+      ${uids.length ? uids.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--borda);font-size:12px"><code>${escM(u)}</code><button class="btn btn-card btn-sm" onclick="desbloquearAnc('${escM(u)}')">Desbloquear</button></div>`).join('') : '<p style="font-size:12px;color:var(--texto2)">Ninguém bloqueado.</p>'}
+    </div>`;
+}
+async function salvarLimiteAnc(){
+  const v = parseInt(document.getElementById('ma-limite').value)||3;
+  try {
+    await db.collection('config').doc('moderacao').set({ limiteDenuncias: Math.max(1, Math.min(99, v)) }, {merge:true});
+    registrarLogModAnc('config_limite_denuncias','config','moderacao', String(v));
+    mostrarMsg('modanc','Limite salvo: '+v+' denúncias.','ok');
+  } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
 }
 
 function mostrarMsg(area, texto, tipo) {
