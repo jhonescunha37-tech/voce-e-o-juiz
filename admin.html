@@ -284,7 +284,16 @@ body{
         <div class="form-row">
           <!-- IMAGEM DE CAPA -->
           <div class="field">
-            <label>Imagem de capa</label>
+            <label>Tipo de mídia da história *</label>
+            <select id="f-tipomidia" onchange="aplicarTipoMidia()">
+              <option value="video">Apenas vídeo</option>
+              <option value="foto">Apenas foto</option>
+              <option value="ambos">Foto e vídeo</option>
+            </select>
+          </div>
+
+          <div class="field" id="wrap-capa">
+            <label id="label-capa">Imagem de capa</label>
             <div class="upload-box">
               <input type="file" id="file-capa" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none" onchange="uploadCapa(this)">
               <button type="button" class="btn btn-card btn-upload" onclick="document.getElementById('file-capa').click()">🖼️ Enviar imagem</button>
@@ -298,8 +307,8 @@ body{
           </div>
 
           <!-- VÍDEO MP4 -->
-          <div class="field">
-            <label>Vídeo MP4 *</label>
+          <div class="field" id="wrap-video">
+            <label id="label-video">Vídeo MP4 *</label>
             <div class="upload-box">
               <input type="file" id="file-video" accept="video/mp4" style="display:none" onchange="uploadVideo(this)">
               <button type="button" class="btn btn-card btn-upload" onclick="document.getElementById('file-video').click()">🎬 Enviar vídeo</button>
@@ -663,6 +672,8 @@ function limparForm() {
   const vn=document.getElementById('video-nome'); if(vn){ vn.classList.remove('ativo'); vn.innerHTML=''; }
   const fc=document.getElementById('file-capa'); if(fc) fc.value='';
   const fv=document.getElementById('file-video'); if(fv) fv.value='';
+  document.getElementById('f-tipomidia').value = 'video';
+  aplicarTipoMidia();
 }
 
 function editarStory(id) {
@@ -678,6 +689,15 @@ function editarStory(id) {
   document.getElementById('f-opcaoB').value = s.opcaoB || '';
   document.getElementById('f-capa-url').value = s.capa || '';
   document.getElementById('f-video-url').value = s.video || '';
+  // tipo de mídia: usa o salvo, ou deduz de histórias antigas (compatibilidade)
+  let tm = s.tipoMidia;
+  if (!tm){
+    const temVid = !!(s.video && String(s.video).trim());
+    const temFoto = !!(s.capa && String(s.capa).trim());
+    tm = temVid && temFoto ? 'ambos' : (temVid ? 'video' : 'foto');
+  }
+  document.getElementById('f-tipomidia').value = tm;
+  aplicarTipoMidia();
   document.getElementById('f-ordem').value = s.ordem || 1;
   document.getElementById('f-destaque').checked = !!s.destaque;
   document.getElementById('f-historiaDoDia').checked = !!s.historiaDoDia;
@@ -719,14 +739,37 @@ function erroCampo(campoId, mensagem){
   mostrarMsg('historia', mensagem, 'erro');
 }
 
+// mostra/esconde os campos de mídia conforme o tipo escolhido
+function aplicarTipoMidia(){
+  const tm = document.getElementById('f-tipomidia').value;
+  const wrapCapa = document.getElementById('wrap-capa');
+  const wrapVideo = document.getElementById('wrap-video');
+  const labelCapa = document.getElementById('label-capa');
+  const labelVideo = document.getElementById('label-video');
+  if (tm==='foto'){
+    wrapCapa.style.display=''; wrapVideo.style.display='none';
+    labelCapa.textContent = 'Foto da história *';
+  } else if (tm==='video'){
+    wrapCapa.style.display='none'; wrapVideo.style.display='';
+    labelVideo.textContent = 'Vídeo MP4 *';
+  } else { // ambos
+    wrapCapa.style.display=''; wrapVideo.style.display='';
+    labelCapa.textContent = 'Foto (capa/thumbnail) *';
+    labelVideo.textContent = 'Vídeo MP4 *';
+  }
+}
+
 async function salvarHistoria() {
   const titulo = document.getElementById('f-titulo').value.trim();
   const descricao = document.getElementById('f-descricao').value.trim();
   const opcaoA = document.getElementById('f-opcaoA').value.trim();
   const opcaoB = document.getElementById('f-opcaoB').value.trim();
   const categoria = document.getElementById('f-categoria').value;
-  const capaFinal = document.getElementById('f-capa-url').value.trim() || 'https://picsum.photos/1200/675';
+  const tipoMidia = document.getElementById('f-tipomidia').value;
+  const capaDigitada = document.getElementById('f-capa-url').value.trim();
   const videoFinal = document.getElementById('f-video-url').value.trim();
+  // foto: se o tipo usa foto e nada foi enviado, usa a padrão
+  const capaFinal = capaDigitada || 'https://picsum.photos/1200/675';
 
   // validação campo a campo (destaca, rola e avisa)
   if (!titulo)    return erroCampo('f-titulo',     'Preencha o título da história.');
@@ -734,7 +777,10 @@ async function salvarHistoria() {
   if (!opcaoA)    return erroCampo('f-opcaoA',     'Adicione a primeira opção de voto (Opção A).');
   if (!opcaoB)    return erroCampo('f-opcaoB',     'Adicione a segunda opção de voto (Opção B).');
   if (!categoria) return erroCampo('f-categoria',  'Escolha uma categoria.');
-  if (!videoFinal)return erroCampo('f-video-url',  'Informe o vídeo ou a URL do vídeo.');
+  // vídeo só é obrigatório quando o tipo de mídia inclui vídeo
+  if ((tipoMidia==='video' || tipoMidia==='ambos') && !videoFinal)
+    return erroCampo('f-video-url', 'Informe o vídeo ou a URL do vídeo (ou mude o tipo de mídia para "Apenas foto").');
+  // foto obrigatória quando o tipo é "apenas foto" ou "ambos" (mas há padrão, então nunca trava)
   // passou: limpa qualquer destaque
   document.querySelectorAll('.campo-erro').forEach(e=>e.classList.remove('campo-erro'));
 
@@ -746,7 +792,8 @@ async function salvarHistoria() {
     titulo, descricao, opcaoA, opcaoB,
     duracao: document.getElementById('f-duracao').value.trim(),
     capa: capaFinal,
-    video: videoFinal,
+    video: (tipoMidia==='foto') ? '' : videoFinal,   // apenas foto: sem vídeo
+    tipoMidia,
     categoria: categoria || 'aleatorias',
     classificacao: document.getElementById('f-classificacao').value || '',
     avisos,
