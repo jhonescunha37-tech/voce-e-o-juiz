@@ -442,6 +442,7 @@ body{
       <div id="msg-modanc" class="msg"></div>
       <div style="margin:0 0 14px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-card btn-sm" id="ma-f-analise" onclick="setFilaModAnc('analise')">📥 Publicações pendentes</button>
+        <button class="btn btn-card btn-sm" id="ma-f-aprovados" onclick="setFilaModAnc('aprovados')">✅ Publicados no site</button>
         <button class="btn btn-card btn-sm" id="ma-f-denunciadas" onclick="setFilaModAnc('denunciadas')">🚩 Publicações denunciadas</button>
         <button class="btn btn-card btn-sm" id="ma-f-canalise" onclick="setFilaModAnc('canalise')">💬 Comentários em análise</button>
         <button class="btn btn-card btn-sm" id="ma-f-cdenunciados" onclick="setFilaModAnc('cdenunciados')">💬🚩 Comentários denunciados</button>
@@ -1604,12 +1605,13 @@ function registrarLogModAnc(acao, alvoTipo, alvoId, resumo, motivo){
 function carregarModAnc(){ setFilaModAnc(filaModAnc); }
 function setFilaModAnc(f){
   filaModAnc = f;
-  ['analise','denunciadas','canalise','cdenunciados','removidos','log','config'].forEach(x=>{
+  ['analise','aprovados','denunciadas','canalise','cdenunciados','removidos','log','config'].forEach(x=>{
     const b=document.getElementById('ma-f-'+x); if(b) b.classList.toggle('btn-ouro', x===f);
   });
   const el = document.getElementById('lista-modanc');
   el.innerHTML = '<div class="loading-inline">Carregando...</div>';
   if (f==='analise') return filaPubsAnc('pendente', el, 'Nenhuma publicação pendente. 👌');
+  if (f==='aprovados') return filaPubsAnc('aprovado', el, 'Nenhuma publicação no ar ainda.');
   if (f==='denunciadas') return filaDenunciadasAnc(el);
   if (f==='canalise') return filaComentariosAnc('analise', el);
   if (f==='cdenunciados') return filaComDenunciadosAnc(el);
@@ -1624,8 +1626,9 @@ function cardPubModAnc(a, contexto){
   const acoes = [];
   if (a.status!=='aprovado') acoes.push(`<button class="btn btn-ouro btn-sm" onclick="acaoPubAnc('${a.id}','aprovar')">✅ Aprovar</button>`);
   if (a.status!=='oculto')    acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','ocultar')">🙈 Ocultar</button>`);
-  if (a.status!=='removido')  acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','remover')">🗑 Remover</button>`);
+  if (a.status!=='removido')  acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','remover')">🗑 Remover do site</button>`);
   else acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','excluir')">❌ Excluir de vez</button>`);
+  if (a.status!=='removido')  acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','excluir')">❌ Excluir de vez</button>`);
   acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','edittitulo')">✏️ Título</button>`);
   acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','editdesc')">✏️ Descrição</button>`);
   if (!a.revisado) acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','revisado')">☑️ Revisado</button>`);
@@ -1682,15 +1685,31 @@ async function acaoPubAnc(id, acao){
       registrarLogModAnc('excluir_definitivo','acontecimento',id,a.titulo);
       mostrarMsg('modanc','Excluída definitivamente.','ok');
     } else if (acao==='edittitulo'){
-      const novo = prompt('Novo título:', a.titulo||''); if (novo===null) return;
-      await db.collection('acontecimentos').doc(id).update({titulo:novo.trim().slice(0,140), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
-      registrarLogModAnc('editar_titulo','acontecimento',id,novo.trim());
-      mostrarMsg('modanc','Título editado.','ok');
+      abrirEditor({
+        titulo:'Editar título', sub:'Título do acontecimento', valor:a.titulo||'',
+        multilinha:false, limite:140,
+        onSalvar: async (novo)=>{
+          if (!novo) return;
+          await db.collection('acontecimentos').doc(id).update({titulo:novo.slice(0,140), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+          registrarLogModAnc('editar_titulo','acontecimento',id,novo);
+          mostrarMsg('modanc','Título editado.','ok');
+          setFilaModAnc(filaModAnc);
+        }
+      });
+      return;
     } else if (acao==='editdesc'){
-      const novo = prompt('Nova descrição:', a.descricao||''); if (novo===null) return;
-      await db.collection('acontecimentos').doc(id).update({descricao:novo.trim().slice(0,3000), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
-      registrarLogModAnc('editar_descricao','acontecimento',id,a.titulo);
-      mostrarMsg('modanc','Descrição editada.','ok');
+      abrirEditor({
+        titulo:'Editar descrição', sub:'Texto completo do acontecimento', valor:a.descricao||'',
+        multilinha:true, limite:3000,
+        onSalvar: async (novo)=>{
+          if (!novo) return;
+          await db.collection('acontecimentos').doc(id).update({descricao:novo.slice(0,3000), atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+          registrarLogModAnc('editar_descricao','acontecimento',id,a.titulo);
+          mostrarMsg('modanc','Descrição editada.','ok');
+          setFilaModAnc(filaModAnc);
+        }
+      });
+      return;
     } else if (acao==='revisado'){
       await db.collection('acontecimentos').doc(id).update({revisado:true, atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
       registrarLogModAnc('marcar_revisado','acontecimento',id,a.titulo);
@@ -1768,10 +1787,18 @@ async function acaoComAnc(id, acao){
       registrarLogModAnc('remover','comentario',id,(c.texto||'').slice(0,60));
       mostrarMsg('modanc','Comentário removido.','ok');
     } else if (acao==='editar'){
-      const novo = prompt('Editar comentário:', c.texto||''); if (novo===null) return;
-      await db.collection('comentariosAcontecimentos').doc(id).update({texto:novo.trim().slice(0,800)});
-      registrarLogModAnc('editar_comentario','comentario',id,novo.trim().slice(0,60));
-      mostrarMsg('modanc','Comentário editado.','ok');
+      abrirEditor({
+        titulo:'Editar comentário', sub:'Comentário do usuário', valor:c.texto||'',
+        multilinha:true, limite:800,
+        onSalvar: async (novo)=>{
+          if (novo===''){ return; }
+          await db.collection('comentariosAcontecimentos').doc(id).update({texto:novo.slice(0,800)});
+          registrarLogModAnc('editar_comentario','comentario',id,novo.slice(0,60));
+          mostrarMsg('modanc','Comentário editado.','ok');
+          setFilaModAnc(filaModAnc);
+        }
+      });
+      return;
     }
     setFilaModAnc(filaModAnc);
     atualizarBadgePendentes();
@@ -1836,6 +1863,42 @@ async function salvarLimiteAnc(){
   } catch(e){ mostrarMsg('modanc','Erro: '+e.message,'erro'); }
 }
 
+// ============================================================
+//  EDITOR AMPLO — substitui os prompt() de uma linha
+// ============================================================
+let _editorSalvar = null;
+function abrirEditor({ titulo, sub, valor, multilinha, limite, onSalvar }){
+  document.getElementById('editor-titulo').innerText = titulo || 'Editar';
+  document.getElementById('editor-sub').innerText = sub || '';
+  const inp = document.getElementById('editor-input');
+  const ta = document.getElementById('editor-textarea');
+  const cont = document.getElementById('editor-contador');
+  const lim = document.getElementById('editor-limite');
+  const campo = multilinha ? ta : inp;
+  inp.style.display = multilinha ? 'none' : 'block';
+  ta.style.display = multilinha ? 'block' : 'none';
+  campo.value = valor || '';
+  if (limite){ campo.maxLength = limite; lim.innerText = 'máx. '+limite; } else { campo.removeAttribute('maxlength'); lim.innerText=''; }
+  const atualizaCont = ()=> cont.innerText = (campo.value.length) + ' caracteres';
+  atualizaCont();
+  campo.oninput = atualizaCont;
+  _editorSalvar = onSalvar;
+  document.getElementById('editor-overlay').style.display = 'block';
+  setTimeout(()=>{ try{ campo.focus(); }catch(e){} }, 60);
+}
+function fecharEditor(){
+  document.getElementById('editor-overlay').style.display = 'none';
+  _editorSalvar = null;
+}
+async function salvarEditor(){
+  if (!_editorSalvar) return fecharEditor();
+  const multilinha = document.getElementById('editor-textarea').style.display !== 'none';
+  const valor = (multilinha ? document.getElementById('editor-textarea') : document.getElementById('editor-input')).value.trim();
+  const fn = _editorSalvar;
+  fecharEditor();
+  await fn(valor);
+}
+
 function mostrarMsg(area, texto, tipo) {
   const el = document.getElementById('msg-' + area);
   if(!el) return;
@@ -1844,5 +1907,23 @@ function mostrarMsg(area, texto, tipo) {
   setTimeout(() => el.classList.remove('ativo'), 5000);
 }
 </script>
+<!-- EDITOR AMPLO (substitui os prompts de uma linha) -->
+<div id="editor-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(5,6,10,0.85);backdrop-filter:blur(4px);overflow-y:auto;padding:40px 16px">
+  <div style="max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--ouro);border-radius:14px;padding:22px">
+    <h2 id="editor-titulo" style="font-size:18px;margin-bottom:6px">Editar</h2>
+    <p id="editor-sub" style="font-size:12px;color:var(--texto2);margin-bottom:14px"></p>
+    <input id="editor-input" type="text" style="display:none;width:100%;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:12px 14px;color:var(--texto);font-size:15px;font-family:inherit;margin-bottom:6px">
+    <textarea id="editor-textarea" style="display:none;width:100%;min-height:240px;background:var(--card2);border:1px solid var(--borda);border-radius:8px;padding:12px 14px;color:var(--texto);font-size:15px;font-family:inherit;line-height:1.6;resize:vertical;margin-bottom:6px"></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--texto2);margin-bottom:14px">
+      <span id="editor-contador">0 caracteres</span>
+      <span id="editor-limite"></span>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-card" onclick="fecharEditor()">Cancelar</button>
+      <button class="btn btn-ouro" onclick="salvarEditor()">💾 Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
