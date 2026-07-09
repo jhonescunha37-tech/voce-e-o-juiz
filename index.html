@@ -3831,16 +3831,21 @@ async function salvarAnc(d, _status){
 // ---------- LISTAGEM / BLOCOS ----------
 async function carregarAcontecimentos(){
   try {
+    // consulta só por status (não exige índice composto); ordenação feita aqui no navegador
     const snap = await db.collection('acontecimentos')
       .where('status','==','aprovado')
-      .orderBy('criadoEm','desc')
-      .limit(80).get();
+      .limit(120).get();
     ancTodos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    // mais recentes primeiro
+    ancTodos.sort((a,b)=>{
+      const ta = a.criadoEm && a.criadoEm.toMillis ? a.criadoEm.toMillis() : 0;
+      const tb = b.criadoEm && b.criadoEm.toMillis ? b.criadoEm.toMillis() : 0;
+      return tb - ta;
+    });
     console.log('[Acontecimentos] Carregados na home (status=aprovado):', ancTodos.length);
   } catch(e){
     console.error('[Acontecimentos] Erro ao carregar (a home mostra só status=aprovado):', e.code, e.message);
     ancTodos = [];
-    // dica de índice: o console do navegador (F12) mostra um link direto para criar
   }
   renderBlocosAnc();
 }
