@@ -3932,7 +3932,12 @@ function abrirDetalheAnc(id){
     <div class="anc-det-texto">${escapeHtml(a.descricao||'').replace(/\n/g,'<br>')}</div>
     <div id="anc-votacao"></div>
     <div id="anc-presenca"></div>
-    <div style="text-align:right;margin-top:10px"><a href="javascript:void(0)" onclick="abrirDenunciaAnc('${String(a.id).replace(/'/g,"\\'")}','acontecimento','${String(a.id).replace(/'/g,"\\'")}')" style="color:var(--texto2);font-size:12px">🚩 Denunciar publicação</a></div>
+    <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap">
+      ${(usuarioAtual && a.autorId===usuarioAtual.uid)
+        ? `<a href="javascript:void(0)" onclick="pedirRemocaoAnc('${String(a.id).replace(/'/g,"\\'")}')" style="color:#ef9c66;font-size:12px">🗑️ Pedir remoção deste post</a>`
+        : '<span></span>'}
+      <a href="javascript:void(0)" onclick="abrirDenunciaAnc('${String(a.id).replace(/'/g,"\\'")}','acontecimento','${String(a.id).replace(/'/g,"\\'")}')" style="color:var(--texto2);font-size:12px">🚩 Denunciar publicação</a>
+    </div>
     <div class="perfil-sec-titulo" style="text-align:left;margin-top:24px">💬 Comentários</div>
     <p class="coment-disclaimer">Comente sem citar nomes completos, endereços, telefones ou fazer acusações graves.</p>
     <div id="anc-coment-form"></div>
@@ -3948,6 +3953,29 @@ function abrirDetalheAnc(id){
   carregarComentariosAnc(a.id);
 }
 function fecharDetalheAnc(){ document.getElementById('anc-detalhe-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
+
+// autor pede remoção do próprio post: oculta na hora e vai pra fila do admin confirmar
+async function pedirRemocaoAnc(id){
+  const a = ancTodos.find(x=>x.id===id);
+  if (!a) return;
+  if (!usuarioAtual || a.autorId !== usuarioAtual.uid){ toast('Só o autor pode pedir a remoção.'); return; }
+  if (!confirm('Pedir a remoção deste post? Ele sai do ar agora e a moderação confirma a exclusão.')) return;
+  try {
+    await db.collection('acontecimentos').doc(id).update({
+      status: 'remocao_pedida',
+      atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('[Acontecimento] Autor pediu remoção:', id);
+    ancTodos = ancTodos.filter(x=>x.id!==id);
+    renderBlocosAnc();
+    fecharDetalheAnc();
+    toast('✅ Seu post foi retirado do ar. A remoção será confirmada pela moderação.');
+    trackEvent('anc_pedido_remocao',{});
+  } catch(e){
+    console.error('[Acontecimento] Erro ao pedir remoção:', e.code, e.message);
+    toast('Não foi possível pedir a remoção agora: '+(e.message||e.code||'')+'.');
+  }
+}
 // regras
 function abrirRegrasComunidade(){ document.getElementById('regras-comunidade-overlay').classList.add('ativo'); document.body.style.overflow='hidden'; }
 function fecharRegrasComunidade(){ document.getElementById('regras-comunidade-overlay').classList.remove('ativo'); document.body.style.overflow=''; }
