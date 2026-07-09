@@ -441,7 +441,7 @@ body{
       <div class="sec-titulo">🛡️ Moderação — Aconteceu na sua cidade</div>
       <div id="msg-modanc" class="msg"></div>
       <div style="margin:0 0 14px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-card btn-sm" id="ma-f-analise" onclick="setFilaModAnc('analise')">📥 Publicações em análise</button>
+        <button class="btn btn-card btn-sm" id="ma-f-analise" onclick="setFilaModAnc('analise')">📥 Publicações pendentes</button>
         <button class="btn btn-card btn-sm" id="ma-f-denunciadas" onclick="setFilaModAnc('denunciadas')">🚩 Publicações denunciadas</button>
         <button class="btn btn-card btn-sm" id="ma-f-canalise" onclick="setFilaModAnc('canalise')">💬 Comentários em análise</button>
         <button class="btn btn-card btn-sm" id="ma-f-cdenunciados" onclick="setFilaModAnc('cdenunciados')">💬🚩 Comentários denunciados</button>
@@ -980,7 +980,7 @@ async function atualizarBadgePendentes(){
   // moderação Aconteceu: publicações + comentários em análise
   try {
     const [p, c] = await Promise.all([
-      db.collection('acontecimentos').where('status','==','analise').get(),
+      db.collection('acontecimentos').where('status','==','pendente').get(),
       db.collection('comentariosAcontecimentos').where('status','==','analise').get()
     ]);
     const n = p.size + c.size;
@@ -1609,7 +1609,7 @@ function setFilaModAnc(f){
   });
   const el = document.getElementById('lista-modanc');
   el.innerHTML = '<div class="loading-inline">Carregando...</div>';
-  if (f==='analise') return filaPubsAnc('analise', el, 'Nenhuma publicação em análise. 👌');
+  if (f==='analise') return filaPubsAnc('pendente', el, 'Nenhuma publicação pendente. 👌');
   if (f==='denunciadas') return filaDenunciadasAnc(el);
   if (f==='canalise') return filaComentariosAnc('analise', el);
   if (f==='cdenunciados') return filaComDenunciadosAnc(el);
@@ -1622,7 +1622,7 @@ function cardPubModAnc(a, contexto){
   const autor = a.autorTipo==='apelido'&&a.apelido ? 'apelido: '+escM(a.apelido) : 'anônimo';
   const den = a.denuncias||0;
   const acoes = [];
-  if (a.status!=='publicado') acoes.push(`<button class="btn btn-ouro btn-sm" onclick="acaoPubAnc('${a.id}','aprovar')">✅ Aprovar</button>`);
+  if (a.status!=='aprovado') acoes.push(`<button class="btn btn-ouro btn-sm" onclick="acaoPubAnc('${a.id}','aprovar')">✅ Aprovar</button>`);
   if (a.status!=='oculto')    acoes.push(`<button class="btn btn-card btn-sm" onclick="acaoPubAnc('${a.id}','ocultar')">🙈 Ocultar</button>`);
   if (a.status!=='removido')  acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','remover')">🗑 Remover</button>`);
   else acoes.push(`<button class="btn btn-danger btn-sm" onclick="acaoPubAnc('${a.id}','excluir')">❌ Excluir de vez</button>`);
@@ -1664,7 +1664,8 @@ async function acaoPubAnc(id, acao){
   const a = {id, ...doc.data()};
   try {
     if (acao==='aprovar'){
-      await db.collection('acontecimentos').doc(id).update({status:'publicado', denuncias:0, revisado:true, atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      await db.collection('acontecimentos').doc(id).update({status:'aprovado', denuncias:0, revisado:true, atualizadoEm:firebase.firestore.FieldValue.serverTimestamp()});
+      console.log('[Moderação] Acontecimento aprovado (status=aprovado):', id);
       registrarLogModAnc('aprovar','acontecimento',id,a.titulo);
       mostrarMsg('modanc','Publicação aprovada e visível no site. Denúncias zeradas.','ok');
     } else if (acao==='ocultar'){
