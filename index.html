@@ -3783,41 +3783,45 @@ async function publicarAnc(){
     trackEvent('anc_texto_suspeito',{motivos: analise.motivos.length});
     return;
   }
-  await salvarAnc(d, 'publicado');
+  await salvarAnc(d);
 }
 function fecharRevisaoAnc(){ document.getElementById('anc-revisao-overlay').classList.remove('ativo'); }
 async function enviarParaAnaliseAnc(){
   if (!ancRascunho) return;
   document.getElementById('anc-revisao-overlay').classList.remove('ativo');
-  await salvarAnc(ancRascunho, 'analise');
+  await salvarAnc(ancRascunho);
   ancRascunho = null;
 }
-async function salvarAnc(d, status){
+async function salvarAnc(d, _status){
   const btn = document.getElementById('anc-btn-publicar');
   btn.disabled = true; btn.innerText = 'Enviando...';
+  // TODO fluxo novo: TODO post entra como "pendente" e só aparece após aprovação do admin
+  const payload = {
+    titulo: d.titulo, descricao: d.descricao,
+    estado: d.estado, cidade: d.cidade, bairro: d.bairro || '',
+    categoria: d.categoria,
+    autorTipo: d.autorTipo, apelido: d.autorTipo==='apelido' ? d.apelido : '',
+    autorId: usuarioAtual.uid,
+    votosAcredito: 0, votosNaoAcredito: 0, votosMaisDetalhes: 0,
+    euEstavaLa: 0, denuncias: 0,
+    status: 'pendente',
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  console.log('[Acontecimento] Enviando para a coleção "acontecimentos":', payload);
   try {
-    await db.collection('acontecimentos').add({
-      titulo: d.titulo, descricao: d.descricao,
-      estado: d.estado, cidade: d.cidade, bairro: d.bairro || '',
-      categoria: d.categoria,
-      autorTipo: d.autorTipo, apelido: d.autorTipo==='apelido' ? d.apelido : '',
-      autorId: usuarioAtual.uid,
-      votosAcredito: 0, votosNaoAcredito: 0, votosMaisDetalhes: 0,
-      euEstavaLa: 0, denuncias: 0,
-      status,
-      criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
-      atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    const ref = await db.collection('acontecimentos').add(payload);
+    console.log('[Acontecimento] ✅ Documento criado com ID:', ref.id, '| status: pendente');
     fecharPublicarAnc();
-    ['anc-f-titulo','anc-f-desc','anc-f-bairro','anc-f-apelido'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('anc-f-resp').checked = false;
+    ['anc-f-titulo','anc-f-desc','anc-f-bairro','anc-f-apelido'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const chk = document.getElementById('anc-f-resp'); if (chk) chk.checked = false;
     toggleBtnPublicarAnc();
-    toast(status==='publicado' ? '✅ Acontecimento publicado!' : '📨 Enviado para análise da moderação.');
-    trackEvent('anc_publicado',{status, categoria:d.categoria, cidade:d.cidade});
-    if (status==='publicado') carregarAcontecimentos();
+    toast('Seu acontecimento foi enviado e está aguardando aprovação.');
+    trackEvent('anc_publicado',{status:'pendente', categoria:d.categoria, cidade:d.cidade});
   } catch(e){
-    console.error(e);
-    toast('Erro ao publicar: '+(e.message||'tente novamente.'));
+    // ERRO REAL — não mostra sucesso
+    console.error('[Acontecimento] ❌ ERRO ao salvar no Firestore:', e.code, e.message, e);
+    toast('Não foi possível enviar: ' + (e.message || e.code || 'erro desconhecido') + '. Tente novamente.');
   } finally {
     btn.innerText = 'PUBLICAR';
     toggleBtnPublicarAnc();
@@ -3828,12 +3832,13 @@ async function salvarAnc(d, status){
 async function carregarAcontecimentos(){
   try {
     const snap = await db.collection('acontecimentos')
-      .where('status','==','publicado')
+      .where('status','==','aprovado')
       .orderBy('criadoEm','desc')
       .limit(80).get();
     ancTodos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    console.log('[Acontecimentos] Carregados na home (status=aprovado):', ancTodos.length);
   } catch(e){
-    console.error('Acontecimentos:', e);
+    console.error('[Acontecimentos] Erro ao carregar (a home mostra só status=aprovado):', e.code, e.message);
     ancTodos = [];
     // dica de índice: o console do navegador (F12) mostra um link direto para criar
   }
