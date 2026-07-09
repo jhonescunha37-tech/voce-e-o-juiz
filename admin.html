@@ -444,6 +444,7 @@ body{
         <button class="btn btn-card btn-sm" id="ma-f-analise" onclick="setFilaModAnc('analise')">📥 Publicações pendentes</button>
         <button class="btn btn-card btn-sm" id="ma-f-aprovados" onclick="setFilaModAnc('aprovados')">✅ Publicados no site</button>
         <button class="btn btn-card btn-sm" id="ma-f-denunciadas" onclick="setFilaModAnc('denunciadas')">🚩 Publicações denunciadas</button>
+        <button class="btn btn-card btn-sm" id="ma-f-remocao" onclick="setFilaModAnc('remocao')">🗑️ Remoção pedida <span class="badge-num" id="badge-remocao" style="display:none">0</span></button>
         <button class="btn btn-card btn-sm" id="ma-f-canalise" onclick="setFilaModAnc('canalise')">💬 Comentários em análise</button>
         <button class="btn btn-card btn-sm" id="ma-f-cdenunciados" onclick="setFilaModAnc('cdenunciados')">💬🚩 Comentários denunciados</button>
         <button class="btn btn-card btn-sm" id="ma-f-removidos" onclick="setFilaModAnc('removidos')">🗑 Removidos</button>
@@ -978,13 +979,14 @@ async function atualizarBadgePendentes(){
     if (snap.size>0){ badge.innerText = fmtBadge(snap.size); badge.style.display='inline-block'; }
     else badge.style.display='none';
   } catch(e){}
-  // moderação Aconteceu: publicações + comentários em análise
+  // moderação Aconteceu: pendentes + remoção pedida + comentários em análise
   try {
-    const [p, c] = await Promise.all([
+    const [p, r, c] = await Promise.all([
       db.collection('acontecimentos').where('status','==','pendente').get(),
+      db.collection('acontecimentos').where('status','==','remocao_pedida').get(),
       db.collection('comentariosAcontecimentos').where('status','==','analise').get()
     ]);
-    const n = p.size + c.size;
+    const n = p.size + r.size + c.size;
     const badge = document.getElementById('badge-modanc');
     if (n>0){ badge.innerText = fmtBadge(n); badge.style.display='inline-block'; }
     else badge.style.display='none';
@@ -1605,13 +1607,14 @@ function registrarLogModAnc(acao, alvoTipo, alvoId, resumo, motivo){
 function carregarModAnc(){ setFilaModAnc(filaModAnc); }
 function setFilaModAnc(f){
   filaModAnc = f;
-  ['analise','aprovados','denunciadas','canalise','cdenunciados','removidos','log','config'].forEach(x=>{
+  ['analise','aprovados','denunciadas','remocao','canalise','cdenunciados','removidos','log','config'].forEach(x=>{
     const b=document.getElementById('ma-f-'+x); if(b) b.classList.toggle('btn-ouro', x===f);
   });
   const el = document.getElementById('lista-modanc');
   el.innerHTML = '<div class="loading-inline">Carregando...</div>';
   if (f==='analise') return filaPubsAnc('pendente', el, 'Nenhuma publicação pendente. 👌');
   if (f==='aprovados') return filaPubsAnc('aprovado', el, 'Nenhuma publicação no ar ainda.');
+  if (f==='remocao') return filaPubsAnc('remocao_pedida', el, 'Nenhum autor pediu remoção. 👌');
   if (f==='denunciadas') return filaDenunciadasAnc(el);
   if (f==='canalise') return filaComentariosAnc('analise', el);
   if (f==='cdenunciados') return filaComDenunciadosAnc(el);
