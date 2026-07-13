@@ -763,15 +763,39 @@ section{animation:fadeUp 0.5s ease both}
   .story-card:hover{transform:none;box-shadow:none}
   .story-card:hover .story-card-capa{transform:none}
 }
+/* ===== TELA DE ENTRADA (boas-vindas) ===== */
+#boas-vindas{position:fixed;inset:0;z-index:9500;background:rgba(5,6,10,0.94);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;animation:bvFade 0.35s ease}
+#boas-vindas.ativo{display:flex !important}
+@keyframes bvFade{from{opacity:0}to{opacity:1}}
+.bv-caixa{position:relative;width:100%;max-width:520px;background:linear-gradient(135deg,rgba(201,162,39,0.14),rgba(201,162,39,0.03)),var(--card);border:1px solid var(--ouro);border-radius:20px;padding:36px 28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,0.7);animation:bvUp 0.4s cubic-bezier(.2,.9,.2,1)}
+@keyframes bvUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.bv-x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--texto2);font-size:22px;cursor:pointer;padding:6px;line-height:1;transition:color 0.2s}
+.bv-x:hover{color:var(--ouro)}
+.bv-ic{font-size:46px;margin-bottom:8px}
+.bv-titulo{font-family:'Sora','Inter',sans-serif;font-size:clamp(22px,5vw,30px);font-weight:800;margin-bottom:10px;background:linear-gradient(135deg,var(--ouro-claro),var(--ouro));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.bv-texto{color:var(--texto2);font-size:15px;line-height:1.55;margin:0 auto 24px;max-width:400px}
+.bv-botoes{display:flex;flex-direction:column;gap:10px}
+.bv-btn{padding:16px 20px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid var(--borda);background:var(--card2);color:var(--texto);transition:all 0.2s}
+.bv-btn:hover{border-color:var(--ouro);transform:translateY(-2px)}
+.bv-btn.destaque{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;border:none;font-weight:800;font-size:16px;padding:18px 20px;box-shadow:0 8px 28px rgba(201,162,39,0.4)}
+.bv-btn.destaque:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 12px 36px rgba(201,162,39,0.55)}
+.bv-btn.simples{background:none;border:none;color:var(--texto2);font-weight:500;padding:10px}
+.bv-btn.simples:hover{color:var(--ouro);transform:none}
+@media(max-width:600px){
+  #boas-vindas{padding:0}
+  .bv-caixa{max-width:none;height:100%;border-radius:0;border:none;display:flex;flex-direction:column;justify-content:center;padding:28px 22px}
+  .bv-ic{font-size:54px}
+}
+
 /* ============================================================
    ACONTECEU NA SUA CIDADE
    ============================================================ */
-#acontecimentos{padding:28px 24px 10px;max-width:1200px;margin:0 auto}
-.anc-destaque{background:linear-gradient(135deg,rgba(201,162,39,0.13),rgba(201,162,39,0.03)),var(--card);border:1px solid var(--ouro);border-radius:18px;padding:30px 22px;text-align:center;margin-bottom:26px;position:relative;overflow:hidden}
+#acontecimentos{padding:18px 24px 10px;max-width:1200px;margin:0 auto;scroll-margin-top:70px}
+.anc-destaque{background:linear-gradient(135deg,rgba(201,162,39,0.13),rgba(201,162,39,0.03)),var(--card);border:1px solid var(--ouro);border-radius:18px;padding:22px 20px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
 .anc-destaque::before{content:'📍';position:absolute;font-size:130px;opacity:0.05;right:-10px;top:-20px}
-.anc-kicker{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin-bottom:10px}
+.anc-kicker{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ouro);margin-bottom:6px}
 .anc-titulo{font-family:'Sora','Inter',sans-serif;font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-0.02em;margin-bottom:8px;background:linear-gradient(135deg,var(--ouro-claro),var(--ouro));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.anc-sub{color:var(--texto2);font-size:15px;max-width:520px;margin:0 auto 20px;line-height:1.5}
+.anc-sub{color:var(--texto2);font-size:15px;max-width:520px;margin:0 auto 16px;line-height:1.45}
 .anc-botoes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .anc-btn{padding:15px 22px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;border:none;transition:transform 0.18s,box-shadow 0.18s;font-family:inherit}
 .anc-btn.principal{background:linear-gradient(135deg,var(--ouro),var(--ouro-claro));color:#05060a;box-shadow:0 6px 24px rgba(201,162,39,0.35)}
@@ -808,10 +832,14 @@ section{animation:fadeUp 0.5s ease both}
 .anc-det-texto{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;font-size:15px;line-height:1.7;margin:14px 0}
 .anc-det-aviso{font-size:11px;color:var(--texto2);opacity:0.8;line-height:1.5;margin-top:14px;border-top:1px solid var(--borda);padding-top:12px}
 @media(max-width:600px){
-  #acontecimentos{padding:18px 12px 6px}
-  .anc-destaque{padding:24px 14px}
-  .anc-botoes{flex-direction:column}
-  .anc-btn{width:100%;padding:17px}
+  #acontecimentos{padding:10px 12px 6px}
+  .anc-destaque{padding:16px 12px;margin-bottom:16px}
+  .anc-kicker{font-size:10px;margin-bottom:4px}
+  .anc-titulo{font-size:24px;line-height:1.1}
+  .anc-sub{font-size:13px;margin-bottom:12px;line-height:1.4}
+  .anc-botoes{flex-direction:column;gap:8px}
+  .anc-btn{width:100%;padding:14px;font-size:14px}
+  .anc-regiao-atual{margin-top:10px;font-size:12px}
   .anc-grid{grid-template-columns:1fr}
 }
 /* --- Leva 2: interação --- */
@@ -888,6 +916,21 @@ section{animation:fadeUp 0.5s ease both}
 <!-- ============================================================
      ACONTECEU NA SUA CIDADE — carro-chefe (Leva 1)
      ============================================================ -->
+<!-- TELA DE ENTRADA — Aconteceu na sua cidade -->
+<div id="boas-vindas" style="display:none">
+  <div class="bv-caixa">
+    <button class="bv-x" onclick="fecharBoasVindas()" aria-label="Fechar">✕</button>
+    <div class="bv-ic">📍</div>
+    <h2 class="bv-titulo">Aconteceu na sua cidade</h2>
+    <p class="bv-texto">Veja o que está acontecendo perto de você ou conte algo que aconteceu na sua região.</p>
+    <div class="bv-botoes">
+      <button class="bv-btn destaque" onclick="bvContar()">✍️ Contar um acontecimento</button>
+      <button class="bv-btn" onclick="bvVer()">👀 Ver acontecimentos</button>
+      <button class="bv-btn simples" onclick="fecharBoasVindas()">Entrar no site →</button>
+    </div>
+  </div>
+</div>
+
 <section id="acontecimentos">
   <div class="anc-destaque">
     <div class="anc-kicker">📍 O que está rolando perto de você</div>
@@ -4248,6 +4291,37 @@ async function enviarDenunciaAnc(){
   toast('🚩 Denúncia registrada. Obrigado por ajudar a manter a comunidade segura.');
 }
 
+// ---------- TELA DE ENTRADA (uma vez por visita) ----------
+function mostrarBoasVindas(){
+  if (sessionStorage.getItem('bv_fechada')) return;   // já viu nesta visita
+  // se a pessoa chegou por um link direto de história (?h=ID), não atrapalha: mostra a história
+  try {
+    const p = new URLSearchParams(location.search);
+    if (p.get('h')) return;
+  } catch(e){}
+  const el = document.getElementById('boas-vindas');
+  if (!el) return;
+  el.classList.add('ativo');
+  document.body.style.overflow = 'hidden';
+  trackEvent('boas_vindas_exibida',{});
+}
+function fecharBoasVindas(){
+  const el = document.getElementById('boas-vindas');
+  if (el) el.classList.remove('ativo');
+  document.body.style.overflow = '';
+  sessionStorage.setItem('bv_fechada','1');           // não mostra de novo nesta visita
+}
+function bvVer(){
+  fecharBoasVindas();
+  abrirListaAnc();
+  trackEvent('boas_vindas_ver',{});
+}
+function bvContar(){
+  fecharBoasVindas();
+  abrirPublicarAnc();
+  trackEvent('boas_vindas_contar',{});
+}
+
 function initAcontecimentos(){
   renderRegiaoAtual();
   carregarLimiteDenuncias();
@@ -4267,6 +4341,14 @@ renderRankingAbas();
 carregarPalavrasProibidas();
 carregarHistorias();
 initAcontecimentos();
+
+// a página SEMPRE abre no topo (impede o navegador de restaurar a rolagem antiga)
+if ('scrollRestoration' in history) { try { history.scrollRestoration = 'manual'; } catch(e){} }
+window.scrollTo(0, 0);
+window.addEventListener('load', () => { window.scrollTo(0, 0); });
+
+// tela de entrada (uma vez por visita)
+mostrarBoasVindas();
 
 // atualizar setas das categorias ao rolar/redimensionar
 (function(){
